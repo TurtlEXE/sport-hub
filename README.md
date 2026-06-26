@@ -1,4 +1,4 @@
-# THIS IS SPORTHUB
+# SportHub
 # Multi-Sport Court Booking Platform
 
 ## Tech Stack
@@ -12,7 +12,7 @@
 
 ## Project Structure
 
-```
+```text
 src/main/java/com/mvc/mock_project/
 ├── config/          # Spring config (Security, etc.)
 ├── controller/      # REST Controllers
@@ -32,15 +32,23 @@ src/main/java/com/mvc/mock_project/
 
 ## Database
 - Schema: `sport_booking_marketplace`
-- SQL script: `src/main/resources/court_booking_db_sqlserver.sql`
+- SQL scripts:
+  - Schema definition: `database/sport_booking_marketplace.sql`
+  - Sample data: `database/sample.sql`
 
 ## Getting Started
 
 1. Clone the repository
-2. Configure `src/main/resources/application.properties`:
-   - Update `spring.datasource.username` and `spring.datasource.password`
-3. Run the SQL script to initialize the database
-4. Run `MockProjectApplication.java`
+2. Configure Database Connection:
+   - The file `src/main/resources/application.properties` serves as a generic template and should **not** contain real database passwords.
+   - Create a file named `application-local.properties` in `src/main/resources/`. (This file is added to `.gitignore` to prevent committing secrets to the repo).
+   - Add your local database configuration to `application-local.properties`:
+     ```properties
+     spring.datasource.username=your_local_username
+     spring.datasource.password=your_local_password
+     ```
+3. Run the SQL scripts in the `database/` folder to initialize your database structure.
+4. Run `SportHubApplication.java` to start the Spring Boot server.
 
 ## Team Convention
 - Branch naming: `feature/<feature-name>`, `fix/<bug-name>`

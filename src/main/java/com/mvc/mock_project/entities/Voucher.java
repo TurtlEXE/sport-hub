@@ -74,4 +74,20 @@ public class Voucher {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
     }
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "VoucherFacility",
+        joinColumns = @JoinColumn(name = "voucher_id"),
+        inverseJoinColumns = @JoinColumn(name = "facility_id")
+    )
+    private java.util.List<Facility> applicableFacilities;
+
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(
+        name = "VoucherAccount",
+        joinColumns = @JoinColumn(name = "voucher_id"),
+        inverseJoinColumns = @JoinColumn(name = "account_id")
+    )
+    private java.util.List<Account> applicableAccounts;
 }

@@ -69,6 +69,15 @@ public class BookingChangeLog {
     @Column(length = 500)
     private String reason;
 
+    @Column(name = "etag_before", length = 64)
+    private String etagBefore;
+
+    @Column(name = "etag_after", length = 64)
+    private String etagAfter;
+
+    @Column(name = "refund_due", precision = 12, scale = 2)
+    private java.math.BigDecimal refundDue;
+
     @PrePersist
     public void prePersist() {
         this.changeTime = LocalDateTime.now();
