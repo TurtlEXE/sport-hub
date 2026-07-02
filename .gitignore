@@ -34,3 +34,8 @@ build/
 
 ### Spring Boot Custom Properties ###
 application-local.properties
+.env
+.env.local
+
+### Project Plans (local only) ###
+plan/
