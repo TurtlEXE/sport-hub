@@ -32,7 +32,7 @@ public class Facility {
     private java.math.BigDecimal latitude;
     private java.math.BigDecimal longitude;
 
-    @Column(columnDefinition = "NVARCHAR(MAX)")
+    @Column(columnDefinition = "LONGTEXT")
     private String description;
 
     @Column(name = "open_time", nullable = false)

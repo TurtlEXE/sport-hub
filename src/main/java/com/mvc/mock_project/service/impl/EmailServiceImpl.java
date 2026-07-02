@@ -2,12 +2,15 @@ package com.mvc.mock_project.service.impl;
 
 import com.mvc.mock_project.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
@@ -23,7 +26,17 @@ public class EmailServiceImpl implements EmailService {
                 + "Mã này sẽ hết hạn sau 24 giờ.\n\n"
                 + "Trân trọng,\nĐội ngũ SportHub");
         
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+            log.info("Verification email sent to {}", to);
+        } catch (MailException e) {
+            log.error("Failed to send email to {}. SMTP might not be configured. OTP is: {}", to, otp, e);
+            System.out.println("=========================================================");
+            System.out.println("DEVELOPMENT MODE - MOCK EMAIL");
+            System.out.println("To: " + to);
+            System.out.println("OTP: " + otp);
+            System.out.println("=========================================================");
+        }
     }
 
     @Override
@@ -37,6 +50,16 @@ public class EmailServiceImpl implements EmailService {
                 + "Mã này sẽ hết hạn sau 10 phút. Nếu bạn không yêu cầu đặt lại mật khẩu, xin hãy bỏ qua email này.\n\n"
                 + "Trân trọng,\nĐội ngũ SportHub");
 
-        mailSender.send(message);
+        try {
+            mailSender.send(message);
+            log.info("Password reset email sent to {}", to);
+        } catch (MailException e) {
+            log.error("Failed to send email to {}. SMTP might not be configured. OTP is: {}", to, otp, e);
+            System.out.println("=========================================================");
+            System.out.println("DEVELOPMENT MODE - MOCK EMAIL");
+            System.out.println("To: " + to);
+            System.out.println("Reset OTP: " + otp);
+            System.out.println("=========================================================");
+        }
     }
 }

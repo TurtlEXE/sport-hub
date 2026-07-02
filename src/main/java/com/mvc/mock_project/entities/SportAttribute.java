@@ -26,7 +26,7 @@ public class SportAttribute {
     @Column(name = "data_type", nullable = false, length = 20)
     private String dataType; // TEXT, NUMBER, BOOLEAN, SELECT
 
-    @Column(name = "options_json", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "options_json", columnDefinition = "LONGTEXT")
     private String optionsJson;
 
     @Column(name = "is_required")

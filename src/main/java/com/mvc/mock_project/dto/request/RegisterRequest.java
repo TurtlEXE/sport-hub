@@ -17,25 +17,23 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterRequest {
 
-    @NotBlank(message = "{auth.register.fullname}")
-    @Size(max = 255)
+    @NotBlank(message = "{validation.fullname.required}")
+    @Size(max = 255, message = "{validation.fullname.size}")
     private String fullName;
 
-    @NotBlank(message = "{auth.register.email}")
-    @Email(message = "{auth.error.invalid_credentials}")
+    @NotBlank(message = "{validation.email.required}")
+    @Email(message = "{validation.email.format}")
     private String email;
 
-    @NotBlank(message = "{auth.register.password}")
-    @Size(min = 8, max = 100)
+    @NotBlank(message = "{validation.password.required}")
+    @Size(min = 8, max = 100, message = "{validation.password.size}")
     private String password;
 
-    @NotBlank(message = "{auth.register.confirm_password}")
+    @NotBlank(message = "{validation.confirm_password.required}")
     private String confirmPassword;
 
-    @NotBlank(message = "{auth.register.phone}")
-    @Pattern(regexp = "^(0[3|5|7|8|9])+([0-9]{8})$", message = "Số điện thoại không hợp lệ")
+    @NotBlank(message = "{validation.phone.required}")
+    @Pattern(regexp = "^(0[3|5|7|8|9])+([0-9]{8})$", message = "{validation.phone.format}")
     private String phone;
 
-    @NotNull
-    private Role role;
 }

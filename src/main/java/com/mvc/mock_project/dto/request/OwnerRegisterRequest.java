@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class OwnerRegisterRequest extends RegisterRequest {
 
-    @NotBlank(message = "{auth.register_owner.business_name}")
+    @NotBlank(message = "{validation.business_name.required}")
     private String businessName;
 
     private String taxCode;

@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class CompleteProfileRequest {
 
-    @NotBlank(message = "{auth.complete.phone}")
-    @Pattern(regexp = "^(0[3|5|7|8|9])+([0-9]{8})$", message = "Số điện thoại không hợp lệ")
+    @NotBlank(message = "{validation.phone.required}")
+    @Pattern(regexp = "^(0[3|5|7|8|9])+([0-9]{8})$", message = "{validation.phone.format}")
     private String phone;
 }

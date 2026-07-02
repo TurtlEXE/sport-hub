@@ -67,8 +67,12 @@ public class AuthServiceImpl implements AuthService {
             throw new EmailAlreadyExistsException("msg.error.email_exists");
         }
 
+        if (accountRepository.existsByPhone(request.getPhone())) {
+            throw new RuntimeException("msg.error.phone_exists");
+        }
+
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("Passwords do not match");
+            throw new RuntimeException("msg.error.passwords_mismatch");
         }
 
         emailVerificationRepository.deleteByEmail(request.getEmail());
@@ -82,15 +86,18 @@ public class AuthServiceImpl implements AuthService {
         account.setIsActive(false);
         account.setCreatedAt(LocalDateTime.now());
         accountRepository.save(account);
-        
+
         String otp = generateOtp();
         EmailVerification verifyOtp = new EmailVerification();
         verifyOtp.setEmail(request.getEmail());
         verifyOtp.setToken(otp);
         verifyOtp.setExpireAt(LocalDateTime.now().plusMinutes(verifyOtpExpirationMinutes));
         verifyOtp.setRole(Role.CUSTOMER);
+        verifyOtp.setFullName(request.getFullName());
+        verifyOtp.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        verifyOtp.setPhone(request.getPhone());
         emailVerificationRepository.save(verifyOtp);
-        
+
         emailService.sendVerificationEmail(request.getEmail(), otp);
     }
 
@@ -100,9 +107,13 @@ public class AuthServiceImpl implements AuthService {
         if (accountRepository.existsByEmail(request.getEmail())) {
             throw new EmailAlreadyExistsException("msg.error.email_exists");
         }
-        
+
+        if (accountRepository.existsByPhone(request.getPhone())) {
+            throw new RuntimeException("msg.error.phone_exists");
+        }
+
         if (!request.getPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("Passwords do not match");
+            throw new RuntimeException("msg.error.passwords_mismatch");
         }
 
         emailVerificationRepository.deleteByEmail(request.getEmail());
@@ -135,17 +146,19 @@ public class AuthServiceImpl implements AuthService {
         verifyOtp.setToken(otp);
         verifyOtp.setExpireAt(LocalDateTime.now().plusMinutes(verifyOtpExpirationMinutes));
         verifyOtp.setRole(Role.OWNER); // indicates this is owner
+        verifyOtp.setFullName(request.getFullName());
+        verifyOtp.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        verifyOtp.setPhone(request.getPhone());
         emailVerificationRepository.save(verifyOtp);
-        
+
         emailService.sendVerificationEmail(request.getEmail(), otp);
     }
-    
-
 
     @Override
     @Transactional
     public void verifyEmailOtp(VerifyOtpRequest request) {
-        Optional<EmailVerification> verificationOpt = emailVerificationRepository.findByTokenAndEmail(request.getOtp(), request.getEmail());
+        Optional<EmailVerification> verificationOpt = emailVerificationRepository.findByTokenAndEmail(request.getOtp(),
+                request.getEmail());
         if (verificationOpt.isEmpty()) {
             throw new InvalidOtpException("msg.error.invalid_otp");
         }
@@ -157,7 +170,7 @@ public class AuthServiceImpl implements AuthService {
 
         // Activate account
         Account account = accountRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new RuntimeException("msg.error.account_not_found"));
         account.setIsActive(true);
         accountRepository.save(account);
 
@@ -167,16 +180,16 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
         Account account = accountRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("msg.error.invalid_credentials"));
+                .orElseThrow(() -> new RuntimeException("Invalid email or password."));
 
         if (!passwordEncoder.matches(request.getPassword(), account.getPasswordHash())) {
-            throw new RuntimeException("msg.error.invalid_credentials");
+            throw new RuntimeException("Invalid email or password.");
         }
 
-        if (!account.getIsActive()) {
-            throw new AccountNotActiveException("msg.error.account_inactive");
+        if (account.getIsActive() != null && !account.getIsActive()) {
+            throw new RuntimeException("Your account is not active. Please verify your email.");
         }
-        
+
         if (account.getRole() == Role.OWNER) {
             OwnerProfile profile = ownerProfileRepository.findByAccountId(account.getId()).orElse(null);
             if (profile != null && profile.getApprovalStatus() == ApprovalStatus.PENDING) {
@@ -185,7 +198,8 @@ public class AuthServiceImpl implements AuthService {
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.getEmail());
-        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null,
+                userDetails.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String token = jwtTokenProvider.generateToken(authentication);
@@ -201,18 +215,32 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void forgotPassword(String email) {
-        Optional<Account> accountOpt = accountRepository.findByEmail(email);
-        if (accountOpt.isPresent()) {
-            passwordResetTokenRepository.deleteByEmail(email);
-            
+        Account account = accountRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("msg.error.account_not_found"));
+        
+        passwordResetTokenRepository.deleteByEmail(email);
+
             String otp = generateOtp();
             PasswordResetToken resetToken = new PasswordResetToken();
             resetToken.setEmail(email);
             resetToken.setToken(otp); // Store OTP
             resetToken.setExpireAt(LocalDateTime.now().plusMinutes(resetOtpExpirationMinutes));
             passwordResetTokenRepository.save(resetToken);
-            
-            emailService.sendPasswordResetEmail(email, otp);
+
+        emailService.sendPasswordResetEmail(email, otp);
+    }
+
+    @Override
+    public void verifyResetOtp(VerifyResetOtpRequest request) {
+        Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByTokenAndEmail(request.getOtp(),
+                request.getEmail());
+        if (tokenOpt.isEmpty()) {
+            throw new InvalidOtpException("msg.error.invalid_otp");
+        }
+
+        PasswordResetToken resetToken = tokenOpt.get();
+        if (resetToken.getExpireAt().isBefore(LocalDateTime.now())) {
+            throw new OtpExpiredException("msg.error.expired_otp");
         }
     }
 
@@ -220,10 +248,11 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         if (!request.getNewPassword().equals(request.getConfirmPassword())) {
-            throw new RuntimeException("Passwords do not match");
+            throw new RuntimeException("msg.error.passwords_mismatch");
         }
 
-        Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByTokenAndEmail(request.getOtp(), request.getEmail());
+        Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByTokenAndEmail(request.getOtp(),
+                request.getEmail());
         if (tokenOpt.isEmpty()) {
             throw new InvalidOtpException("msg.error.invalid_otp");
         }
@@ -235,7 +264,7 @@ public class AuthServiceImpl implements AuthService {
 
         Account account = accountRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Account not found"));
-        
+
         account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         accountRepository.save(account);
 
@@ -246,8 +275,12 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void completeProfile(String email, CompleteProfileRequest request) {
         Account account = accountRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Account not found"));
-        
+                .orElseThrow(() -> new RuntimeException("msg.error.account_not_found"));
+
+        if (!account.getPhone().equals(request.getPhone()) && accountRepository.existsByPhone(request.getPhone())) {
+            throw new RuntimeException("msg.error.phone_exists");
+        }
+
         account.setPhone(request.getPhone());
         accountRepository.save(account);
     }

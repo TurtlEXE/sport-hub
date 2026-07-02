@@ -24,7 +24,7 @@ public class EmailQueue {
     @Column(name = "to_email", nullable = false)
     private String toEmail;
 
-    @Column(name = "payload_json", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "payload_json", columnDefinition = "LONGTEXT")
     private String payloadJson;
 
     @Column(name = "reminder_at")

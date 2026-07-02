@@ -9,6 +9,7 @@ public interface AuthService {
     void verifyEmailOtp(VerifyOtpRequest request);
     AuthResponse login(LoginRequest request);
     void forgotPassword(String email);
+    void verifyResetOtp(VerifyResetOtpRequest request);
     void resetPassword(ResetPasswordRequest request);
     void completeProfile(String email, CompleteProfileRequest request);
 }

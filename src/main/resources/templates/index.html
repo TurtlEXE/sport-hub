@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{layout}">
+
+<head>
+    <title>SportHub - Premium Venue Booking Platform</title>
+</head>
+
+<body>
+    <main layout:fragment="content">
+        <!-- Hero Section -->
+        <section class="relative bg-[#0B1120] pt-20 pb-32 overflow-hidden">
+            <!-- Background Glows -->
+            <div
+                class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary-blue/20 rounded-full blur-[128px] pointer-events-none">
+            </div>
+            <div
+                class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-[128px] pointer-events-none">
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center mb-16">
+
+                    <!-- Text Content (Left) -->
+                    <div class="lg:col-span-7 space-y-8 animate-fade-in text-center lg:text-left mt-8 lg:mt-0">
+                        <!-- Premium Badge -->
+                        <div
+                            class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-slate-400 text-xs font-bold tracking-wider mx-auto lg:mx-0">
+                            <span class="w-2 h-2 rounded-full bg-primary-blue"></span>
+                            PREMIUM VENUE BOOKING PLATFORM
+                        </div>
+
+                        <!-- Headline -->
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight">
+                            Book Your Perfect <br />
+                            <span class="text-primary-blue">Sports</span> <span
+                                class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-yellow-400">Venue</span>
+                            <br />
+                            Anytime, Anywhere
+                        </h1>
+
+                        <!-- Description -->
+                        <p
+                            class="text-slate-400 text-lg sm:text-base font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
+                            Discover football fields, badminton courts, tennis courts, basketball courts and more in
+                            just a few clicks. Verified premium listings, instant confirmations, and zero hidden fees.
+                        </p>
+
+                        <!-- Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                            <a href="#search"
+                                class="bg-primary-blue hover:bg-blue-600 text-white font-bold px-8 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
+                                Book Now
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </a>
+                            <a th:href="@{/auth/register/owner}"
+                                class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-8 py-3.5 rounded-xl transition-all text-center">
+                                Become an Owner
+                            </a>
+                        </div>
+
+                        <!-- Features list -->
+                        <div class="flex flex-wrap gap-x-6 gap-y-2 justify-center lg:justify-start pt-2">
+                            <div class="flex items-center gap-2 text-sm font-semibold text-slate-300">
+                                <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                Instant Booking
+                            </div>
+                            <div class="flex items-center gap-2 text-sm font-semibold text-slate-300">
+                                <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                Verified Court Conditions
+                            </div>
+                            <div class="flex items-center gap-2 text-sm font-semibold text-slate-300">
+                                <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                                Flexible Rescheduling
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Image Content (Right) -->
+                    <div class="lg:col-span-5 relative animate-fade-in mx-auto w-full max-w-md lg:max-w-none"
+                        style="animation-delay: 0.2s;">
+                        <!-- Glow behind image -->
+                        <div
+                            class="absolute inset-0 bg-gradient-to-tr from-primary-blue to-emerald-400 rounded-[2.5rem] blur-xl opacity-20">
+                        </div>
+
+                        <div class="relative rounded-[2.5rem] overflow-hidden border border-slate-800 aspect-square">
+                            <img src="https://images.pexels.com/photos/114296/pexels-photo-114296.jpeg?auto=compress&cs=tinysrgb&w=800&h=800&dpr=1"
+                                alt="Sports Venue" class="w-full h-full object-cover">
+                            <div
+                                class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-slate-900/40">
+                            </div>
+
+                            <!-- Top Left Badge -->
+                            <div
+                                class="absolute top-6 left-6 bg-slate-950/80 backdrop-blur-md px-4 py-2 rounded-xl flex items-center gap-3 border border-slate-700">
+                                <div class="w-6 h-6 bg-primary-blue/20 rounded-full flex items-center justify-center">
+                                    <svg class="w-3 h-3 text-primary-blue" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Top Voted
+                                        Court</div>
+                                    <div class="text-sm font-bold text-white">Greenwood Turf Arena</div>
+                                </div>
+                            </div>
+
+                            <!-- Bottom Right Badge -->
+                            <div
+                                class="absolute bottom-6 right-6 bg-primary-blue px-4 py-3 rounded-xl flex items-center gap-3 shadow-xl">
+                                <svg class="w-6 h-6 text-yellow-300" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                                </svg>
+                                <div>
+                                    <div class="text-[10px] font-bold text-blue-200 uppercase tracking-wider">Average
+                                        Rating</div>
+                                    <div class="text-sm font-bold text-white">4.9 (50K+ Games)</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Horizontal Search Bar -->
+                <div id="search"
+                    class="w-full max-w-5xl mx-auto bg-slate-200 rounded-2xl p-4 sm:p-5 relative z-20 shadow-2xl animate-fade-in"
+                    style="animation-delay: 0.4s;">
+                    <form class="flex flex-col md:flex-row gap-4 items-end">
+                        <div class="w-full md:w-1/4">
+                            <label
+                                class="block text-slate-500 text-[11px] font-bold mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-primary-blue" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                                Sport Type
+                            </label>
+                            <select
+                                class="w-full bg-white border-0 rounded-xl px-4 py-3.5 text-slate-800 font-bold focus:ring-2 focus:ring-primary-blue appearance-none shadow-sm text-sm">
+                                <option>All Sports</option>
+                                <option>Football</option>
+                                <option>Basketball</option>
+                                <option>Tennis</option>
+                                <option>Badminton</option>
+                            </select>
+                        </div>
+
+                        <div class="w-full md:w-1/3">
+                            <label
+                                class="block text-slate-500 text-[11px] font-bold mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-primary-blue" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                Preferred Location
+                            </label>
+                            <select
+                                class="w-full bg-white border-0 rounded-xl px-4 py-3.5 text-slate-800 font-bold focus:ring-2 focus:ring-primary-blue appearance-none shadow-sm text-sm">
+                                <option>All Locations</option>
+                                <option>Hanoi</option>
+                                <option>Ho Chi Minh City</option>
+                                <option>Da Nang</option>
+                            </select>
+                        </div>
+
+                        <div class="w-full md:w-1/4">
+                            <label
+                                class="block text-slate-500 text-[11px] font-bold mb-1.5 uppercase tracking-wider flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5 text-primary-blue" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                Select Date
+                            </label>
+                            <input type="date"
+                                class="w-full bg-white border-0 rounded-xl px-4 py-3.5 text-slate-800 font-bold focus:ring-2 focus:ring-primary-blue shadow-sm text-sm"
+                                value="2026-02-07">
+                        </div>
+
+                        <div class="w-full md:w-[15%]">
+                            <button type="button"
+                                class="w-full bg-primary-blue hover:bg-blue-600 text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 text-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Hint Text -->
+                <div class="text-center mt-4 animate-fade-in" style="animation-delay: 0.5s;">
+                    <p class="text-[11px] font-medium text-slate-400 flex items-center justify-center gap-1.5">
+                        <span class="text-yellow-400">💡</span> Select your parameters and click Search to filter
+                        verified venues below.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How It Works Section -->
+        <section id="how-it-works" class="py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <h2 class="text-3xl font-black text-slate-900 mb-4">How SportHub Works</h2>
+                    <p class="text-slate-500 text-lg">Whether you want to play or manage a venue, we make it simple.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-16">
+                    <!-- Players -->
+                    <div
+                        class="bg-white rounded-3xl p-8 border border-slate-200 relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-blue-100 rounded-bl-full -mr-8 -mt-8 opacity-50">
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-3">
+                            <span
+                                class="w-10 h-10 bg-primary-blue text-white rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                </svg>
+                            </span>
+                            For Players
+                        </h3>
+
+                        <div class="space-y-8 relative z-10">
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white text-primary-blue font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
+                                    1</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 mb-1">Search Facilities</h4>
+                                    <p class="text-slate-500 text-sm">Filter our premium inventory by location, sport,
+                                        and available hours.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white text-primary-blue font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
+                                    2</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 mb-1">Book Instantly</h4>
+                                    <p class="text-slate-500 text-sm">Reserve your slot instantly. Our system guarantees
+                                        no double-bookings.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white text-primary-blue font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
+                                    3</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 mb-1">Enter & Play</h4>
+                                    <p class="text-slate-500 text-sm">Show up at the venue, present your smart ticket,
+                                        and play.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Owners -->
+                    <div
+                        class="bg-white rounded-3xl p-8 border border-slate-200 relative overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.08)] hover:shadow-[0_20px_40px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300">
+                        <div
+                            class="absolute top-0 right-0 w-32 h-32 bg-green-100 rounded-bl-full -mr-8 -mt-8 opacity-50">
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900 mb-8 flex items-center gap-3">
+                            <span
+                                class="w-10 h-10 bg-secondary-green text-white rounded-xl flex items-center justify-center shadow-lg shadow-green-500/20">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                </svg>
+                            </span>
+                            For Owners
+                        </h3>
+
+                        <div class="space-y-8 relative z-10">
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white text-secondary-green font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
+                                    1</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 mb-1">Quick Register</h4>
+                                    <p class="text-slate-500 text-sm">Create an owner account and get approved in less
+                                        than 24h.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white text-secondary-green font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
+                                    2</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 mb-1">List Facilities</h4>
+                                    <p class="text-slate-500 text-sm">Set custom hourly rates, define slots, and upload
+                                        photos.</p>
+                                </div>
+                            </div>
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-12 h-12 bg-white text-secondary-green font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
+                                    3</div>
+                                <div>
+                                    <h4 class="font-bold text-slate-900 mb-1">Collect Payouts</h4>
+                                    <p class="text-slate-500 text-sm">Receive automated bookings and track revenue
+                                        easily.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Stats Section -->
+        <section class="py-24 bg-[#0B1120] relative z-10" data-aos="fade-up">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div
+                        class="bg-slate-900/80 rounded-2xl p-8 border border-slate-800 flex flex-col items-center text-center transition-transform hover:-translate-y-1">
+                        <div
+                            class="w-12 h-12 bg-primary-blue/20 text-primary-blue rounded-xl flex items-center justify-center mb-6">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                        </div>
+                        <div class="text-3xl font-black text-white mb-2">1,200+</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Sports
+                            Facilities</div>
+                        <div class="text-xs text-slate-500 font-medium">Across 15 core regions</div>
+                    </div>
+
+                    <div
+                        class="bg-slate-900/80 rounded-2xl p-8 border border-slate-800 flex flex-col items-center text-center transition-transform hover:-translate-y-1">
+                        <div
+                            class="w-12 h-12 bg-emerald-500/20 text-emerald-400 rounded-xl flex items-center justify-center mb-6">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                            </svg>
+                        </div>
+                        <div class="text-3xl font-black text-white mb-2">25,000+</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Active Athletes
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">Booking courts monthly</div>
+                    </div>
+
+                    <div
+                        class="bg-slate-900/80 rounded-2xl p-8 border border-slate-800 flex flex-col items-center text-center transition-transform hover:-translate-y-1">
+                        <div
+                            class="w-12 h-12 bg-orange-500/20 text-orange-400 rounded-xl flex items-center justify-center mb-6">
+                            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <div class="text-3xl font-black text-white mb-2">50,000+</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Completed Games
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">Reserve slots smoothly</div>
+                    </div>
+
+                    <div
+                        class="bg-slate-900/80 rounded-2xl p-8 border border-slate-800 flex flex-col items-center text-center transition-transform hover:-translate-y-1">
+                        <div
+                            class="w-12 h-12 bg-yellow-500/20 text-yellow-400 rounded-xl flex items-center justify-center mb-6">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                                <path
+                                    d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                            </svg>
+                        </div>
+                        <div class="text-3xl font-black text-white mb-2">4.9<span
+                                class="text-xl text-slate-500 font-semibold">/5.0</span></div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Customer Rating
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium">Elite customer care</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- What Our Community Says Section -->
+        <section class="py-24 bg-white" data-aos="fade-up">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center max-w-3xl mx-auto mb-16">
+                    <div class="text-emerald-500 text-[11px] font-bold uppercase tracking-widest mb-3">Athlete Voices
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-6">What Our Community Says</h2>
+                    <p class="text-slate-500 text-sm font-medium leading-relaxed">
+                        Read stories from verified sport clubs, organizers, and amateur players who have organized games
+                        through SportHub.
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Testimonial 1 -->
+                    <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-xl transition-shadow duration-300 relative"
+                        data-aos="fade-up" data-aos-delay="100">
+                        <svg class="absolute top-8 right-8 w-8 h-8 text-slate-200" fill="currentColor"
+                            viewBox="0 0 32 32">
+                            <path
+                                d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-1.1.9-2 2-2h2V8h-2zm16 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-1.1.9-2 2-2h2V8h-2z" />
+                        </svg>
+                        <div class="flex text-yellow-400 mb-6 gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        </div>
+                        <p class="text-slate-600 text-[13px] leading-relaxed italic font-medium mb-8">
+                            "SportHub has completely transformed how our club organizes weekly practice matches. Booking
+                            4 tennis courts takes under 1 minute now! The digital ticket check-in is extremely
+                            seamless."
+                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                <img src="https://images.pexels.com/photos/415829/pexels-photo-415829.jpeg?auto=compress&cs=tinysrgb&w=100"
+                                    class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-900">Sarah Jenkins</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-wide font-semibold mt-0.5">
+                                    Amateur Tennis Club Captain</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 2 -->
+                    <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-xl transition-shadow duration-300 relative"
+                        data-aos="fade-up" data-aos-delay="200">
+                        <svg class="absolute top-8 right-8 w-8 h-8 text-slate-200" fill="currentColor"
+                            viewBox="0 0 32 32">
+                            <path
+                                d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-1.1.9-2 2-2h2V8h-2zm16 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-1.1.9-2 2-2h2V8h-2z" />
+                        </svg>
+                        <div class="flex text-yellow-400 mb-6 gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        </div>
+                        <p class="text-slate-600 text-[13px] leading-relaxed italic font-medium mb-8">
+                            "We schedule employee friendly football and badminton matches every Friday. SportHub has
+                            made finding high-quality facilities with locker rooms and night lights super
+                            straightforward. Highly recommended."
+                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                <img src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=100"
+                                    class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-900">Dave K.</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-wide font-semibold mt-0.5">
+                                    Corporate Wellness Coordinator</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Testimonial 3 -->
+                    <div class="bg-slate-50 rounded-3xl p-8 border border-slate-100 hover:shadow-xl transition-shadow duration-300 relative"
+                        data-aos="fade-up" data-aos-delay="300">
+                        <svg class="absolute top-8 right-8 w-8 h-8 text-slate-200" fill="currentColor"
+                            viewBox="0 0 32 32">
+                            <path
+                                d="M10 8c-3.3 0-6 2.7-6 6v10h10V14H8c0-1.1.9-2 2-2h2V8h-2zm16 0c-3.3 0-6 2.7-6 6v10h10V14h-6c0-1.1.9-2 2-2h2V8h-2z" />
+                        </svg>
+                        <div class="flex text-yellow-400 mb-6 gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path
+                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                        </div>
+                        <p class="text-slate-600 text-[13px] leading-relaxed italic font-medium mb-8">
+                            "Finding indoor badminton courts with the right wooden flooring used to be a weekly
+                            nightmare. Now, I filter for wood flooring, book, and split payments with teammates right on
+                            the platform."
+                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-200 overflow-hidden">
+                                <img src="https://images.pexels.com/photos/733872/pexels-photo-733872.jpeg?auto=compress&cs=tinysrgb&w=100"
+                                    class="w-full h-full object-cover">
+                            </div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-900">Li Na</div>
+                                <div class="text-[10px] text-slate-500 uppercase tracking-wide font-semibold mt-0.5">
+                                    University Badminton Champion</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA Section -->
+        <section class="py-20 bg-gradient-to-r from-blue-600 to-emerald-500 relative overflow-hidden">
+            <div class="absolute inset-0 bg-slate-900/10"></div>
+            <div class="max-w-4xl mx-auto px-4 text-center relative z-10" data-aos="zoom-in">
+                <h2 class="text-4xl sm:text-5xl font-black text-white mb-6">Ready to Play?</h2>
+                <p class="text-white/90 text-lg sm:text-xl font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
+                    Skip the phone calls and physical queues. Secure your favorite court slots instantly, split
+                    bookings, and check in on-site.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="#search"
+                        class="bg-white text-primary-blue font-bold px-8 py-4 rounded-xl hover:bg-slate-50 transition-colors shadow-xl shadow-blue-900/20">
+                        Book Your Court Today
+                    </a>
+                    <a th:href="@{/auth/register/owner}"
+                        class="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold px-8 py-4 rounded-xl transition-colors backdrop-blur-sm">
+                        Register Venue Partner
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Connecting Owners & Athletes Section -->
+        <section class="py-24 bg-white" data-aos="fade-up">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div data-aos="fade-right">
+                        <div class="text-orange-500 text-[11px] font-bold uppercase tracking-widest mb-3">About SportHub
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-8 leading-tight">Connecting Venue
+                            Owners & Passionate Athletes</h2>
+
+                        <div class="space-y-6 text-slate-500 text-[15px] font-medium leading-relaxed mb-10">
+                            <p>
+                                Founded in 2026, SportHub is a leading sports marketplace platform engineered to help
+                                recreational athletes secure premium athletic court slots seamlessly while enabling
+                                facility managers to maximize field utilization and streamline booking dispatch.
+                            </p>
+                            <p>
+                                Our platform automates reservation processing, handles multi-tiered peak/off-peak
+                                pricing, coordinates sports category checks, and manages instant checkout schedules.
+                                Together, we are building a healthier, more active world.
+                            </p>
+                        </div>
+
+                        <div class="flex gap-12">
+                            <div>
+                                <div
+                                    class="text-2xl font-black text-slate-900 border-l-4 border-primary-blue pl-4 mb-1">
+                                    100%</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-4">Verified
+                                    Courts</div>
+                            </div>
+                            <div>
+                                <div class="text-2xl font-black text-slate-900 border-l-4 border-emerald-500 pl-4 mb-1">
+                                    24/7</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-4">Instant
+                                    Scheduler</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="relative" data-aos="fade-left">
+                        <div
+                            class="rounded-3xl overflow-hidden border border-slate-100 shadow-2xl shadow-slate-200 aspect-[4/3]">
+                            <img src="https://plus.unsplash.com/premium_photo-1684713510655-e6e31536168d?q=80&w=1740&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                                alt="Soccer stadium overview" class="w-full h-full object-cover">
+                        </div>
+                        <!-- Floating Badge -->
+                        <div class="absolute -bottom-6 -left-6 bg-slate-900 rounded-2xl p-5 shadow-xl border border-slate-800"
+                            data-aos="zoom-in" data-aos-delay="200">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-2">Join the
+                                Movement</div>
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path
+                                        d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                                <span class="text-white font-bold text-sm">Rated 4.9 on Google Store</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Get In Touch Section -->
+        <section class="py-24 bg-slate-50 border-t border-slate-100" data-aos="fade-up">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                    <!-- Contact Info -->
+                    <div data-aos="fade-right">
+                        <div class="text-primary-blue text-[11px] font-bold uppercase tracking-widest mb-3">Support Desk
+                        </div>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-6">Get in Touch</h2>
+                        <p class="text-slate-500 text-[15px] font-medium leading-relaxed max-w-md mb-12">
+                            Have questions about listed stadium bookings, refund structures, custom event spacing, or
+                            corporate sports tournaments? Contact our dedicated help desk.
+                        </p>
+
+                        <div class="space-y-8">
+                            <div class="flex gap-4 items-start">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-primary-blue">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                                        Email Address</div>
+                                    <div class="text-sm font-bold text-slate-900">support@sporthub.com</div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4 items-start">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-primary-blue">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
+                                        Phone Helpline</div>
+                                    <div class="text-sm font-bold text-slate-900">+1 (800) 555-PLAY</div>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-4 items-start">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 text-primary-blue">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">HQ
+                                        Office</div>
+                                    <div class="text-sm font-bold text-slate-900">100 Athletic Way, Suite 400, San
+                                        Francisco, CA</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Form -->
+                    <div class="bg-white rounded-[2rem] p-8 sm:p-10 border border-slate-200 shadow-xl shadow-slate-200/50"
+                        data-aos="fade-left">
+                        <h3 class="text-xl font-bold text-slate-900 mb-2">Send us a direct message</h3>
+                        <p class="text-[13px] text-slate-500 font-medium mb-8">Receive a secure reply to your verified
+                            email within 4 hours.</p>
+
+                        <form class="space-y-6">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2">Your
+                                        Name</label>
+                                    <input type="text" placeholder="Steve Rogers"
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all">
+                                </div>
+                                <div>
+                                    <label
+                                        class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2">Email
+                                        Address</label>
+                                    <input type="email" placeholder="steve@shield.com"
+                                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label
+                                    class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2">Message
+                                    Details</label>
+                                <textarea rows="4" placeholder="Explain your inquiry in detail..."
+                                    class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all resize-none"></textarea>
+                            </div>
+
+                            <button type="button"
+                                class="w-full bg-[#0B1120] hover:bg-slate-900 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                                </svg>
+                                Send Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{auth-layout}">
+<head>
+    <title>Become a Partner - SportHub</title>
+</head>
+<body>
+    <main layout:fragment="content">
+        <div class="min-h-screen flex flex-col md:flex-row bg-white relative">
+            
+            <a href="/" class="absolute top-6 right-6 z-50 text-sm font-semibold text-slate-500 hover:text-primary-blue flex items-center gap-2 transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to Home
+            </a>
+            
+            <!-- Left Brand Panel -->
+            <div class="hidden md:flex md:w-[40%] bg-slate-900 relative overflow-hidden items-center justify-center p-12 lg:p-20">
+                <div class="absolute inset-0 bg-cover bg-center opacity-90" style="background-image: url('https://images.pexels.com/photos/209977/pexels-photo-209977.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1');"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent"></div>
+                
+                <div class="relative z-10 w-full max-w-md">
+                    <div class="flex items-center gap-2 mb-8">
+                        <div class="w-12 h-12 bg-secondary-green rounded-xl flex items-center justify-center">
+                            <span class="text-white font-black text-2xl tracking-tighter">S</span>
+                        </div>
+                        <span class="font-black text-3xl tracking-tight text-white">Sport<span class="text-secondary-green">Hub</span></span>
+                    </div>
+                    
+                    <h2 class="text-4xl lg:text-5xl font-black text-white leading-tight mb-6">
+                        Grow Your Sports Business
+                    </h2>
+                    <p class="text-slate-400 text-lg leading-relaxed mb-8">
+                        Join our network of premium venues. Automate bookings, manage schedules, and maximize your occupancy rates.
+                    </p>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm">✓</div>
+                            <span class="text-slate-300">Automated scheduling</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm">✓</div>
+                            <span class="text-slate-300">Secure online payments</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-6 h-6 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm">✓</div>
+                            <span class="text-slate-300">24/7 customer support</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Form Panel -->
+            <div class="w-full md:w-[60%] flex items-center justify-center p-6 sm:p-12 overflow-y-auto">
+                <div class="w-full max-w-2xl animate-fade-in py-8">
+                    
+                    <div class="md:hidden flex items-center gap-2 mb-8 justify-center">
+                        <div class="w-10 h-10 bg-secondary-green rounded-xl flex items-center justify-center">
+                            <span class="text-white font-black text-xl tracking-tighter">S</span>
+                        </div>
+                        <span class="font-black text-2xl tracking-tight text-slate-900">Sport<span class="text-secondary-green">Hub</span></span>
+                    </div>
+
+                    <h1 class="text-3xl font-black text-slate-900 mb-2">Partner Registration</h1>
+                    <p class="text-slate-500 mb-8">Tell us about you and your sports facility.</p>
+
+                    <!-- Role Switcher -->
+                    <div class="grid grid-cols-2 gap-4 mb-8 bg-slate-50 p-1.5 rounded-2xl border border-slate-100 max-w-md mx-auto">
+                        <a th:href="@{/auth/register}" class="flex items-center justify-center gap-2 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 font-semibold text-sm transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg> Player
+                        </a>
+                        <a href="javascript:void(0)" class="flex items-center justify-center gap-2 py-2.5 rounded-xl bg-white shadow-sm border border-slate-200 text-secondary-green font-bold text-sm">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg> Venue Owner
+                        </a>
+                    </div>
+
+                    <!-- Custom Alert Box -->
+                    <div class="auth-alert hidden mb-6 p-4 rounded-xl border flex gap-3 items-start text-sm">
+                        <span class="alert-icon shrink-0 mt-0.5"></span>
+                        <span class="alert-msg font-medium"></span>
+                    </div>
+
+                    <form id="ownerRegisterForm">
+                        
+                        <div class="grid md:grid-cols-2 gap-6 mb-8">
+                            <!-- Personal Details -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4">Personal Details</h3>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Full Name <span class="text-rose-500">*</span></label>
+                                    <input type="text" name="fullName" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Email Address <span class="text-rose-500">*</span></label>
+                                    <input type="email" name="email" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number <span class="text-rose-500">*</span></label>
+                                    <input type="tel" name="phone" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                </div>
+
+                                <div class="relative">
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Password <span class="text-rose-500">*</span></label>
+                                    <input type="password" id="passwordOwner" name="password" required class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                    <button type="button" class="toggle-password absolute bottom-0 right-0 h-10 pr-3 flex items-center text-slate-400 focus:outline-none" data-target="passwordOwner">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Business & Bank Details -->
+                            <div class="space-y-4">
+                                <h3 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4">Business Information</h3>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Business Name <span class="text-rose-500">*</span></label>
+                                    <input type="text" name="businessName" required class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Tax Code (MST)</label>
+                                    <input type="text" name="taxCode" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                </div>
+
+                                <div class="pt-2">
+                                    <h4 class="text-sm font-bold text-slate-900 mb-3 text-slate-500">Payout Details</h4>
+                                    
+                                    <div class="space-y-3">
+                                        <div>
+                                            <input type="text" name="bankName" placeholder="Bank Name (e.g. VCB, Techcombank)" class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                        </div>
+                                        <div>
+                                            <input type="text" name="bankAccountNo" placeholder="Account Number" class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                        </div>
+                                        <div>
+                                            <input type="text" name="bankAccountName" placeholder="Account Name" class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 flex justify-end">
+                            <button type="submit" class="w-full md:w-auto px-12 bg-slate-900 hover:bg-secondary-green text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-slate-900/10 flex items-center justify-center">
+                                Submit Application
+                            </button>
+                        </div>
+                    </form>
+
+                    <p class="mt-8 text-center text-sm text-slate-600">
+                        Already a partner? <a th:href="@{/auth/login}" class="font-bold text-secondary-green hover:underline">Sign in to Dashboard</a>
+                    </p>
+                </div>
+            </div>
+            
+        </div>
+    </main>
+
+    <th:block layout:fragment="pageScripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.getElementById('ownerRegisterForm');
+                handleAuthFormSubmit(form, '/api/auth/register/owner', (result, data) => {
+                    // Redirect to OTP verification on success
+                    window.location.href = `/auth/verify?email=${encodeURIComponent(data.email)}`;
+                });
+            });
+        </script>
+    </th:block>
+</body>
+</html>

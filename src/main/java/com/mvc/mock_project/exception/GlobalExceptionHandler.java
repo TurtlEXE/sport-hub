@@ -5,7 +5,9 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-@ControllerAdvice(basePackages = "com.mvc.mock_project.controller")
+import com.mvc.mock_project.controller.AuthController;
+
+@ControllerAdvice(assignableTypes = {AuthController.class})
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyExistsException.class)

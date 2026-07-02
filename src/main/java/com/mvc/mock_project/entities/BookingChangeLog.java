@@ -60,10 +60,10 @@ public class BookingChangeLog {
     @Column(name = "change_action", length = 30)
     private String changeAction;
 
-    @Column(name = "before_data", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "before_data", columnDefinition = "LONGTEXT")
     private String beforeData;
 
-    @Column(name = "after_data", columnDefinition = "NVARCHAR(MAX)")
+    @Column(name = "after_data", columnDefinition = "LONGTEXT")
     private String afterData;
 
     @Column(length = 500)

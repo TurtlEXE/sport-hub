@@ -8,11 +8,11 @@ import lombok.Data;
 @Data
 public class VerifyOtpRequest {
 
-    @NotBlank
-    @Email
+    @NotBlank(message = "{validation.email.required}")
+    @Email(message = "{validation.email.format}")
     private String email;
 
-    @NotBlank
-    @Size(min = 6, max = 6)
+    @NotBlank(message = "{validation.otp.required}")
+    @Size(min = 6, max = 6, message = "{validation.otp.size}")
     private String otp;
 }
