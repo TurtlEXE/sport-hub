@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.mvc.mock_project.controller.AuthController;
+import com.mvc.mock_project.controller.web.auth.AuthController;
 
 @ControllerAdvice(assignableTypes = {AuthController.class})
 public class GlobalExceptionHandler {

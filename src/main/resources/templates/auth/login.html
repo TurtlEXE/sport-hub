@@ -170,9 +170,20 @@
             document.addEventListener('DOMContentLoaded', () => {
                 const form = document.getElementById('loginForm');
                 handleAuthFormSubmit(form, '/api/auth/login', (result) => {
-                    // Success login, token is set in HttpOnly cookie or session handled by backend
-                    // Or if JWT is returned, we would save it. But currently it's handled by server session
-                    window.location.href = '/';
+                    if (result && result.data && result.data.role) {
+                        const role = result.data.role;
+                        if (role === 'ADMIN') {
+                            window.location.href = '/admin/dashboard';
+                        } else if (role === 'OWNER') {
+                            window.location.href = '/owner/dashboard';
+                        } else if (role === 'STAFF') {
+                            window.location.href = '/staff/dashboard';
+                        } else {
+                            window.location.href = '/';
+                        }
+                    } else {
+                        window.location.href = '/';
+                    }
                 });
             });
         </script>

@@ -1,4 +1,4 @@
-package com.mvc.mock_project.controller;
+package com.mvc.mock_project.controller.web.auth;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;

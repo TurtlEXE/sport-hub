@@ -44,13 +44,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/bookings/**", "/api/reviews/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_ADMIN")
                 
                 // Court Owner
-                .requestMatchers("/api/owner/**", "/api/facilities/manage/**").hasAnyAuthority("ROLE_OWNER", "ROLE_ADMIN")
+                .requestMatchers("/api/owner/**", "/api/facilities/manage/**", "/owner/**").hasAnyAuthority("ROLE_OWNER", "ROLE_ADMIN")
                 
                 // Staff
-                .requestMatchers("/api/staff/**", "/api/ops/**").hasAnyAuthority("ROLE_STAFF", "ROLE_ADMIN")
+                .requestMatchers("/api/staff/**", "/api/ops/**", "/staff/**").hasAnyAuthority("ROLE_STAFF", "ROLE_ADMIN")
                 
                 // Admin
-                .requestMatchers("/api/admin/**").hasAuthority("ROLE_ADMIN")
+                .requestMatchers("/api/admin/**", "/admin/**").hasAuthority("ROLE_ADMIN")
                 
                 // Any other requests require authentication
                 .anyRequest().authenticated()

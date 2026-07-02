@@ -1,4 +1,4 @@
-package com.mvc.mock_project.controller;
+package com.mvc.mock_project.controller.api.auth;
 
 import com.mvc.mock_project.dto.request.*;
 import com.mvc.mock_project.dto.response.ApiResponse;
