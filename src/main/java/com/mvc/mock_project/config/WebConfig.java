@@ -5,9 +5,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
-import org.springframework.web.servlet.i18n.SessionLocaleResolver;
 
+import java.time.Duration;
 import java.util.Locale;
 
 @Configuration
@@ -15,9 +16,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     public LocaleResolver localeResolver() {
-        SessionLocaleResolver slr = new SessionLocaleResolver();
-        slr.setDefaultLocale(Locale.ENGLISH); // Mặc định tiếng Anh
-        return slr;
+        CookieLocaleResolver clr = new CookieLocaleResolver("lang_cookie");
+        clr.setDefaultLocale(new java.util.Locale("en"));
+        clr.setCookieMaxAge(Duration.ofDays(365));
+        clr.setCookiePath("/");
+        return clr;
     }
 
     @Bean

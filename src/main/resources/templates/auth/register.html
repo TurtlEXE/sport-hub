@@ -9,7 +9,7 @@
             
             <a href="/" class="absolute top-6 right-6 z-50 text-sm font-semibold text-slate-500 hover:text-primary-blue flex items-center gap-2 transition-colors">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Back to Home
+                <span th:text="#{auth.back}">Back to Home</span>
             </a>
             
             <!-- Left Brand Panel -->
@@ -97,7 +97,7 @@
                         </div>
 
                         <button type="submit" class="w-full bg-slate-900 hover:bg-primary-blue text-white font-bold py-3.5 mt-2 rounded-xl transition-colors shadow-lg shadow-slate-900/10 flex items-center justify-center">
-                            Create Account
+                            <span th:text="#{auth.reg.btn}">Create Account</span>
                         </button>
                     </form>
 
@@ -113,7 +113,7 @@
                     </div>
 
                     <p class="mt-8 text-center text-sm text-slate-600">
-                        Already have an account? <a th:href="@{/auth/login}" class="font-bold text-primary-blue hover:underline">Sign in</a>
+                        <span th:text="#{auth.reg.has_account}">Already have an account?</span> <a th:href="@{/auth/login}" class="font-bold text-primary-blue hover:underline">Sign in</a>
                     </p>
                 </div>
             </div>

@@ -29,30 +29,30 @@
                         <div
                             class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50 text-slate-400 text-xs font-bold tracking-wider mx-auto lg:mx-0">
                             <span class="w-2 h-2 rounded-full bg-primary-blue"></span>
-                            PREMIUM VENUE BOOKING PLATFORM
+                            <span th:text="#{home.hero.badge}">PREMIUM VENUE BOOKING PLATFORM</span>
                         </div>
 
                         <!-- Headline -->
                         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.1] tracking-tight">
-                            Book Your Perfect <br />
-                            <span class="text-primary-blue">Sports</span> <span
-                                class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-yellow-400">Venue</span>
+                            <span th:text="#{home.hero.title1}">Book Your Perfect</span> <br />
+                            <span class="text-primary-blue" th:text="#{home.hero.title2}">Sports</span> <span
+                                class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-yellow-400" th:text="#{home.hero.title3}">Venue</span>
                             <br />
-                            Anytime, Anywhere
+                            <span th:text="#{home.hero.title4}">Anytime, Anywhere</span>
                         </h1>
 
                         <!-- Description -->
                         <p
                             class="text-slate-400 text-lg sm:text-base font-medium leading-relaxed max-w-xl mx-auto lg:mx-0">
-                            Discover football fields, badminton courts, tennis courts, basketball courts and more in
-                            just a few clicks. Verified premium listings, instant confirmations, and zero hidden fees.
+                            <span th:text="#{home.hero.desc}">Discover football fields, badminton courts, tennis courts, basketball courts and more in
+                            just a few clicks. Verified premium listings, instant confirmations, and zero hidden fees.</span>
                         </p>
 
                         <!-- Buttons -->
                         <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                             <a href="#search"
                                 class="bg-primary-blue hover:bg-blue-600 text-white font-bold px-8 py-3.5 rounded-xl transition-all flex items-center justify-center gap-2">
-                                Book Now
+                                <span th:text="#{home.hero.book_now}">Book Now</span>
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M14 5l7 7m0 0l-7 7m7-7H3" />
@@ -60,7 +60,7 @@
                             </a>
                             <a th:href="@{/auth/register/owner}"
                                 class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-8 py-3.5 rounded-xl transition-all text-center">
-                                Become an Owner
+                                <span th:text="#{home.hero.become_owner}">Become an Owner</span>
                             </a>
                         </div>
 
@@ -72,7 +72,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
                                         d="M5 13l4 4L19 7" />
                                 </svg>
-                                Instant Booking
+                                <span th:text="#{home.hero.feat1}">Instant Booking</span>
                             </div>
                             <div class="flex items-center gap-2 text-sm font-semibold text-slate-300">
                                 <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24"
@@ -80,7 +80,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
                                         d="M5 13l4 4L19 7" />
                                 </svg>
-                                Verified Court Conditions
+                                <span th:text="#{home.hero.feat2}">Verified Court Conditions</span>
                             </div>
                             <div class="flex items-center gap-2 text-sm font-semibold text-slate-300">
                                 <svg class="w-4 h-4 text-emerald-500" fill="none" viewBox="0 0 24 24"
@@ -88,7 +88,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
                                         d="M5 13l4 4L19 7" />
                                 </svg>
-                                Flexible Rescheduling
+                                <span th:text="#{home.hero.feat3}">Flexible Rescheduling</span>
                             </div>
                         </div>
                     </div>
@@ -153,15 +153,15 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
-                                Sport Type
+                                <span th:text="#{home.search.sport_type}">Sport Type</span>
                             </label>
                             <select
                                 class="w-full bg-white border-0 rounded-xl px-4 py-3.5 text-slate-800 font-bold focus:ring-2 focus:ring-primary-blue appearance-none shadow-sm text-sm">
-                                <option>All Sports</option>
-                                <option>Football</option>
-                                <option>Basketball</option>
-                                <option>Tennis</option>
-                                <option>Badminton</option>
+                                <option th:text="#{home.search.all_sports}">All Sports</option>
+                                <option th:text="#{home.search.football}">Football</option>
+                                <option th:text="#{home.search.basketball}">Basketball</option>
+                                <option th:text="#{home.search.tennis}">Tennis</option>
+                                <option th:text="#{home.search.badminton}">Badminton</option>
                             </select>
                         </div>
 
@@ -175,11 +175,11 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
-                                Preferred Location
+                                <span th:text="#{home.search.location}">Preferred Location</span>
                             </label>
                             <select
                                 class="w-full bg-white border-0 rounded-xl px-4 py-3.5 text-slate-800 font-bold focus:ring-2 focus:ring-primary-blue appearance-none shadow-sm text-sm">
-                                <option>All Locations</option>
+                                <option th:text="#{home.search.all_locations}">All Locations</option>
                                 <option>Hanoi</option>
                                 <option>Ho Chi Minh City</option>
                                 <option>Da Nang</option>
@@ -194,7 +194,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                 </svg>
-                                Select Date
+                                <span th:text="#{home.search.date}">Select Date</span>
                             </label>
                             <input type="date"
                                 class="w-full bg-white border-0 rounded-xl px-4 py-3.5 text-slate-800 font-bold focus:ring-2 focus:ring-primary-blue shadow-sm text-sm"
@@ -208,7 +208,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                Search
+                                <span th:text="#{home.search.btn}">Search</span>
                             </button>
                         </div>
                     </form>
@@ -217,8 +217,8 @@
                 <!-- Hint Text -->
                 <div class="text-center mt-4 animate-fade-in" style="animation-delay: 0.5s;">
                     <p class="text-[11px] font-medium text-slate-400 flex items-center justify-center gap-1.5">
-                        <span class="text-yellow-400">💡</span> Select your parameters and click Search to filter
-                        verified venues below.
+                        <span class="text-yellow-400">💡</span> <span th:text="#{home.search.hint}">Select your parameters and click Search to filter
+                        verified venues below.</span>
                     </p>
                 </div>
             </div>
@@ -228,8 +228,8 @@
         <section id="how-it-works" class="py-24 bg-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto mb-16">
-                    <h2 class="text-3xl font-black text-slate-900 mb-4">How SportHub Works</h2>
-                    <p class="text-slate-500 text-lg">Whether you want to play or manage a venue, we make it simple.</p>
+                    <h2 class="text-3xl font-black text-slate-900 mb-4"><span th:text="#{home.how.title}">How SportHub Works</span></h2>
+                    <p class="text-slate-500 text-lg"><span th:text="#{home.how.desc}">Whether you want to play or manage a venue, we make it simple.</span></p>
                 </div>
 
                 <div class="grid md:grid-cols-2 gap-16">
@@ -247,7 +247,7 @@
                                         d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </span>
-                            For Players
+                            <span th:text="#{home.how.player}">For Players</span>
                         </h3>
 
                         <div class="space-y-8 relative z-10">
@@ -256,9 +256,9 @@
                                     class="w-12 h-12 bg-white text-primary-blue font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
                                     1</div>
                                 <div>
-                                    <h4 class="font-bold text-slate-900 mb-1">Search Facilities</h4>
-                                    <p class="text-slate-500 text-sm">Filter our premium inventory by location, sport,
-                                        and available hours.</p>
+                                    <h4 class="font-bold text-slate-900 mb-1"><span th:text="#{home.how.player.step1.title}">Search Facilities</span></h4>
+                                    <p class="text-slate-500 text-sm"><span th:text="#{home.how.player.step1.desc}">Filter our premium inventory by location, sport,
+                                        and available hours.</span></p>
                                 </div>
                             </div>
                             <div class="flex gap-4">
@@ -266,9 +266,9 @@
                                     class="w-12 h-12 bg-white text-primary-blue font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
                                     2</div>
                                 <div>
-                                    <h4 class="font-bold text-slate-900 mb-1">Book Instantly</h4>
-                                    <p class="text-slate-500 text-sm">Reserve your slot instantly. Our system guarantees
-                                        no double-bookings.</p>
+                                    <h4 class="font-bold text-slate-900 mb-1"><span th:text="#{home.how.player.step2.title}">Book Instantly</span></h4>
+                                    <p class="text-slate-500 text-sm"><span th:text="#{home.how.player.step2.desc}">Reserve your slot instantly. Our system guarantees
+                                        no double-bookings.</span></p>
                                 </div>
                             </div>
                             <div class="flex gap-4">
@@ -276,9 +276,9 @@
                                     class="w-12 h-12 bg-white text-primary-blue font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
                                     3</div>
                                 <div>
-                                    <h4 class="font-bold text-slate-900 mb-1">Enter & Play</h4>
-                                    <p class="text-slate-500 text-sm">Show up at the venue, present your smart ticket,
-                                        and play.</p>
+                                    <h4 class="font-bold text-slate-900 mb-1"><span th:text="#{home.how.player.step3.title}">Enter & Play</span></h4>
+                                    <p class="text-slate-500 text-sm"><span th:text="#{home.how.player.step3.desc}">Show up at the venue, present your smart ticket,
+                                        and play.</span></p>
                                 </div>
                             </div>
                         </div>
@@ -298,7 +298,7 @@
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                 </svg>
                             </span>
-                            For Owners
+                            <span th:text="#{home.how.owner}">For Owners</span>
                         </h3>
 
                         <div class="space-y-8 relative z-10">
@@ -307,9 +307,9 @@
                                     class="w-12 h-12 bg-white text-secondary-green font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
                                     1</div>
                                 <div>
-                                    <h4 class="font-bold text-slate-900 mb-1">Quick Register</h4>
-                                    <p class="text-slate-500 text-sm">Create an owner account and get approved in less
-                                        than 24h.</p>
+                                    <h4 class="font-bold text-slate-900 mb-1"><span th:text="#{home.how.owner.step1.title}">Quick Register</span></h4>
+                                    <p class="text-slate-500 text-sm"><span th:text="#{home.how.owner.step1.desc}">Create an owner account and get approved in less
+                                        than 24h.</span></p>
                                 </div>
                             </div>
                             <div class="flex gap-4">
@@ -317,9 +317,9 @@
                                     class="w-12 h-12 bg-white text-secondary-green font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
                                     2</div>
                                 <div>
-                                    <h4 class="font-bold text-slate-900 mb-1">List Facilities</h4>
-                                    <p class="text-slate-500 text-sm">Set custom hourly rates, define slots, and upload
-                                        photos.</p>
+                                    <h4 class="font-bold text-slate-900 mb-1"><span th:text="#{home.how.owner.step2.title}">List Facilities</span></h4>
+                                    <p class="text-slate-500 text-sm"><span th:text="#{home.how.owner.step2.desc}">Set custom hourly rates, define slots, and upload
+                                        photos.</span></p>
                                 </div>
                             </div>
                             <div class="flex gap-4">
@@ -327,9 +327,9 @@
                                     class="w-12 h-12 bg-white text-secondary-green font-bold rounded-full flex items-center justify-center shadow-sm shrink-0">
                                     3</div>
                                 <div>
-                                    <h4 class="font-bold text-slate-900 mb-1">Collect Payouts</h4>
-                                    <p class="text-slate-500 text-sm">Receive automated bookings and track revenue
-                                        easily.</p>
+                                    <h4 class="font-bold text-slate-900 mb-1"><span th:text="#{home.how.owner.step3.title}">Collect Payouts</span></h4>
+                                    <p class="text-slate-500 text-sm"><span th:text="#{home.how.owner.step3.desc}">Receive automated bookings and track revenue
+                                        easily.</span></p>
                                 </div>
                             </div>
                         </div>
@@ -352,9 +352,8 @@
                             </svg>
                         </div>
                         <div class="text-3xl font-black text-white mb-2">1,200+</div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Sports
-                            Facilities</div>
-                        <div class="text-xs text-slate-500 font-medium">Across 15 core regions</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2"><span th:text="#{home.stats.fac}">Sports Facilities</span></div>
+                        <div class="text-xs text-slate-500 font-medium"><span th:text="#{home.stats.fac_desc}">Across 15 core regions</span></div>
                     </div>
 
                     <div
@@ -367,9 +366,9 @@
                             </svg>
                         </div>
                         <div class="text-3xl font-black text-white mb-2">25,000+</div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Active Athletes
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2"><span th:text="#{home.stats.ath}">Active Athletes</span>
                         </div>
-                        <div class="text-xs text-slate-500 font-medium">Booking courts monthly</div>
+                        <div class="text-xs text-slate-500 font-medium"><span th:text="#{home.stats.ath_desc}">Booking courts monthly</span></div>
                     </div>
 
                     <div
@@ -382,9 +381,9 @@
                             </svg>
                         </div>
                         <div class="text-3xl font-black text-white mb-2">50,000+</div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Completed Games
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2"><span th:text="#{home.stats.games}">Completed Games</span>
                         </div>
-                        <div class="text-xs text-slate-500 font-medium">Reserve slots smoothly</div>
+                        <div class="text-xs text-slate-500 font-medium"><span th:text="#{home.stats.games_desc}">Reserve slots smoothly</span></div>
                     </div>
 
                     <div
@@ -398,24 +397,24 @@
                         </div>
                         <div class="text-3xl font-black text-white mb-2">4.9<span
                                 class="text-xl text-slate-500 font-semibold">/5.0</span></div>
-                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Customer Rating
+                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2"><span th:text="#{home.stats.rating}">Customer Rating</span>
                         </div>
-                        <div class="text-xs text-slate-500 font-medium">Elite customer care</div>
+                        <div class="text-xs text-slate-500 font-medium"><span th:text="#{home.stats.rating_desc}">Elite customer care</span></div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- What Our Community Says Section -->
+        <!-- <span th:text="#{home.community.title}">What Our Community Says</span> Section -->
         <section class="py-24 bg-white" data-aos="fade-up">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="text-center max-w-3xl mx-auto mb-16">
-                    <div class="text-emerald-500 text-[11px] font-bold uppercase tracking-widest mb-3">Athlete Voices
+                    <div class="text-emerald-500 text-[11px] font-bold uppercase tracking-widest mb-3"><span th:text="#{home.community.badge}">Athlete Voices</span>
                     </div>
-                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-6">What Our Community Says</h2>
+                    <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-6"><span th:text="#{home.community.title}">What Our Community Says</span></h2>
                     <p class="text-slate-500 text-sm font-medium leading-relaxed">
-                        Read stories from verified sport clubs, organizers, and amateur players who have organized games
-                        through SportHub.
+                        <span th:text="#{home.community.desc}">Read stories from verified sport clubs, organizers, and amateur players who have organized games
+                        through SportHub.</span>
                     </p>
                 </div>
 
@@ -571,19 +570,19 @@
         <section class="py-20 bg-gradient-to-r from-blue-600 to-emerald-500 relative overflow-hidden">
             <div class="absolute inset-0 bg-slate-900/10"></div>
             <div class="max-w-4xl mx-auto px-4 text-center relative z-10" data-aos="zoom-in">
-                <h2 class="text-4xl sm:text-5xl font-black text-white mb-6">Ready to Play?</h2>
+                <h2 class="text-4xl sm:text-5xl font-black text-white mb-6"><span th:text="#{home.cta.title}">Ready to Play?</span></h2>
                 <p class="text-white/90 text-lg sm:text-xl font-medium max-w-2xl mx-auto mb-10 leading-relaxed">
-                    Skip the phone calls and physical queues. Secure your favorite court slots instantly, split
-                    bookings, and check in on-site.
+                    <span th:text="#{home.cta.desc}">Skip the phone calls and physical queues. Secure your favorite court slots instantly, split
+                    bookings, and check in on-site.</span>
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="#search"
                         class="bg-white text-primary-blue font-bold px-8 py-4 rounded-xl hover:bg-slate-50 transition-colors shadow-xl shadow-blue-900/20">
-                        Book Your Court Today
+                        <span th:text="#{home.cta.btn_book}">Book Your Court Today</span>
                     </a>
                     <a th:href="@{/auth/register/owner}"
                         class="bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold px-8 py-4 rounded-xl transition-colors backdrop-blur-sm">
-                        Register Venue Partner
+                        <span th:text="#{home.cta.btn_owner}">Register Venue Partner</span>
                     </a>
                 </div>
             </div>
@@ -594,21 +593,21 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div data-aos="fade-right">
-                        <div class="text-orange-500 text-[11px] font-bold uppercase tracking-widest mb-3">About SportHub
+                        <div class="text-orange-500 text-[11px] font-bold uppercase tracking-widest mb-3"><span th:text="#{home.about.badge}">About SportHub</span>
                         </div>
-                        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-8 leading-tight">Connecting Venue
-                            Owners & Passionate Athletes</h2>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-8 leading-tight"><span th:text="#{home.about.title}">Connecting Venue
+                            Owners & Passionate Athletes</span></h2>
 
                         <div class="space-y-6 text-slate-500 text-[15px] font-medium leading-relaxed mb-10">
                             <p>
-                                Founded in 2026, SportHub is a leading sports marketplace platform engineered to help
+                                <span th:text="#{home.about.desc1}">Founded in 2026, SportHub is a leading sports marketplace platform engineered to help
                                 recreational athletes secure premium athletic court slots seamlessly while enabling
-                                facility managers to maximize field utilization and streamline booking dispatch.
+                                facility managers to maximize field utilization and streamline booking dispatch.</span>
                             </p>
                             <p>
-                                Our platform automates reservation processing, handles multi-tiered peak/off-peak
+                                <span th:text="#{home.about.desc2}">Our platform automates reservation processing, handles multi-tiered peak/off-peak
                                 pricing, coordinates sports category checks, and manages instant checkout schedules.
-                                Together, we are building a healthier, more active world.
+                                Together, we are building a healthier, more active world.</span>
                             </p>
                         </div>
 
@@ -617,14 +616,14 @@
                                 <div
                                     class="text-2xl font-black text-slate-900 border-l-4 border-primary-blue pl-4 mb-1">
                                     100%</div>
-                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-4">Verified
-                                    Courts</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-4"><span th:text="#{home.about.verified}">Verified
+                                    Courts</span></div>
                             </div>
                             <div>
                                 <div class="text-2xl font-black text-slate-900 border-l-4 border-emerald-500 pl-4 mb-1">
                                     24/7</div>
-                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-4">Instant
-                                    Scheduler</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider pl-4"><span th:text="#{home.about.scheduler}">Instant
+                                    Scheduler</span></div>
                             </div>
                         </div>
                     </div>
@@ -659,12 +658,11 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
                     <!-- Contact Info -->
                     <div data-aos="fade-right">
-                        <div class="text-primary-blue text-[11px] font-bold uppercase tracking-widest mb-3">Support Desk
+                        <div class="text-primary-blue text-[11px] font-bold uppercase tracking-widest mb-3"><span th:text="#{home.contact.badge}">Support Desk</span>
                         </div>
-                        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-6">Get in Touch</h2>
+                        <h2 class="text-3xl sm:text-4xl font-black text-slate-900 mb-6"><span th:text="#{home.contact.title}">Get in Touch</span></h2>
                         <p class="text-slate-500 text-[15px] font-medium leading-relaxed max-w-md mb-12">
-                            Have questions about listed stadium bookings, refund structures, custom event spacing, or
-                            corporate sports tournaments? Contact our dedicated help desk.
+                            <span th:text="#{home.contact.desc}">Have questions about listed stadium bookings, refund structures, custom event spacing, or corporate sports tournaments? Contact our dedicated help desk.</span>
                         </p>
 
                         <div class="space-y-8">
@@ -678,7 +676,7 @@
                                 </div>
                                 <div>
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                                        Email Address</div>
+                                        <span th:text="#{home.contact.email_lbl}">Email Address</span></div>
                                     <div class="text-sm font-bold text-slate-900">support@sporthub.com</div>
                                 </div>
                             </div>
@@ -693,7 +691,7 @@
                                 </div>
                                 <div>
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
-                                        Phone Helpline</div>
+                                        <span th:text="#{home.contact.phone_lbl}">Phone Helpline</span></div>
                                     <div class="text-sm font-bold text-slate-900">+1 (800) 555-PLAY</div>
                                 </div>
                             </div>
@@ -709,8 +707,7 @@
                                     </svg>
                                 </div>
                                 <div>
-                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">HQ
-                                        Office</div>
+                                    <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1"><span th:text="#{home.contact.hq_lbl}">HQ Office</span></div>
                                     <div class="text-sm font-bold text-slate-900">100 Athletic Way, Suite 400, San
                                         Francisco, CA</div>
                                 </div>
@@ -721,33 +718,29 @@
                     <!-- Contact Form -->
                     <div class="bg-white rounded-[2rem] p-8 sm:p-10 border border-slate-200 shadow-xl shadow-slate-200/50"
                         data-aos="fade-left">
-                        <h3 class="text-xl font-bold text-slate-900 mb-2">Send us a direct message</h3>
-                        <p class="text-[13px] text-slate-500 font-medium mb-8">Receive a secure reply to your verified
-                            email within 4 hours.</p>
+                        <h3 class="text-xl font-bold text-slate-900 mb-2"><span th:text="#{home.contact.form.title}">Send us a direct message</span></h3>
+                        <p class="text-[13px] text-slate-500 font-medium mb-8"><span th:text="#{home.contact.form.desc}">Receive a secure reply to your verified email within 4 hours.</span></p>
 
                         <form class="space-y-6">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div>
                                     <label
-                                        class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2">Your
-                                        Name</label>
-                                    <input type="text" placeholder="Steve Rogers"
+                                        class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2"><span th:text="#{home.contact.form.name}">Your Name</span></label>
+                                    <input type="text" th:placeholder="#{home.contact.form.name}"
                                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all">
                                 </div>
                                 <div>
                                     <label
-                                        class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2">Email
-                                        Address</label>
-                                    <input type="email" placeholder="steve@shield.com"
+                                        class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2"><span th:text="#{home.contact.form.email}">Email Address</span></label>
+                                    <input type="email" th:placeholder="#{home.contact.form.email}"
                                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all">
                                 </div>
                             </div>
 
                             <div>
                                 <label
-                                    class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2">Message
-                                    Details</label>
-                                <textarea rows="4" placeholder="Explain your inquiry in detail..."
+                                    class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2"><span th:text="#{home.contact.form.msg}">Message Details</span></label>
+                                <textarea rows="4" th:placeholder="#{home.contact.form.msg}"
                                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all resize-none"></textarea>
                             </div>
 
@@ -757,7 +750,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                                 </svg>
-                                Send Message
+                                <span th:text="#{home.contact.form.btn}">Send Message</span>
                             </button>
                         </form>
                     </div>

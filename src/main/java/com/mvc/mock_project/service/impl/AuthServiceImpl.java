@@ -180,14 +180,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public AuthResponse login(LoginRequest request) {
         Account account = accountRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password."));
+                .orElseThrow(() -> new RuntimeException("msg.error.invalid_credentials"));
 
         if (!passwordEncoder.matches(request.getPassword(), account.getPasswordHash())) {
-            throw new RuntimeException("Invalid email or password.");
+            throw new RuntimeException("msg.error.invalid_credentials");
         }
 
         if (account.getIsActive() != null && !account.getIsActive()) {
-            throw new RuntimeException("Your account is not active. Please verify your email.");
+            throw new RuntimeException("msg.error.account_inactive");
         }
 
         if (account.getRole() == Role.OWNER) {
@@ -263,7 +263,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         Account account = accountRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Account not found"));
+                .orElseThrow(() -> new RuntimeException("msg.error.account_not_found"));
 
         account.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
         accountRepository.save(account);

@@ -12,7 +12,7 @@
                     <span class="font-black text-2xl tracking-tight text-white">Sport<span class="text-primary-blue">Hub</span></span>
                 </div>
                 <p class="text-slate-500 text-xs font-medium leading-relaxed max-w-[250px]">
-                    Premium SaaS marketplace connecting venue owners and athletes globally. Reserve your fields and courts in seconds.
+                    <span th:text="#{footer.desc}">Premium SaaS marketplace connecting venue owners and athletes globally. Reserve your fields and courts in seconds.</span>
                 </p>
                 <div class="flex gap-3">
                     <a href="#" class="w-8 h-8 bg-slate-900 rounded-md flex items-center justify-center text-slate-400 hover:bg-slate-800 hover:text-white transition-all border border-slate-800">
@@ -29,34 +29,34 @@
 
             <!-- Links: Company -->
             <div class="lg:col-span-2 lg:col-start-6">
-                <h4 class="text-white text-[11px] font-bold uppercase tracking-widest mb-6">Company</h4>
+                <h4 class="text-white text-[11px] font-bold uppercase tracking-widest mb-6"><span th:text="#{footer.company}">Company</span></h4>
                 <ul class="space-y-3">
-                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors">About Us</a></li>
-                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors">Careers <span class="text-[10px] bg-slate-800 text-white px-1.5 py-0.5 rounded ml-1 uppercase tracking-wider font-bold">Hiring</span></a></li>
-                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors">Press Room</a></li>
-                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors">Athletic Blog</a></li>
+                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors"><span th:text="#{footer.company.about}">About Us</span></a></li>
+                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors"><span th:text="#{footer.company.careers}">Careers</span> <span class="text-[10px] bg-slate-800 text-white px-1.5 py-0.5 rounded ml-1 uppercase tracking-wider font-bold"><span th:text="#{footer.company.hiring}">Hiring</span></span></a></li>
+                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors"><span th:text="#{footer.company.press}">Press Room</span></a></li>
+                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors"><span th:text="#{footer.company.blog}">Athletic Blog</span></a></li>
                 </ul>
             </div>
 
             <!-- Links: Support -->
             <div class="lg:col-span-2">
-                <h4 class="text-white text-[11px] font-bold uppercase tracking-widest mb-6">Support</h4>
+                <h4 class="text-white text-[11px] font-bold uppercase tracking-widest mb-6"><span th:text="#{footer.support}">Support</span></h4>
                 <ul class="space-y-3">
-                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors">Help Center</a></li>
-                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors">Contact Support</a></li>
-                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors">Refund Policy</a></li>
-                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors">Security Safety</a></li>
+                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors"><span th:text="#{footer.support.help}">Help Center</span></a></li>
+                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors"><span th:text="#{footer.support.contact}">Contact Support</span></a></li>
+                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors"><span th:text="#{footer.support.refund}">Refund Policy</span></a></li>
+                    <li><a href="#" class="text-[13px] text-slate-400 font-medium hover:text-white transition-colors"><span th:text="#{footer.support.safety}">Security Safety</span></a></li>
                 </ul>
             </div>
 
             <!-- Newsletter -->
             <div class="lg:col-span-3">
-                <h4 class="text-white text-[11px] font-bold uppercase tracking-widest mb-6">Join Our Newsletter</h4>
+                <h4 class="text-white text-[11px] font-bold uppercase tracking-widest mb-6"><span th:text="#{footer.newsletter.title}">Join Our Newsletter</span></h4>
                 <p class="text-slate-500 text-[11px] font-medium leading-relaxed mb-4">
-                    Subscribe to get exclusive tournament invites, priority court slots booking, and weekend sport discounts directly in your inbox.
+                    <span th:text="#{footer.newsletter.desc}">Subscribe to get exclusive tournament invites, priority court slots booking, and weekend sport discounts directly in your inbox.</span>
                 </p>
                 <form class="relative">
-                    <input type="email" placeholder="Enter athlete email" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-[13px] text-white focus:outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600 transition-all font-medium pr-12">
+                    <input type="email" th:placeholder="#{footer.newsletter.placeholder}" class="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-[13px] text-white focus:outline-none focus:border-slate-600 focus:ring-1 focus:ring-slate-600 transition-all font-medium pr-12">
                     <button type="button" class="absolute right-1.5 top-1.5 bottom-1.5 w-9 bg-primary-blue hover:bg-blue-600 text-white rounded-lg flex items-center justify-center transition-colors">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                     </button>
@@ -65,11 +65,11 @@
         </div>
 
         <div class="mt-20 pt-8 border-t border-slate-900/50 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p class="text-slate-600 text-[11px] font-medium">© 2026 SportHub Technologies Inc. All rights reserved.</p>
+            <p class="text-slate-600 text-[11px] font-medium"><span th:text="#{footer.copyright}">© 2026 SportHub Technologies Inc. All rights reserved.</span></p>
             <div class="flex gap-6">
-                <a href="#" class="text-slate-600 hover:text-slate-400 text-[11px] font-medium transition-colors">Terms of Service</a>
-                <a href="#" class="text-slate-600 hover:text-slate-400 text-[11px] font-medium transition-colors">Privacy Policy</a>
-                <a href="#" class="text-slate-600 hover:text-slate-400 text-[11px] font-medium transition-colors">Cookie Settings</a>
+                <a href="#" class="text-slate-600 hover:text-slate-400 text-[11px] font-medium transition-colors"><span th:text="#{footer.legal.terms}">Terms of Service</span></a>
+                <a href="#" class="text-slate-600 hover:text-slate-400 text-[11px] font-medium transition-colors"><span th:text="#{footer.legal.privacy}">Privacy Policy</span></a>
+                <a href="#" class="text-slate-600 hover:text-slate-400 text-[11px] font-medium transition-colors"><span th:text="#{footer.legal.cookie}">Cookie Settings</span></a>
             </div>
         </div>
     </div>
