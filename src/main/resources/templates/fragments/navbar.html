@@ -12,8 +12,8 @@
 
             <!-- Desktop Menu -->
             <div class="hidden md:flex items-center space-x-8">
-                <a href="/#" class="text-sm font-semibold text-primary-blue transition-colors" th:text="#{nav.home}">Home</a>
-                <a href="/venues" class="text-sm font-semibold text-slate-600 hover:text-primary-blue transition-colors" th:text="#{nav.venues}">Venues</a>
+                <a href="/" class="nav-link text-sm font-semibold text-slate-600 hover:text-primary-blue transition-colors" data-path="home" th:text="#{nav.home}">Home</a>
+                <a href="/venues" class="nav-link text-sm font-semibold text-slate-600 hover:text-primary-blue transition-colors" data-path="venues" th:text="#{nav.venues}">Venues</a>
                 <a href="/#how-it-works" class="text-sm font-semibold text-slate-600 hover:text-primary-blue transition-colors" th:text="#{nav.how_it_works}">How it works</a>
                 <a href="/#about" class="text-sm font-semibold text-slate-600 hover:text-primary-blue transition-colors" th:text="#{nav.about}">About</a>
                 <a href="/#contact" class="text-sm font-semibold text-slate-600 hover:text-primary-blue transition-colors" th:text="#{nav.contact}">Contact</a>
@@ -24,7 +24,7 @@
                 <!-- Language Switcher Dropdown -->
                 <div class="relative group">
                     <button class="flex items-center gap-1 p-2 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
-                        <span class="text-xl leading-none block mt-0.5" th:text="${#locale.language == 'vi' ? '🇻🇳' : (#locale.language == 'my' ? '🇲🇲' : '🇺🇸')}">🇺🇸</span>
+                        <span class="text-sm font-bold text-slate-600 block mt-0.5" th:text="${#locale.language == 'vi' ? 'VN' : (#locale.language == 'my' ? 'MM' : 'EN')}">EN</span>
                         <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
@@ -80,8 +80,8 @@
     <!-- Mobile Menu Panel -->
     <div id="mobile-menu-panel" class="md:hidden hidden bg-white border-b border-slate-200">
         <div class="px-4 pt-2 pb-6 space-y-1">
-            <a href="/#" class="block px-3 py-2 text-base font-semibold text-primary-blue bg-blue-50 rounded-lg" th:text="#{nav.home}">Home</a>
-            <a href="/venues" class="block px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary-blue rounded-lg" th:text="#{nav.venues}">Venues</a>
+            <a href="/" class="nav-link-mobile block px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary-blue rounded-lg" data-path="home" th:text="#{nav.home}">Home</a>
+            <a href="/venues" class="nav-link-mobile block px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary-blue rounded-lg" data-path="venues" th:text="#{nav.venues}">Venues</a>
             <a href="/#how-it-works" class="block px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary-blue rounded-lg" th:text="#{nav.how_it_works}">How it works</a>
             <a href="/#about" class="block px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary-blue rounded-lg" th:text="#{nav.about}">About</a>
             <a href="/#contact" class="block px-3 py-2 text-base font-semibold text-slate-700 hover:bg-slate-50 hover:text-primary-blue rounded-lg" th:text="#{nav.contact}">Contact</a>
@@ -128,5 +128,28 @@
             url.searchParams.set('lang', lang);
             window.location.href = url.toString();
         }
+
+        // JS-based active nav highlighting to avoid Thymeleaf 3.1 #httpServletRequest issues
+        document.addEventListener('DOMContentLoaded', function() {
+            const path = window.location.pathname;
+            let current = 'home';
+            if (path.startsWith('/venues')) current = 'venues';
+            
+            // Desktop
+            document.querySelectorAll('.nav-link').forEach(link => {
+                if (link.getAttribute('data-path') === current) {
+                    link.classList.remove('text-slate-600');
+                    link.classList.add('text-primary-blue');
+                }
+            });
+            
+            // Mobile
+            document.querySelectorAll('.nav-link-mobile').forEach(link => {
+                if (link.getAttribute('data-path') === current) {
+                    link.classList.remove('text-slate-700', 'hover:bg-slate-50');
+                    link.classList.add('text-primary-blue', 'bg-blue-50');
+                }
+            });
+        });
     </script>
 </nav>
