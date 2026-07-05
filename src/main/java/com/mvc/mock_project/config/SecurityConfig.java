@@ -52,6 +52,9 @@ public class SecurityConfig {
                 // Admin
                 .requestMatchers("/api/admin/**", "/admin/**").hasAuthority("ROLE_ADMIN")
                 
+                // Profile (all authenticated users)
+                .requestMatchers("/profile/**", "/api/profile/**").authenticated()
+                
                 // Any other requests require authentication
                 .anyRequest().authenticated()
             )

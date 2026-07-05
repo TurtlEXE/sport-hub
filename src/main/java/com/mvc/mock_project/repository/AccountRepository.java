@@ -12,4 +12,5 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     Optional<Account> findByGoogleId(String googleId);
     boolean existsByEmail(String email);
     boolean existsByPhone(String phone);
+    boolean existsByPhoneAndIdNot(String phone, Integer id);
 }
