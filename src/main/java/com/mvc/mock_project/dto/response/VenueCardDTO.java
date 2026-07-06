@@ -16,6 +16,7 @@ public class VenueCardDTO {
     private String address;
     private String imageUrl;
     private List<String> sports; // "BASKETBALL", "PICKLEBALL"...
+    private List<String> sportNames;
     private Double rating;
     private Integer reviewCount;
     private String openingHours;
