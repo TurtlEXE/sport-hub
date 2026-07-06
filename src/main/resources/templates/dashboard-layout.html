@@ -58,22 +58,16 @@
         <div class="p-4 space-y-3 mb-4">
             <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 transition-colors w-full text-center justify-center">
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Client Explorer
+                <span th:text="#{nav.client_explorer}">Client Explorer</span>
             </a>
-            <form th:action="@{/logout}" method="post">
-                <button type="submit" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold text-rose-200 hover:text-white bg-rose-500/10 hover:bg-rose-500/20 transition-colors w-full text-center justify-center border border-rose-500/20">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                    Exit Console
-                </button>
-            </form>
         </div>
     </aside>
 
     <!-- Main Wrapper -->
-    <div class="flex-1 flex flex-col overflow-hidden relative">
+    <div class="flex-1 flex flex-col overflow-y-auto relative">
         
         <!-- Top Navbar -->
-        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10">
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-50 sticky top-0 flex-shrink-0">
             <!-- Greeting & Subtitle (Injected via fragment) -->
             <div layout:fragment="header-title" class="flex-1">
                 <h1 class="text-xl font-bold text-slate-900">Hello, User</h1>
@@ -92,34 +86,80 @@
                     <input type="text" placeholder="Search Anything.." class="w-64 pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-full focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-colors text-sm">
                 </div>
                 
+                <!-- Language Switcher Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-1 p-2 rounded-lg hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-200">
+                        <span class="text-xl leading-none block mt-0.5" th:text="${#locale.language == 'vi' ? '🇻🇳' : (#locale.language == 'my' ? '🇲🇲' : '🇺🇸')}">🇺🇸</span>
+                        <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    <!-- Dropdown menu -->
+                    <div class="absolute right-0 mt-1 w-36 bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
+                        <div class="py-1">
+                            <button onclick="changeLanguage('en')" class="block w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors" th:classappend="${#locale.language == 'en' ? 'text-primary-blue bg-blue-50/50' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}">English</button>
+                            <button onclick="changeLanguage('vi')" class="block w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors" th:classappend="${#locale.language == 'vi' ? 'text-primary-blue bg-blue-50/50' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}">Vietnamese</button>
+                            <button onclick="changeLanguage('my')" class="block w-full text-left px-4 py-2.5 text-sm font-semibold transition-colors" th:classappend="${#locale.language == 'my' ? 'text-primary-blue bg-blue-50/50' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'}">Myanmar</button>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Notification -->
                 <button class="relative p-2 text-slate-400 hover:text-primary-blue transition-colors">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                     <span class="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full border border-white"></span>
                 </button>
                 
-                <!-- Profile -->
-                <div class="flex items-center gap-3 pl-6 border-l border-slate-200">
-                    <div class="w-9 h-9 bg-blue-100 text-primary-blue rounded-full flex items-center justify-center font-bold text-sm">
-                        <span th:text="${#strings.substring(#authentication.principal.account.fullName, 0, 1)}" class="uppercase">U</span>
-                    </div>
-                    <div class="hidden lg:block">
-                        <div th:text="${#authentication.principal.account.fullName}" class="text-sm font-bold text-slate-900 leading-none mb-1">User Name</div>
-                        <div th:text="${#authentication.principal.account.role}" class="text-xs font-bold text-primary-blue uppercase tracking-wider leading-none">ROLE</div>
+                <!-- Profile Dropdown -->
+                <div class="relative group">
+                    <button class="flex items-center gap-3 pl-6 border-l border-slate-200 cursor-pointer">
+                        <div class="w-9 h-9 bg-blue-100 text-primary-blue rounded-full flex items-center justify-center font-bold text-sm overflow-hidden">
+                            <img th:src="${#authentication.principal.account.avatarPath ?: ''}" 
+                                 alt="Avatar" 
+                                 th:class="${'nav-avatar-img w-full h-full object-cover ' + (#authentication.principal.account.avatarPath != null && !#authentication.principal.account.avatarPath.isEmpty() ? '' : 'hidden')}">
+                            <div th:class="${'nav-avatar-placeholder w-full h-full flex items-center justify-center ' + (#authentication.principal.account.avatarPath != null && !#authentication.principal.account.avatarPath.isEmpty() ? 'hidden' : '')}">
+                                <span th:text="${#strings.substring(#authentication.principal.account.fullName, 0, 1)}" class="uppercase nav-avatar-initial">U</span>
+                            </div>
+                        </div>
+                        <div class="hidden lg:block text-left">
+                            <div th:text="${#authentication.principal.account.fullName}" class="text-sm font-bold text-slate-900 leading-none mb-1">User Name</div>
+                            <div th:text="${#authentication.principal.account.role}" class="text-xs font-bold text-primary-blue uppercase tracking-wider leading-none">ROLE</div>
+                        </div>
+                        <svg class="w-4 h-4 text-slate-400 group-hover:text-slate-600 transition-colors hidden lg:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                    </button>
+                    
+                    <!-- Dropdown Menu -->
+                    <div class="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-lg shadow-slate-200/50 border border-slate-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right z-50">
+                        <div class="py-1">
+                            <a th:href="@{/profile/settings}" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-slate-600 hover:bg-slate-50 hover:text-primary-blue transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                <span th:text="#{nav.settings}">Settings</span>
+                            </a>
+                        </div>
+                        <div class="py-1 border-t border-slate-100">
+                            <form th:action="@{/logout}" method="post" class="block">
+                                <button type="submit" class="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-colors w-full text-left">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                    <span th:text="#{nav.logout}">Logout</span>
+                                </button>
+                            </form>
+                        </div>
                     </div>
                 </div>
             </div>
         </header>
 
-        <!-- Main Content Scrollable Area -->
-        <main class="flex-1 overflow-y-auto p-8 relative pb-24">
+        <!-- Main Content Area -->
+        <main class="flex-1 p-8">
             <div layout:fragment="content">
                 <!-- Page specific content goes here -->
             </div>
         </main>
         
         <!-- Bottom Banner -->
-        <div class="absolute bottom-0 left-0 right-0 h-16 bg-dash-sidebar flex flex-col items-center justify-center text-center px-4 z-10 border-t border-white/5">
+        <div class="h-16 bg-dash-sidebar flex flex-col items-center justify-center text-center px-4 border-t border-white/5 flex-shrink-0 mt-auto">
             <h3 class="text-white text-xs font-bold tracking-widest uppercase mb-1">SPORTHUB MASTER ADMINISTRATION DESK</h3>
             <p class="text-slate-400 text-[10px] uppercase tracking-wide">Secure console with global record overrides, commission syncs, and database level locks.</p>
         </div>
@@ -127,6 +167,13 @@
 
     <!-- Scripts -->
     <script th:src="@{/js/main.js}"></script>
+    <script>
+        function changeLanguage(lang) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', lang);
+            window.location.href = url.toString();
+        }
+    </script>
     <th:block layout:fragment="pageScripts"></th:block>
 
 </body>
