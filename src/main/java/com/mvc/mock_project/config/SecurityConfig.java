@@ -30,11 +30,15 @@ public class SecurityConfig {
                 // Public endpoints & static resources
                 .requestMatchers(
                     "/", 
+                    "/venues/**",
+                    "/booking/**",
+                    "/api/venues/**",
                     "/api/public/**", 
                     "/api/auth/**",
                     "/auth/**", 
+                    "/error",
                     "/css/**", 
-                    "/js/**", 
+                    "/js/**",
                     "/images/**", 
                     "/webjars/**"
                 ).permitAll()

@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html th:lang="${#locale.language}" xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{layout}">
+
+<head>
+    <title>Venues - SportHub</title>
+</head>
+
+<body>
+
+    <main layout:fragment="content" class="py-8 bg-slate-50 min-h-screen">
+        <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="flex flex-col lg:flex-row gap-8">
+
+                <!-- Sidebar Filters -->
+                <div class="w-full lg:w-1/4 flex-shrink-0">
+                    <form id="filterForm" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 sticky top-28" action="/venues" method="GET">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-sm font-bold text-slate-800 tracking-wider flex items-center gap-2">
+                                <svg class="w-4 h-4 text-primary-blue" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                </svg>
+                                <span th:text="#{venue.filter.title}">SEARCH FILTERS</span>
+                            </h2>
+                            <button type="button" onclick="resetFilters()"
+                                class="text-xs font-semibold text-slate-400 hover:text-primary-blue transition-colors" th:text="#{venue.filter.clear}">Clear
+                                all</button>
+                        </div>
+
+                        <!-- Keyword Search -->
+                        <div class="mb-8">
+                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider" th:text="#{venue.filter.keyword.label}">KEYWORD
+                                / VENUE NAME</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                        <path fill-rule="evenodd"
+                                            d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <input type="text" name="keyword" th:value="${keyword}"
+                                    class="filter-input block w-full pl-10 pr-3 py-2.5 border border-slate-200 rounded-xl leading-5 bg-slate-50 placeholder-slate-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-primary-blue sm:text-sm transition-all"
+                                    th:placeholder="#{venue.filter.keyword.placeholder}">
+                            </div>
+                        </div>
+
+                        <!-- Sport Categories -->
+                        <div class="mb-8">
+                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider" th:text="#{venue.filter.sport.label}">SPORT
+                                CATEGORIES</label>
+                            <div class="space-y-1">
+                                <!-- All Sports Option -->
+                                <label
+                                    class="flex items-center justify-between p-2.5 rounded-xl border border-transparent cursor-pointer group hover:bg-slate-50 transition-all"
+                                    th:classappend="${sportCode == null or sportCode == ''} ? 'bg-blue-50/50 border-blue-100' : ''">
+                                    <input type="radio" name="sportCode" value="" class="filter-input hidden" th:checked="${sportCode == null or sportCode == ''}">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-lg shadow-sm">
+                                            🎯
+                                        </div>
+                                        <span class="text-sm font-bold text-primary-blue" th:text="#{venue.filter.sport.all}">All Sports</span>
+                                    </div>
+                                    <svg class="w-5 h-5 transition-colors" th:classappend="${sportCode == null or sportCode == ''} ? 'text-primary-blue' : 'text-transparent group-hover:text-slate-300'" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </label>
+
+                                <!-- Dynamic Sports Options -->
+                                <label th:each="sport : ${sports}"
+                                    class="flex items-center justify-between p-2.5 rounded-xl cursor-pointer group transition-all"
+                                    th:classappend="${sportCode == sport.sportCode} ? 'bg-blue-50/50 border-blue-100' : 'hover:bg-slate-50 border-transparent hover:border-slate-100'">
+                                    <input type="radio" name="sportCode" th:value="${sport.sportCode}" class="filter-input hidden" th:checked="${sportCode == sport.sportCode}">
+                                    <div class="flex items-center gap-3">
+                                        <div
+                                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-lg group-hover:bg-white group-hover:shadow-sm transition-all"
+                                            th:classappend="${sportCode == sport.sportCode} ? 'bg-white shadow-sm' : ''">
+                                            <span th:if="${sport.sportCode == 'FOOTBALL'}">⚽</span>
+                                            <span th:if="${sport.sportCode == 'BADMINTON'}">🏸</span>
+                                            <span th:if="${sport.sportCode == 'TENNIS'}">🎾</span>
+                                            <span th:if="${sport.sportCode == 'BASKETBALL'}">🏀</span>
+                                            <span th:if="${sport.sportCode == 'PICKLEBALL'}">🏓</span>
+                                            <span
+                                                th:if="${sport.sportCode != 'FOOTBALL' && sport.sportCode != 'BADMINTON' && sport.sportCode != 'TENNIS' && sport.sportCode != 'BASKETBALL' && sport.sportCode != 'PICKLEBALL'}">🏆</span>
+                                        </div>
+                                        <span class="text-sm font-medium transition-colors"
+                                              th:classappend="${sportCode == sport.sportCode} ? 'text-primary-blue font-bold' : 'text-slate-600 group-hover:text-slate-900'"
+                                              th:text="${sport.sportName}">Sport Name</span>
+                                    </div>
+                                    <svg class="w-5 h-5 transition-colors" th:classappend="${sportCode == sport.sportCode} ? 'text-primary-blue' : 'text-transparent group-hover:text-slate-300'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    </svg>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Price Range -->
+                        <div class="mb-8">
+                            <div class="flex justify-between items-end mb-4">
+                                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider" th:text="#{venue.filter.price.label}">MAX PRICE PER
+                                    HOUR</label>
+                                <span class="text-sm font-bold text-slate-900" id="priceLabel" th:text="${maxPrice != null ? #numbers.formatDecimal(maxPrice, 0, 'COMMA', 0, 'POINT') + ' VNĐ' : #messages.msg('venue.filter.price.all')}">All prices</span>
+                                <input type="hidden" id="i18nAllPrices" th:value="#{venue.filter.price.all}">
+                            </div>
+                            <input type="range" name="maxPrice" id="priceSlider" min="50000" max="1000000" step="50000" th:value="${maxPrice != null ? maxPrice : 1000000}"
+                                class="filter-input w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-blue">
+                            <div class="flex justify-between mt-2">
+                                <span class="text-xs font-medium text-slate-400" th:text="#{venue.filter.price.min} + '50,000 VNĐ'">Min: 50,000 VNĐ</span>
+                                <span class="text-xs font-medium text-slate-400" th:text="#{venue.filter.price.max} + '1,000,000 VNĐ'">Max: 1,000,000 VNĐ</span>
+                            </div>
+                        </div>
+
+                        <!-- Venue Amenities -->
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider" th:text="#{venue.filter.amenities.label}">FACILITY SERVICES</label>
+                            <div class="space-y-3">
+                                <label th:each="category : ${categories}" class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="amenities" th:value="${category.id}" th:checked="${selectedAmenities.contains(category.id)}"
+                                        class="filter-input w-4 h-4 text-primary-blue border-slate-300 rounded focus:ring-primary-blue focus:ring-2">
+                                    <span
+                                        class="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors flex items-center gap-2">
+                                        <span class="text-lg text-primary-blue"></span> <span th:text="${category.categoryName}">Amenity</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Venues Grid -->
+                <div class="w-full lg:w-3/4" id="venueGridContainer" th:fragment="venueListFragment">
+                    <!-- Loading Overlay -->
+                    <div id="gridLoadingOverlay" class="hidden absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-2xl">
+                        <svg class="animate-spin h-10 w-10 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                    
+                    <div th:if="${venues.isEmpty()}" class="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm">
+                        <div class="text-5xl mb-4">🔍</div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2" th:text="#{venue.empty.title}">Không tìm thấy sân</h3>
+                        <p class="text-slate-500" th:text="#{venue.empty.message}">Rất tiếc không có sân nào phù hợp với bộ lọc hiện tại của bạn.</p>
+                        <button onclick="resetFilters()" class="mt-6 bg-blue-50 text-primary-blue font-bold px-6 py-2.5 rounded-xl hover:bg-blue-100 transition-colors" th:text="#{venue.empty.clear}">Xóa bộ lọc</button>
+                    </div>
+
+                    <div th:if="${!venues.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+
+                        <!-- Venue Card -->
+                        <div th:each="venue : ${venues}"
+                            class="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100 group venue-card"
+                            th:data-lat="${venue.latitude}" th:data-lng="${venue.longitude}"
+                            th:data-id="${venue.facilityId}">
+
+                            <!-- Image Container -->
+                            <div class="relative h-48 overflow-hidden cursor-pointer venue-image-trigger">
+                                <img th:src="${venue.imageUrl}" alt="Venue Image"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+
+                                <!-- Badges Top Left -->
+                                <div class="absolute top-3 left-3 flex gap-2">
+                                    <span
+                                        class="bg-secondary-green/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Daily</span>
+                                    <span
+                                        class="bg-purple-500/90 backdrop-blur-sm text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">Event</span>
+                                </div>
+
+                                <!-- Favorite Button Top Right -->
+                                <button
+                                    class="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-white transition-all shadow-sm">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd"
+                                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                                            clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+
+                                <!-- Bottom Badges -->
+                                <div class="absolute bottom-3 left-3 flex gap-2">
+                                    <span th:each="sport : ${venue.sports}"
+                                        class="bg-white/90 backdrop-blur-sm text-slate-800 text-xs font-bold px-2.5 py-1 rounded shadow-sm flex items-center gap-1">
+                                        <span th:if="${sport == 'BASKETBALL'}"
+                                            class="text-[10px] text-accent-orange">●</span>
+                                        <span th:if="${sport == 'PICKLEBALL'}"
+                                            class="text-[10px] text-rose-500">●</span>
+                                        <span th:if="${sport == 'BADMINTON'}"
+                                            class="text-[10px] text-primary-blue">●</span>
+                                        <span th:if="${sport == 'TENNIS'}"
+                                            class="text-[10px] text-secondary-green">●</span>
+                                        <span th:if="${sport == 'FOOTBALL'}" class="text-[10px] text-slate-800">●</span>
+                                        <span th:text="${sport}">SPORT</span>
+                                    </span>
+                                </div>
+
+                                <!-- Distance Badge -->
+                                <div class="absolute bottom-3 right-3">
+                                    <span
+                                        class="bg-slate-900/80 backdrop-blur-sm text-white text-xs font-bold px-2.5 py-1 rounded shadow-sm distance-label">
+                                        -- <th:block th:text="#{venue.distance}">km</th:block>
+                                    </span>
+                                </div>
+                            </div>
+
+                            <!-- Card Content -->
+                            <div class="p-5">
+                                <h3 class="text-lg font-bold text-slate-900 mb-1 line-clamp-1" th:text="${venue.name}">
+                                    Venue Name</h3>
+
+                                <!-- Address -->
+                                <div class="flex items-start gap-2 mb-2">
+                                    <svg class="w-4 h-4 text-slate-400 mt-0.5 flex-shrink-0" fill="none"
+                                        viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                    <span class="text-sm text-slate-500 line-clamp-1"
+                                        th:text="${venue.address}">Address</span>
+                                </div>
+
+                                <!-- Opening Hours -->
+                                <div class="flex items-center gap-2 mb-4 pb-4 border-b border-slate-100">
+                                    <svg class="w-4 h-4 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    <span class="text-xs text-slate-500"><th:block th:text="#{venue.card.openingHours}"></th:block> <strong class="text-slate-700" th:text="${venue.openingHours}">05:00 - 23:00</strong></span>
+                                </div>
+
+                                <!-- Amenities small tags -->
+                                <div class="flex items-center gap-2 mb-5">
+                                    <span th:each="amenity, stat : ${venue.amenities}" th:if="${stat.index < 2}"
+                                        class="text-[10px] font-bold text-secondary-green bg-green-50 px-2 py-1 rounded flex items-center gap-1">
+                                        <span th:if="${amenity == 'Locker'}">✨</span>
+                                        <span th:if="${amenity == 'Parking'}">🚗</span>
+                                        <span th:text="${amenity}">Amenity</span>
+                                    </span>
+                                    <span th:if="${venue.amenities.size() > 2}"
+                                        class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded"
+                                        th:text="'+' + ${venue.amenities.size() - 2} + ' amenities'">+2 amenities</span>
+                                </div>
+
+                                <!-- Price and Action -->
+                                <div class="mt-auto border-t border-slate-100 pt-4">
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" th:text="#{venue.card.priceFrom}">
+                                            GIÁ TỪ
+                                        </div>
+                                        <div class="flex items-baseline gap-1">
+                                            <span class="text-xl font-black text-slate-900"
+                                                th:text="${#numbers.formatDecimal(venue.minPricePerHour, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">150,000 VNĐ</span>
+                                            <span class="text-[10px] font-bold text-slate-400" th:text="#{venue.card.perSlot}">/ slot</span>
+                                        </div>
+                                    </div>
+                                    <a th:href="@{/booking/{id}(id=${venue.facilityId})}"
+                                        class="w-full bg-slate-900 hover:bg-primary-blue text-white text-sm font-bold px-4 py-3 rounded-xl transition-all shadow-md hover:shadow-primary-blue/30 flex items-center justify-center gap-2">
+                                        <span th:text="#{venue.card.bookNow}">BOOK NOW</span>
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M9 5l7 7-7 7" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End Venue Card -->
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Venue Details Modal -->
+        <div id="venueModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
+            <!-- Backdrop with blur -->
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" id="venueModalBackdrop"></div>
+            
+            <!-- Modal Content Shell -->
+            <div class="relative bg-white rounded-3xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl flex flex-col transform transition-all">
+                <!-- Close button -->
+                <button id="closeVenueModal" class="absolute top-4 right-4 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white transition-all shadow-sm z-10">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
+                
+                <div id="venueModalContent" class="w-full flex-1 overflow-y-auto">
+                    <div class="p-12 text-center text-slate-500">
+                        <svg class="animate-spin h-8 w-8 mx-auto mb-4 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Đang tải dữ liệu sân...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+
+    <th:block layout:fragment="pageScripts">
+        <script>
+            // Geolocation Script to Calculate Distance
+            document.addEventListener('DOMContentLoaded', function () {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(function (position) {
+                        const userLat = position.coords.latitude;
+                        const userLng = position.coords.longitude;
+
+                        const cards = document.querySelectorAll('.venue-card');
+                        cards.forEach(card => {
+                            const venueLat = parseFloat(card.getAttribute('data-lat'));
+                            const venueLng = parseFloat(card.getAttribute('data-lng'));
+                            const label = card.querySelector('.distance-label');
+
+                            if (!isNaN(venueLat) && !isNaN(venueLng)) {
+                                const distance = calculateDistance(userLat, userLng, venueLat, venueLng);
+                                if (distance !== null) {
+                                    label.innerHTML = distance.toFixed(1) + ' km';
+                                }
+                            }
+                        });
+                    }, function (error) {
+                        console.log("Error obtaining location: ", error);
+                        // Fallback to default or mock distance if location is denied
+                        mockDistances();
+                    });
+                } else {
+                    console.log("Geolocation is not supported by this browser.");
+                    mockDistances();
+                }
+            });
+
+            // Haversine formula to calculate distance in km
+            function calculateDistance(lat1, lon1, lat2, lon2) {
+                const R = 6371; // Radius of the earth in km
+                const dLat = deg2rad(lat2 - lat1);
+                const dLon = deg2rad(lon2 - lon1);
+                const a =
+                    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                    Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+                    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+                    ;
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+                const d = R * c; // Distance in km
+                return d;
+            }
+
+            function deg2rad(deg) {
+                return deg * (Math.PI / 180);
+            }
+
+            function mockDistances() {
+                const cards = document.querySelectorAll('.venue-card');
+                cards.forEach(card => {
+                    const label = card.querySelector('.distance-label');
+                    const randomDist = (Math.random() * 5 + 0.5).toFixed(1);
+                    label.innerHTML = randomDist + ' km';
+                });
+            }
+
+            // Modal Functions
+            function initVenueModal() {
+                console.log("Initializing Venue Modal scripts...");
+                const cards = document.querySelectorAll('.venue-card');
+                console.log("Found " + cards.length + " venue cards.");
+                
+                const modal = document.getElementById('venueModal');
+                const modalContent = document.getElementById('venueModalContent');
+                const closeBtn = document.getElementById('closeVenueModal');
+                const backdrop = document.getElementById('venueModalBackdrop');
+                
+                if (!modal || !modalContent) {
+                    console.error("Modal elements not found in the DOM!");
+                    return;
+                }
+
+                cards.forEach(card => {
+                    const trigger = card.querySelector('.venue-image-trigger');
+                    if (trigger) {
+                        trigger.addEventListener('click', async (e) => {
+                            e.preventDefault();
+                            
+                            const venueId = card.dataset.id;
+                            console.log("Clicked venue card ID: " + venueId);
+                            
+                            // Show loading modal
+                            modal.classList.remove('hidden');
+                            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                            modalContent.innerHTML = `
+                                <div class="p-12 text-center text-slate-500">
+                                    <svg class="animate-spin h-8 w-8 mx-auto mb-4 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Đang tải dữ liệu sân...
+                                </div>`;
+
+                            try {
+                                console.log("Fetching popup for venue: " + venueId);
+                                const res = await fetch('/venues/' + venueId + '/popup');
+                                if (!res.ok) throw new Error("Network response was not ok, status: " + res.status);
+                                const html = await res.text();
+                                console.log("Fetched popup HTML successfully.");
+                                modalContent.innerHTML = html;
+                            } catch (err) {
+                                modalContent.innerHTML = "<div class='p-12 text-center text-rose-500 font-bold'>Không thể tải thông tin sân. Vui lòng thử lại sau.</div>";
+                                console.error("Error fetching venue popup:", err);
+                            }
+                        });
+                    }
+                });
+
+                function closeModal() {
+                    console.log("Closing modal.");
+                    modal.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+
+                if (closeBtn) closeBtn.addEventListener('click', closeModal);
+                if (backdrop) backdrop.addEventListener('click', closeModal);
+            }
+
+            // Run initialization
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initVenueModal);
+            } else {
+                initVenueModal();
+            }
+
+            // AJAX Filtering Logic
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.getElementById('filterForm');
+                const inputs = document.querySelectorAll('.filter-input');
+                const priceSlider = document.getElementById('priceSlider');
+                const priceLabel = document.getElementById('priceLabel');
+                let debounceTimer;
+
+                // Update price label visually immediately
+                priceSlider.addEventListener('input', function() {
+                    const val = parseInt(this.value);
+                    if (val >= 1000000) {
+                        priceLabel.textContent = document.getElementById('i18nAllPrices').value;
+                    } else {
+                        priceLabel.textContent = new Intl.NumberFormat('en-US').format(val) + ' VNĐ';
+                    }
+                });
+
+                inputs.forEach(input => {
+                    input.addEventListener('input', function() {
+                        clearTimeout(debounceTimer);
+                        debounceTimer = setTimeout(() => {
+                            fetchFilteredVenues();
+                        }, 500); // Debounce to prevent excessive requests
+                    });
+                    
+                    // For radio/checkboxes, trigger immediately on change
+                    if (input.type === 'radio' || input.type === 'checkbox') {
+                        input.addEventListener('change', function() {
+                            // Update styling for radio buttons
+                            if (input.type === 'radio' && input.name === 'sportCode') {
+                                document.querySelectorAll('input[name="sportCode"]').forEach(radio => {
+                                    const label = radio.closest('label');
+                                    const iconBg = label.querySelector('.rounded-full');
+                                    const textSpan = label.querySelector('span.text-sm');
+                                    const checkIcon = label.querySelector('svg.w-5.h-5');
+                                    
+                                    if (radio.checked) {
+                                        label.classList.add('bg-blue-50/50', 'border-blue-100');
+                                        label.classList.remove('hover:bg-slate-50', 'border-transparent', 'hover:border-slate-100');
+                                        if (iconBg) iconBg.classList.add('bg-white', 'shadow-sm');
+                                        if (textSpan) {
+                                            textSpan.classList.add('text-primary-blue', 'font-bold');
+                                            textSpan.classList.remove('text-slate-600', 'group-hover:text-slate-900');
+                                        }
+                                        if (checkIcon) {
+                                            checkIcon.classList.add('text-primary-blue');
+                                            checkIcon.classList.remove('text-transparent', 'group-hover:text-slate-300');
+                                        }
+                                    } else {
+                                        label.classList.remove('bg-blue-50/50', 'border-blue-100');
+                                        label.classList.add('hover:bg-slate-50', 'border-transparent', 'hover:border-slate-100');
+                                        if (iconBg) iconBg.classList.remove('bg-white', 'shadow-sm');
+                                        if (textSpan) {
+                                            textSpan.classList.remove('text-primary-blue', 'font-bold');
+                                            textSpan.classList.add('text-slate-600', 'group-hover:text-slate-900');
+                                        }
+                                        if (checkIcon) {
+                                            checkIcon.classList.remove('text-primary-blue');
+                                            checkIcon.classList.add('text-transparent', 'group-hover:text-slate-300');
+                                        }
+                                    }
+                                });
+                            }
+
+                            clearTimeout(debounceTimer);
+                            fetchFilteredVenues();
+                        });
+                    }
+                });
+
+                function fetchFilteredVenues() {
+                    const formData = new FormData(form);
+                    const searchParams = new URLSearchParams(formData);
+                    
+                    // Show loading if we added it
+                    const overlay = document.getElementById('gridLoadingOverlay');
+                    if (overlay) overlay.classList.remove('hidden');
+
+                    fetch('/venues?' + searchParams.toString(), {
+                        headers: {
+                            'Fetch': 'true' // Trigger fragment return in Controller
+                        }
+                    })
+                    .then(res => res.text())
+                    .then(html => {
+                        // Dynamically get the current container to avoid modifying a detached node!
+                        const currentContainer = document.getElementById('venueGridContainer');
+                        if (currentContainer) {
+                            currentContainer.outerHTML = html;
+                        }
+                        // Re-initialize scripts after DOM replacement
+                        if ("geolocation" in navigator) {
+                            navigator.geolocation.getCurrentPosition(function (position) {
+                                calculateDistances(position.coords.latitude, position.coords.longitude);
+                            }, mockDistances);
+                        } else {
+                            mockDistances();
+                        }
+                        initVenueModal(); // Rebind modal events
+                    })
+                    .catch(err => console.error("Error fetching filtered venues", err));
+                }
+            });
+
+            function calculateDistances(userLat, userLng) {
+                const distanceText = document.getElementById('i18nAllPrices') ? 
+                    document.getElementById('i18nAllPrices').parentElement.nextElementSibling.nextElementSibling.innerText : 'km'; // Fallback or we can just inject a span
+                // A better way to get the 'km' text for distance is to embed it in the card, which we did with th:text="#{venue.distance}"
+                const kmSuffix = ' km'; // For simplicity, we just append ' km' in JS, or extract from DOM. Let's just hardcode ' km' or use the existing text.
+                
+                const cards = document.querySelectorAll('.venue-card');
+                cards.forEach(card => {
+                    const venueLat = parseFloat(card.getAttribute('data-lat'));
+                    const venueLng = parseFloat(card.getAttribute('data-lng'));
+                    const label = card.querySelector('.distance-label');
+
+                    if (!isNaN(venueLat) && !isNaN(venueLng)) {
+                        const distance = calculateDistance(userLat, userLng, venueLat, venueLng);
+                        if (distance !== null) {
+                            label.innerHTML = distance.toFixed(1) + ' ' + (label.textContent.replace(/[\d.\s-]/g, '').trim() || 'km');
+                        }
+                    }
+                });
+            }
+
+            function resetFilters() {
+                window.location.href = '/venues';
+            }
+        </script>
+    </th:block>
+
+</body>
+
+</html>
