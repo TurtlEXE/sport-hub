@@ -1,175 +1,241 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <body>
 
-<div th:fragment="popupContent">
-    <div class="relative flex flex-col h-full bg-white">
-        <!-- Header Image & Basic Info -->
-        <div class="h-56 relative overflow-hidden flex-shrink-0">
-            <img th:src="${venue.imageUrl}" alt="Venue" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
-            
-            <div class="absolute bottom-4 left-6 right-6">
-                <div class="flex justify-between items-end">
+    <div th:fragment="popupContent">
+        <div class="relative flex flex-col h-full bg-white">
+            <!-- Header Image & Basic Info -->
+            <div class="h-56 relative overflow-hidden flex-shrink-0">
+                <img th:src="${venue.imageUrl}" alt="Venue" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+
+                <div class="absolute bottom-4 left-6 right-6">
+                    <div class="flex justify-between items-end">
+                        <div>
+                            <h2 class="text-2xl font-black text-white mb-1" th:text="${venue.name}">Venue Name</h2>
+                            <p class="text-white/90 text-sm flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                                <span th:text="${venue.address}">Address</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="flex border-b border-slate-200 px-6 pt-2 bg-white sticky top-0 z-10 overflow-x-auto whitespace-nowrap">
+                <button type="button" onclick="document.querySelectorAll('.popup-tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-info').classList.remove('hidden'); document.querySelectorAll('.popup-tab-btn').forEach(b=>{b.classList.remove('border-secondary-green', 'text-secondary-green'); b.classList.add('border-transparent', 'text-slate-500');}); this.classList.remove('border-transparent', 'text-slate-500'); this.classList.add('border-secondary-green', 'text-secondary-green');" id="btn-tab-info" class="popup-tab-btn pb-3 px-4 font-bold text-sm border-b-2 border-secondary-green text-secondary-green transition-colors">Thông tin</button>
+                <button type="button" onclick="document.querySelectorAll('.popup-tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-services').classList.remove('hidden'); document.querySelectorAll('.popup-tab-btn').forEach(b=>{b.classList.remove('border-secondary-green', 'text-secondary-green'); b.classList.add('border-transparent', 'text-slate-500');}); this.classList.remove('border-transparent', 'text-slate-500'); this.classList.add('border-secondary-green', 'text-secondary-green');" id="btn-tab-services" class="popup-tab-btn pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">Dịch vụ</button>
+                <button type="button" onclick="document.querySelectorAll('.popup-tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-images').classList.remove('hidden'); document.querySelectorAll('.popup-tab-btn').forEach(b=>{b.classList.remove('border-secondary-green', 'text-secondary-green'); b.classList.add('border-transparent', 'text-slate-500');}); this.classList.remove('border-transparent', 'text-slate-500'); this.classList.add('border-secondary-green', 'text-secondary-green');" id="btn-tab-images" class="popup-tab-btn pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">Hình ảnh</button>
+                <button type="button" onclick="document.querySelectorAll('.popup-tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-reviews').classList.remove('hidden'); document.querySelectorAll('.popup-tab-btn').forEach(b=>{b.classList.remove('border-secondary-green', 'text-secondary-green'); b.classList.add('border-transparent', 'text-slate-500');}); this.classList.remove('border-transparent', 'text-slate-500'); this.classList.add('border-secondary-green', 'text-secondary-green');" id="btn-tab-reviews" class="popup-tab-btn pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">Đánh giá</button>
+            </div>
+
+            <!-- Tab Content Container -->
+            <div class="overflow-y-auto flex-1 p-6 relative">
+
+                <!-- Tab 1: Information -->
+                <div id="tab-info" class="popup-tab-content block space-y-6">
+                    <!-- Description -->
                     <div>
-                        <h2 class="text-2xl font-black text-white mb-1" th:text="${venue.name}">Venue Name</h2>
-                        <p class="text-white/90 text-sm flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
-                            <span th:text="${venue.address}">Address</span>
+                        <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Giới thiệu</h3>
+                        <p class="text-slate-600 text-sm leading-relaxed"
+                            th:text="${venue.description != null ? venue.description : 'Đang cập nhật thông tin chi tiết...'}">
                         </p>
                     </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- Tab Navigation -->
-        <div class="flex border-b border-slate-200 px-6 pt-2 bg-white sticky top-0 z-10">
-            <button onclick="document.getElementById('tab-info').classList.remove('hidden'); document.getElementById('tab-services').classList.add('hidden'); this.classList.add('border-primary-blue', 'text-primary-blue'); this.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700'); document.getElementById('btn-tab-services').classList.remove('border-primary-blue', 'text-primary-blue'); document.getElementById('btn-tab-services').classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700');" 
-                    id="btn-tab-info"
-                    class="pb-3 px-4 font-bold text-sm border-b-2 border-primary-blue text-primary-blue transition-colors">
-                Thông tin chi tiết
-            </button>
-            <button onclick="document.getElementById('tab-services').classList.remove('hidden'); document.getElementById('tab-info').classList.add('hidden'); this.classList.add('border-primary-blue', 'text-primary-blue'); this.classList.remove('border-transparent', 'text-slate-500', 'hover:text-slate-700'); document.getElementById('btn-tab-info').classList.remove('border-primary-blue', 'text-primary-blue'); document.getElementById('btn-tab-info').classList.add('border-transparent', 'text-slate-500', 'hover:text-slate-700');" 
-                    id="btn-tab-services"
-                    class="pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors">
-                Dịch vụ & Bảng giá
-            </button>
-        </div>
-
-        <!-- Tab Content Container -->
-        <div class="overflow-y-auto flex-1 p-6 relative">
-            
-            <!-- Tab 1: Information -->
-            <div id="tab-info" class="block space-y-6">
-                <!-- Description -->
-                <div>
-                    <h3 class="text-xs font-bold text-slate-400 uppercase mb-2">Giới thiệu</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed" th:text="${venue.description != null ? venue.description : 'Đang cập nhật thông tin chi tiết...'}"></p>
-                </div>
-
-                <div class="grid grid-cols-2 gap-6">
-                    <!-- Rating hidden for now -->
-                    <!--
-                    <div>
-                    <div>
-                        <div class="text-xs font-bold text-slate-400 uppercase mb-1" th:text="#{venue.popup.openingHours}">Giờ hoạt động</div>
-                        <div class="text-sm font-bold text-slate-700" th:text="${venue.openingHours}">00:00 - 00:00</div>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase mb-1"
+                                th:text="#{venue.popup.openingHours}">Giờ hoạt động</div>
+                            <div class="text-sm font-bold text-slate-700" th:text="${venue.openingHours}">00:00 - 00:00
+                            </div>
+                        </div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-400 uppercase mb-1">Liên hệ</div>
+                            <div class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-secondary-green" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                                <span th:text="${venue.contactPhone != null ? venue.contactPhone : 'Đang cập nhật'}">0987654321</span>
+                            </div>
+                        </div>
                     </div>
+
+                    <div class="mb-8">
+                        <h4 class="text-sm font-bold text-slate-900 mb-4" th:text="#{venue.popup.sports}">Các môn thể
+                            thao</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span th:each="sport : ${venue.sports}"
+                                class="bg-blue-50 text-primary-blue text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <span th:if="${sport == 'FOOTBALL'}">⚽</span>
+                                <span th:if="${sport == 'BADMINTON'}">🏸</span>
+                                <span th:if="${sport == 'TENNIS'}">🎾</span>
+                                <span th:if="${sport == 'BASKETBALL'}">🏀</span>
+                                <span th:if="${sport == 'PICKLEBALL'}">🏓</span>
+                                <span
+                                    th:if="${sport != 'FOOTBALL' && sport != 'BADMINTON' && sport != 'TENNIS' && sport != 'BASKETBALL' && sport != 'PICKLEBALL'}">🏅</span>
+                                <span th:text="${sport}">Môn thể thao</span>
+                            </span>
+                        </div>
+                    </div>
+
                     <div>
-                        <div class="text-xs font-bold text-slate-400 uppercase mb-1" th:text="#{venue.popup.managedBy}">Quản lý bởi</div>
-                        <div class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
-                            <span class="w-5 h-5 rounded-full bg-blue-100 text-primary-blue flex items-center justify-center text-[10px]">S</span>
-                            <span th:text="${venue.ownerName}">SportHub Admin</span>
+                        <h4 class="text-sm font-bold text-slate-900 mb-4" th:text="#{venue.popup.amenities}">Tiện ích &
+                            Dịch vụ</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <span th:each="amenity : ${venue.amenities}"
+                                class="text-sm font-medium text-secondary-green bg-green-50 px-3 py-1.5 rounded-lg">
+                                <span th:text="${amenity}">Tiện ích</span>
+                            </span>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-8">
-                    <h4 class="text-sm font-bold text-slate-900 mb-4" th:text="#{venue.popup.sports}">Các môn thể thao</h4>
-                    <div class="flex flex-wrap gap-2">
-                        <span th:each="sport : ${venue.sports}" 
-                              class="bg-blue-50 text-primary-blue text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5">
-                            <span th:if="${sport.sportCode == 'FOOTBALL'}">⚽</span>
-                            <span th:if="${sport.sportCode == 'BADMINTON'}">🏸</span>
-                            <span th:if="${sport.sportCode == 'TENNIS'}">🎾</span>
-                            <span th:if="${sport.sportCode == 'BASKETBALL'}">🏀</span>
-                            <span th:if="${sport.sportCode == 'PICKLEBALL'}">🏓</span>
-                            <span th:if="${sport.sportCode != 'FOOTBALL' && sport.sportCode != 'BADMINTON' && sport.sportCode != 'TENNIS' && sport.sportCode != 'BASKETBALL' && sport.sportCode != 'PICKLEBALL'}">🏆</span>
-                            <span th:text="${sport.sportName}">Môn thể thao</span>
-                        </span>
-                    </div>
-                </div>
+                <!-- Tab 2: Services and Prices -->
+                <div id="tab-services" class="popup-tab-content hidden space-y-8">
 
-                <div>
-                    <h4 class="text-sm font-bold text-slate-900 mb-4" th:text="#{venue.popup.amenities}">Tiện ích & Dịch vụ</h4>
-                    <div class="grid grid-cols-2 gap-3">
-                        <div th:each="amenity : ${venue.amenityNames}" class="flex items-center gap-2 text-sm text-slate-600">
-                            <span class="text-lg">✨</span>
-                            <span th:text="${amenity}">Tiện ích</span>
+                    <!-- Price Table -->
+                    <div>
+                        <h3 class="text-sm font-bold text-primary-blue uppercase mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            Bảng giá sân
+                            <span class="text-xs text-slate-500 font-medium normal-case ml-auto"
+                                th:if="${venue.slotDurationMinutes != null}"
+                                th:text="'(Giá mỗi ' + ${venue.slotDurationMinutes} + ' phút / 1 slot)'">(Giá mỗi 60
+                                phút / 1 slot)</span>
+                        </h3>
+
+                        <div th:if="${venue.groupedPriceRules == null or venue.groupedPriceRules.isEmpty()}"
+                            class="text-sm text-slate-500 italic">
+                            Đang cập nhật bảng giá...
+                        </div>
+
+                        <div th:each="entry : ${venue.groupedPriceRules}"
+                            class="mb-4 overflow-hidden rounded-xl border border-slate-200">
+                            <div class="bg-slate-50 px-4 py-2 border-b border-slate-200">
+                                <span class="font-bold text-slate-700 text-sm"
+                                    th:text="${entry.key == 'WEEKDAY' ? 'Từ Thứ 2 - Thứ 6' : (entry.key == 'WEEKEND' ? 'Thứ 7 & Chủ Nhật' : entry.key)}">Ngày
+                                    thường</span>
+                            </div>
+                            <table class="w-full text-sm text-left">
+                                <tbody>
+                                    <tr th:each="rule, iterStat : ${entry.value}"
+                                        th:class="${!iterStat.last} ? 'border-b border-slate-100' : ''">
+                                        <td class="px-4 py-3 font-medium text-slate-600">
+                                            <span th:text="${rule.startTime} + ' - ' + ${rule.endTime}">00:00 -
+                                                00:00</span>
+                                        </td>
+                                        <td class="px-4 py-3 text-right font-bold text-slate-900">
+                                            <span
+                                                th:text="${#numbers.formatDecimal(rule.pricePerSlot, 0, 'COMMA', 0, 'POINT')} + ' đ'">100.000
+                                                đ</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Services List -->
+                    <div>
+                        <h3 class="text-sm font-bold text-secondary-green uppercase mb-3 flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                            </svg>
+                            Danh sách dịch vụ
+                        </h3>
+
+                        <div th:if="${venue.groupedServices == null or venue.groupedServices.isEmpty()}"
+                            class="text-sm text-slate-500 italic">
+                            Sân chưa cung cấp dịch vụ thêm.
+                        </div>
+
+                        <div th:each="entry : ${venue.groupedServices}"
+                            class="mb-4 overflow-hidden rounded-xl border border-slate-200">
+                            <div class="bg-slate-50 px-4 py-2 border-b border-slate-200">
+                                <span class="font-bold text-slate-700 text-sm" th:text="${entry.key}">Dịch vụ
+                                    khác</span>
+                            </div>
+                            <table class="w-full text-sm text-left">
+                                <tbody>
+                                    <tr th:each="service, iterStat : ${entry.value}"
+                                        th:class="${!iterStat.last} ? 'border-b border-slate-100' : ''">
+                                        <td class="px-4 py-3 font-medium text-slate-600"
+                                            th:text="${service.productName}">
+                                            Tên dịch vụ
+                                        </td>
+                                        <td class="px-4 py-3 text-right text-slate-800">
+                                            <span class="font-bold"
+                                                th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">50.000
+                                                đ</span>
+                                            <span class="text-xs text-slate-500" th:if="${service.rentalUnit != null}"
+                                                th:text="' / ' + ${service.rentalUnit}">/ giờ</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Tab 2: Services and Prices -->
-            <div id="tab-services" class="hidden space-y-8">
-                
-                <!-- Price Table -->
-                <div>
-                    <h3 class="text-sm font-bold text-primary-blue uppercase mb-3 flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                        Bảng giá sân 
-                        <span class="text-xs text-slate-500 font-medium normal-case ml-auto" th:if="${venue.slotDurationMinutes != null}" th:text="'(Giá mỗi ' + ${venue.slotDurationMinutes} + ' phút / 1 slot)'">(Giá mỗi 60 phút / 1 slot)</span>
+                <!-- Tab 3: Images -->
+                <div id="tab-images" class="popup-tab-content hidden space-y-4">
+                    <h3 class="text-sm font-bold text-secondary-green uppercase mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                        Hình ảnh
                     </h3>
-                    
-                    <div th:if="${venue.groupedPriceRules == null or venue.groupedPriceRules.isEmpty()}" class="text-sm text-slate-500 italic">
-                        Đang cập nhật bảng giá...
+                    <div th:if="${venue.galleryImages == null or venue.galleryImages.isEmpty()}" class="text-sm text-slate-500 italic">
+                        Chưa có hình ảnh nào.
                     </div>
-                    
-                    <div th:each="entry : ${venue.groupedPriceRules}" class="mb-4 overflow-hidden rounded-xl border border-slate-200">
-                        <div class="bg-slate-50 px-4 py-2 border-b border-slate-200">
-                            <span class="font-bold text-slate-700 text-sm" th:text="${entry.key == 'WEEKDAY' ? 'Từ Thứ 2 - Thứ 6' : (entry.key == 'WEEKEND' ? 'Thứ 7 & Chủ Nhật' : entry.key)}">Ngày thường</span>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div th:each="img : ${venue.galleryImages}" class="aspect-video rounded-lg overflow-hidden shadow-sm">
+                            <img th:src="${img}" alt="Venue Image" class="w-full h-full object-cover hover:scale-110 transition-transform duration-300">
                         </div>
-                        <table class="w-full text-sm text-left">
-                            <tbody>
-                                <tr th:each="rule, iterStat : ${entry.value}" th:class="${!iterStat.last} ? 'border-b border-slate-100' : ''">
-                                    <td class="px-4 py-3 font-medium text-slate-600">
-                                        <span th:text="${rule.startTime} + ' - ' + ${rule.endTime}">00:00 - 00:00</span>
-                                    </td>
-                                    <td class="px-4 py-3 text-right font-bold text-slate-900">
-                                        <span th:text="${#numbers.formatDecimal(rule.pricePerSlot, 0, 'COMMA', 0, 'POINT')} + ' đ'">100.000 đ</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
                     </div>
                 </div>
 
-                <!-- Services List -->
-                <div>
-                    <h3 class="text-sm font-bold text-secondary-green uppercase mb-3 flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
-                        Danh sách dịch vụ
+                <!-- Tab 4: Reviews -->
+                <div id="tab-reviews" class="popup-tab-content hidden space-y-6">
+                    <h3 class="text-sm font-bold text-secondary-green uppercase mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>
+                        Đánh giá
                     </h3>
-                    
-                    <div th:if="${venue.groupedServices == null or venue.groupedServices.isEmpty()}" class="text-sm text-slate-500 italic">
-                        Sân chưa cung cấp dịch vụ thêm.
+                    <div th:if="${venue.reviews == null or venue.reviews.isEmpty()}" class="text-sm text-slate-500 italic">
+                        Chưa có đánh giá nào.
                     </div>
-
-                    <div th:each="entry : ${venue.groupedServices}" class="mb-4 overflow-hidden rounded-xl border border-slate-200">
-                        <div class="bg-slate-50 px-4 py-2 border-b border-slate-200">
-                            <span class="font-bold text-slate-700 text-sm" th:text="${entry.key}">Dịch vụ khác</span>
+                    <div th:each="review : ${venue.reviews}" class="border-b border-slate-100 pb-4 last:border-0">
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-10 h-10 rounded-full bg-secondary-green text-white flex items-center justify-center font-bold text-lg" th:text="${review.reviewerName.substring(0,1)}">N</div>
+                            <div>
+                                <div class="text-sm font-bold text-slate-900" th:text="${review.reviewerName}">Nguyễn Văn A</div>
+                                <div class="flex text-yellow-400 text-xs">
+                                    <span th:each="i : ${#numbers.sequence(1, 5)}" th:text="${i <= review.rating ? '★' : '☆'}">★</span>
+                                </div>
+                            </div>
                         </div>
-                        <table class="w-full text-sm text-left">
-                            <tbody>
-                                <tr th:each="service, iterStat : ${entry.value}" th:class="${!iterStat.last} ? 'border-b border-slate-100' : ''">
-                                    <td class="px-4 py-3 font-medium text-slate-600" th:text="${service.productName}">
-                                        Tên dịch vụ
-                                    </td>
-                                    <td class="px-4 py-3 text-right text-slate-800">
-                                        <span class="font-bold" th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT')} + ' đ'">50.000 đ</span>
-                                        <span class="text-xs text-slate-500" th:if="${service.rentalUnit != null}" th:text="' / ' + ${service.rentalUnit}">/ giờ</span>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        <p class="text-sm text-slate-600" th:text="${review.comment}">Sân đẹp, thoáng mát...</p>
                     </div>
                 </div>
             </div>
-            
-        </div>
-        
-        <!-- Footer Checkout Button -->
-        <div class="p-6 border-t border-slate-100 bg-white">
-            <a th:href="@{/booking/{id}(id=${venue.facilityId})}" class="block text-center w-full bg-slate-900 hover:bg-primary-blue text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl">
-                <span th:text="#{venue.card.bookNow}">ĐẶT LỊCH NGAY</span>
-            </a>
+
+            <!-- Footer Checkout Button -->
+            <div class="p-6 border-t border-slate-100 bg-white">
+                <a th:href="@{/booking/{id}(id=${venue.facilityId})}"
+                    class="block text-center w-full bg-slate-900 hover:bg-primary-blue text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl">
+                    <span th:text="#{venue.card.bookNow}">ĐẶT LỊCH NGAY</span>
+                </a>
+            </div>
         </div>
     </div>
-</div>
 
 </body>
+
 </html>

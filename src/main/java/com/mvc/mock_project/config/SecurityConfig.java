@@ -36,8 +36,9 @@ public class SecurityConfig {
                     "/api/public/**", 
                     "/api/auth/**",
                     "/auth/**", 
+                    "/error",
                     "/css/**", 
-                    "/js/**", 
+                    "/js/**",
                     "/images/**", 
                     "/webjars/**"
                 ).permitAll()

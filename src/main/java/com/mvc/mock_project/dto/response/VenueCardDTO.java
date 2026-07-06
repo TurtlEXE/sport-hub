@@ -24,4 +24,6 @@ public class VenueCardDTO {
     private Double latitude;
     private Double longitude;
     private String description;
+    private String ownerName;
+    private String contactPhone;
 }

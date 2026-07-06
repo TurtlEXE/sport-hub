@@ -18,6 +18,7 @@ import com.mvc.mock_project.repository.FacilitySportRepository;
 import com.mvc.mock_project.repository.ProductCategoryRepository;
 import com.mvc.mock_project.repository.ProductRepository;
 import com.mvc.mock_project.repository.SportRepository;
+import com.mvc.mock_project.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +40,7 @@ public class FacilityService {
     private final FacilityPriceRuleRepository facilityPriceRuleRepository;
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
+    private final ReviewRepository reviewRepository;
 
     public List<Sport> getAllActiveSports() {
         return sportRepository.findByIsActiveTrue();
@@ -201,6 +203,8 @@ public class FacilityService {
                 .latitude(facility.getLatitude() != null ? facility.getLatitude().doubleValue() : null)
                 .longitude(facility.getLongitude() != null ? facility.getLongitude().doubleValue() : null)
                 .description(facility.getDescription())
+                .ownerName(facility.getOwner() != null ? facility.getOwner().getFullName() : "SportHub Admin")
+                .contactPhone(facility.getOwner() != null ? facility.getOwner().getPhone() : null)
                 .build();
     }
 
@@ -241,6 +245,25 @@ public class FacilityService {
                 .build()
         ).collect(Collectors.groupingBy(PriceRuleDTO::getDayType));
 
+        List<String> galleryImages = new ArrayList<>();
+        if (facility.getImages() != null) {
+            for (com.mvc.mock_project.entities.FacilityImage img : facility.getImages()) {
+                if (!Boolean.TRUE.equals(img.getIsThumbnail()) && img.getImagePath() != null) {
+                    galleryImages.add(img.getImagePath());
+                }
+            }
+        }
+
+        List<com.mvc.mock_project.entities.Review> reviewEntities = reviewRepository.findByFacilityIdOrderByCreatedAtDesc(id);
+        List<com.mvc.mock_project.dto.response.ReviewDTO> reviewDTOs = reviewEntities.stream().map(r -> com.mvc.mock_project.dto.response.ReviewDTO.builder()
+                .id(r.getId())
+                .reviewerName(r.getAccount() != null ? r.getAccount().getFullName() : "Khách")
+                .rating(r.getRating())
+                .comment(r.getComment())
+                .createdAt(r.getCreatedAt())
+                .build()
+        ).collect(Collectors.toList());
+
         return VenueDetailDTO.builder()
                 .facilityId(base.getFacilityId())
                 .name(base.getName())
@@ -255,9 +278,13 @@ public class FacilityService {
                 .latitude(base.getLatitude())
                 .longitude(base.getLongitude())
                 .description(base.getDescription())
+                .ownerName(base.getOwnerName())
+                .contactPhone(base.getContactPhone())
                 .groupedServices(groupedServices)
                 .groupedPriceRules(groupedPriceRules)
                 .slotDurationMinutes(slotDuration)
+                .galleryImages(galleryImages)
+                .reviews(reviewDTOs)
                 .build();
     }
 }

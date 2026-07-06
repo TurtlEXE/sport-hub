@@ -18,4 +18,6 @@ public class VenueDetailDTO extends VenueCardDTO {
     private Map<String, List<ProductDTO>> groupedServices;
     private Map<String, List<PriceRuleDTO>> groupedPriceRules;
     private Integer slotDurationMinutes;
+    private List<String> galleryImages;
+    private List<ReviewDTO> reviews;
 }
