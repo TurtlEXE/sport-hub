@@ -1,4 +1,4 @@
-package com.mvc.mock_project.controller.web;
+package com.mvc.mock_project.controller.web.venue_site;
 
 import com.mvc.mock_project.service.FacilityService;
 import lombok.RequiredArgsConstructor;
