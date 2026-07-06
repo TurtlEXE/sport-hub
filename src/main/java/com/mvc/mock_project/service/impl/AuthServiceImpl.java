@@ -277,7 +277,7 @@ public class AuthServiceImpl implements AuthService {
         Account account = accountRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("msg.error.account_not_found"));
 
-        if (!account.getPhone().equals(request.getPhone()) && accountRepository.existsByPhone(request.getPhone())) {
+        if (!request.getPhone().equals(account.getPhone()) && accountRepository.existsByPhone(request.getPhone())) {
             throw new RuntimeException("msg.error.phone_exists");
         }
 

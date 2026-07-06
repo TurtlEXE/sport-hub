@@ -24,9 +24,7 @@
   box-shadow: 0 0 20px rgba(34, 197, 94, 0.15);
 }
 
-html {
-  scrollbar-gutter: stable;
-}
+
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
