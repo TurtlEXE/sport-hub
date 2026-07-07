@@ -12,4 +12,19 @@ public class OwnerController {
     public String ownerDashboard() {
         return "owner/dashboard";
     }
+    @GetMapping("/facilities")
+    public String myFacilities() {
+        return "owner/facility/list";
+    }
+
+    @GetMapping("/facilities/create")
+    public String createFacility() {
+        return "owner/facility/create";
+    }
+
+    @GetMapping("/facilities/{id}")
+    public String facilityDetail(@org.springframework.web.bind.annotation.PathVariable Integer id, org.springframework.ui.Model model) {
+        model.addAttribute("facilityId", id);
+        return "owner/facility/detail";
+    }
 }

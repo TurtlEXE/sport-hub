@@ -45,6 +45,16 @@ public class Facility {
     @Column(name = "approval_status", length = 20)
     private ApprovalStatus approvalStatus = ApprovalStatus.PENDING;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "approved_by")
+    private Account approvedBy;
+
+    @Column(name = "approved_at")
+    private LocalDateTime approvedAt;
+
+    @Column(name = "rejection_reason", length = 500)
+    private String rejectionReason;
+
     @Column(name = "is_active")
     private Boolean isActive = true;
 

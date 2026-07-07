@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{dashboard-layout}">
+<head>
+    <title>Chi tiết cơ sở</title>
+    <link rel="stylesheet" th:href="@{/css/facility-management.css}">
+</head>
+<body>
+    <div layout:fragment="sidebar-menu" th:replace="~{owner/fragments/sidebar :: sidebar('facilities')}"></div>
+
+    <div layout:fragment="header-title" class="flex-1">
+        <h1 class="text-xl font-bold text-slate-900">Chi Tiết Cơ Sở</h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">OWNER DASHBOARD • FACILITY MANAGEMENT</p>
+    </div>
+
+    <div layout:fragment="content">
+        <div class="container mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="mb-6 flex justify-between items-start">
+            <div>
+                <h1 id="facilityName" class="text-2xl font-bold text-gray-800">Loading...</h1>
+                <p id="facilityAddress" class="text-gray-500"></p>
+                <div class="mt-2" id="statusBadgeContainer"></div>
+            </div>
+            <div class="space-x-2">
+                <button id="btnResubmit" class="hidden bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">Gửi duyệt lại</button>
+                <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md border">Chỉnh sửa</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="border-b border-gray-200 mb-6">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <button class="tab-btn active border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-target="overview">Tổng quan</button>
+                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-target="sports">Môn thể thao</button>
+                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-target="courts">Quản lý sân</button>
+                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-target="pricing">Bảng giá</button>
+            </nav>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="overview" class="tab-content active">
+            <div class="bg-white p-6 rounded-lg shadow-sm border mb-6">
+                <h3 class="text-lg font-medium mb-4">Thông tin cơ bản</h3>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div><span class="text-gray-500">Giờ hoạt động:</span> <span id="opHours" class="font-medium"></span></div>
+                    <div><span class="text-gray-500">Ngày tạo:</span> <span id="createdAt" class="font-medium"></span></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="sports" class="tab-content hidden">
+            <!-- Sports content rendered by JS -->
+        </div>
+
+        <div id="courts" class="tab-content hidden">
+            <!-- Courts content rendered by JS -->
+        </div>
+
+        <div id="pricing" class="tab-content hidden">
+            <!-- Pricing content rendered by JS -->
+        </div>
+    </div>
+    
+    <th:block layout:fragment="pageScripts">
+        <script th:inline="javascript">
+            const facilityId = /*[[${facilityId}]]*/ 0;
+        </script>
+        <script th:src="@{/js/owner-facility-detail.js}"></script>
+    </th:block>
+</html>

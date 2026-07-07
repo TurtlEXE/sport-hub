@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{dashboard-layout}">
+<head>
+    <title th:text="#{facility.management.title}">Cơ sở của tôi</title>
+</head>
+<body>
+    <!-- Sidebar Menu Injection -->
+    <div layout:fragment="sidebar-menu" th:replace="~{owner/fragments/sidebar :: sidebar('facilities')}"></div>
+
+    <!-- Header Title -->
+    <div layout:fragment="header-title" class="flex-1">
+        <h1 class="text-xl font-bold text-slate-900" th:text="#{facility.management.title}">Cơ sở của tôi</h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">OWNER DASHBOARD • FACILITY MANAGEMENT</p>
+    </div>
+
+    <!-- Main Content -->
+    <div layout:fragment="content">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-800">Cơ sở của tôi</h1>
+                <a href="/owner/facilities/create" class="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg shadow transition duration-150 ease-in-out flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Tạo cơ sở mới
+                </a>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 p-4">
+                <div class="flex space-x-4 border-b border-gray-200">
+                    <button class="filter-tab active text-blue-600 border-b-2 border-blue-600 pb-2 px-4 font-medium" data-status="ALL">Tất cả</button>
+                    <button class="filter-tab text-gray-500 hover:text-gray-700 pb-2 px-4 font-medium" data-status="PENDING">Chờ duyệt</button>
+                    <button class="filter-tab text-gray-500 hover:text-gray-700 pb-2 px-4 font-medium" data-status="APPROVED">Đã duyệt</button>
+                    <button class="filter-tab text-gray-500 hover:text-gray-700 pb-2 px-4 font-medium" data-status="REJECTED">Bị từ chối</button>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div id="emptyState" class="hidden bg-white rounded-lg shadow-sm border border-gray-200 p-12 text-center">
+                <svg class="mx-auto h-24 w-24 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                <h3 class="text-xl font-medium text-gray-900 mb-2">Bạn chưa có cơ sở nào</h3>
+                <p class="text-gray-500 mb-6">Hãy tạo cơ sở đầu tiên của bạn để bắt đầu kinh doanh.</p>
+                <a href="/owner/facilities/create" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-6 rounded-lg transition duration-150">
+                    Tạo ngay
+                </a>
+            </div>
+
+            <!-- Facility Grid -->
+            <div id="facilityGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards will be rendered here by JS -->
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="pageScripts">
+        <script th:src="@{/js/owner-facility-list.js}"></script>
+    </th:block>
+</html>

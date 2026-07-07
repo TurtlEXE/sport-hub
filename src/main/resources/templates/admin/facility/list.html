@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{dashboard-layout}">
+<head>
+    <title>Duyệt Cơ Sở</title>
+</head>
+<body>
+    <div layout:fragment="sidebar-menu" th:replace="~{admin/fragments/sidebar :: sidebar('facilities')}"></div>
+
+    <div layout:fragment="header-title" class="flex-1">
+        <h1 class="text-xl font-bold text-slate-900">Quản Lý Duyệt Cơ Sở</h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">ADMIN DASHBOARD • FACILITY APPROVAL</p>
+    </div>
+
+    <div layout:fragment="content">
+        <div class="container mx-auto px-4 py-6">
+        <h1 class="text-2xl font-bold text-gray-800 mb-6">Quản lý duyệt cơ sở</h1>
+        
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cơ sở</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chủ sân</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày gửi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="facilityTableBody">
+                        <!-- Data will be populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between sm:px-6">
+                <!-- Pagination controls via JS -->
+            </div>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="pageScripts">
+        <script th:src="@{/js/admin-facility-list.js}"></script>
+    </th:block>
+</html>

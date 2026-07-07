@@ -12,4 +12,14 @@ public class AdminController {
     public String adminDashboard() {
         return "admin/dashboard";
     }
+    @GetMapping("/facilities")
+    public String facilityList() {
+        return "admin/facility/list";
+    }
+
+    @GetMapping("/facilities/{id}")
+    public String facilityDetail(@org.springframework.web.bind.annotation.PathVariable Integer id, org.springframework.ui.Model model) {
+        model.addAttribute("facilityId", id);
+        return "admin/facility/detail";
+    }
 }

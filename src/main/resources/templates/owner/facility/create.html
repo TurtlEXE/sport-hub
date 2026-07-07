@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{dashboard-layout}">
+<head>
+    <title>Tạo Cơ Sở Mới</title>
+    <link rel="stylesheet" th:href="@{/css/facility-management.css}">
+</head>
+<body>
+    <div layout:fragment="sidebar-menu" th:replace="~{owner/fragments/sidebar :: sidebar('facilities')}"></div>
+
+    <div layout:fragment="header-title" class="flex-1">
+        <h1 class="text-xl font-bold text-slate-900">Tạo Cơ Sở Mới</h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">OWNER DASHBOARD • FACILITY MANAGEMENT</p>
+    </div>
+
+    <div layout:fragment="content">
+        <div class="container mx-auto px-4 py-6 max-w-4xl">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Tạo Cơ Sở Mới</h1>
+            <p class="text-gray-500">Điền thông tin để đăng ký cơ sở kinh doanh của bạn.</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+            <form id="createFacilityForm" class="space-y-6">
+                <!-- Basic Info -->
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Thông tin cơ bản</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tên cơ sở <span class="text-red-500">*</span></label>
+                            <input type="text" id="name" name="name" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố <span class="text-red-500">*</span></label>
+                            <input type="text" id="province" name="province" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Quận/Huyện <span class="text-red-500">*</span></label>
+                            <input type="text" id="district" name="district" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Phường/Xã <span class="text-red-500">*</span></label>
+                            <input type="text" id="ward" name="ward" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ chi tiết <span class="text-red-500">*</span></label>
+                            <input type="text" id="address" name="address" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Giờ mở cửa <span class="text-red-500">*</span></label>
+                            <select id="openTime" name="openTime" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <!-- Options populated by JS -->
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Giờ đóng cửa <span class="text-red-500">*</span></label>
+                            <select id="closeTime" name="closeTime" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                                <!-- Options populated by JS -->
+                            </select>
+                        </div>
+                        
+                        <div class="col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả cơ sở</label>
+                            <textarea id="description" name="description" rows="4" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3 border-t">
+                    <a href="/owner/facilities" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition">Hủy</a>
+                    <button type="submit" id="btnSubmit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Tạo cơ sở</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <th:block layout:fragment="pageScripts">
+        <script th:src="@{/js/owner-facility-create.js}"></script>
+    </th:block>
+</html>
