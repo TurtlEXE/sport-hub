@@ -35,6 +35,7 @@ public class SecurityConfig {
                     "/api/venues/**",
                     "/api/public/**", 
                     "/api/auth/**",
+                    "/api/contact",
                     "/auth/**", 
                     "/error",
                     "/css/**", 
