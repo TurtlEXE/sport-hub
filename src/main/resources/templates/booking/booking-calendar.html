@@ -239,6 +239,10 @@
                             <span>Tổng giờ</span>
                             <span class="font-medium text-slate-800" id="summaryTotalHours">0 giờ</span>
                         </div>
+                        <div class="flex justify-between text-sm text-slate-600">
+                            <span>Tiền sân</span>
+                            <span class="font-medium text-slate-800" id="summaryCourtFee">0 đ</span>
+                        </div>
                         <div class="flex justify-between text-sm text-slate-600 hidden" id="summaryServicesRow">
                             <span>Dịch vụ thêm</span>
                             <span class="font-medium text-slate-800" id="summaryServicesTotal">0 đ</span>
@@ -249,8 +253,11 @@
                         </div>
 
                         <div class="pt-3 mt-3 border-t border-slate-200 flex justify-between items-end">
-                            <span class="text-base font-bold text-slate-800">Tổng tiền sân</span>
-                            <span class="text-2xl font-bold text-amber-500" id="summaryFinalTotal">0 đ</span>
+                            <div class="flex flex-col">
+                                <span class="text-base font-bold text-slate-800">Thanh toán online</span>
+                                <span class="text-xs text-slate-500 italic mt-1">* Chỉ bao gồm tiền sân (bắt buộc). Tiền dịch vụ sẽ thanh toán trực tiếp tại sân.</span>
+                            </div>
+                            <span class="text-2xl font-bold text-amber-500 shrink-0 ml-2" id="summaryFinalTotal">0 đ</span>
                         </div>
                     </div>
 
@@ -383,7 +390,7 @@
         <script th:inline="javascript">
             const venueId = /*[[${venue.facilityId}]]*/ 1;
         </script>
-        <script th:src="@{/js/booking/booking-calendar.js(v=11)}"></script>
+        <script th:src="@{/js/booking/booking-calendar.js(v=17)}"></script>
     </th:block>
 </body>
 

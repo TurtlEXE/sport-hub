@@ -455,7 +455,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!platformSelect) return;
 
         try {
-            const res = await fetch(`/api/booking/vouchers?facilityId=${venueId}`);
+            const res = await fetch(`/api/vouchers/valid?facilityId=${venueId}`);
             if (res.ok) {
                 checkoutVouchers = await res.json();
                 platformSelect.innerHTML = '<option value="">-- Chọn ưu đãi --</option>';
@@ -578,6 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const platformSelect = document.getElementById('platformVoucher');
         const facilitySelect = document.getElementById('facilityVoucher');
+        const summaryCourtFee = document.getElementById('summaryCourtFee');
 
         const applyVoucher = (vId) => {
             const v = checkoutVouchers.find(x => x.voucherId == vId);
@@ -607,13 +608,124 @@ document.addEventListener('DOMContentLoaded', () => {
             summaryDiscountRow.classList.remove('flex');
         }
 
-        let finalTotal = subtotal - totalDiscount;
-        if (finalTotal < 0) finalTotal = 0;
+        let courtAmount = baseTotal - totalDiscount;
+        if (courtAmount < 0) courtAmount = 0;
+        
+        let finalTotal = courtAmount; // Only pay court online
 
+        window.currentCourtAmount = courtAmount;
+        window.currentProductAmount = servicesTotal;
+
+        if (summaryCourtFee) summaryCourtFee.textContent = formatMoney(baseTotal) + ' đ';
         summaryFinalTotal.textContent = formatMoney(finalTotal) + ' đ';
     }
 
     document.getElementById('btnConfirmPayment').addEventListener('click', () => {
-        alert("Tính năng gửi yêu cầu đặt sân đang được hoàn thiện. Tổng tiền: " + summaryFinalTotal.textContent);
+        const emailInput = document.getElementById('guestEmail');
+        const email = emailInput ? emailInput.value.trim() : '';
+        const nameInput = document.getElementById('guestName');
+        const name = nameInput ? nameInput.value.trim() : '';
+        const phoneInput = document.getElementById('guestPhone');
+        const phone = phoneInput ? phoneInput.value.trim() : '';
+
+        // If guest form is visible, require name and phone
+        if (nameInput && phoneInput) {
+            if (!name) {
+                alert('Vui lòng nhập Họ và tên!');
+                nameInput.focus();
+                return;
+            }
+            if (!phone) {
+                alert('Vui lòng nhập Số điện thoại!');
+                phoneInput.focus();
+                return;
+            }
+        }
+
+        // Create a dynamic form to POST to /api/payment/create-payment
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/api/payment/create-payment';
+
+        // Serialize slots
+        const slotsArray = Array.from(selectedSlots.values());
+        const inputSlots = document.createElement('input');
+        inputSlots.type = 'hidden';
+        inputSlots.name = 'slotsJson';
+        inputSlots.value = JSON.stringify(slotsArray);
+        form.appendChild(inputSlots);
+
+        // Also pass the booking date
+        const inputDate = document.createElement('input');
+        inputDate.type = 'hidden';
+        inputDate.name = 'bookingDate';
+        inputDate.value = window.currentDate || currentDate || new Date().toISOString().split('T')[0];
+        form.appendChild(inputDate);
+
+        const inputCourt = document.createElement('input');
+        inputCourt.type = 'hidden';
+        inputCourt.name = 'courtAmount';
+        inputCourt.value = window.currentCourtAmount || 0;
+        form.appendChild(inputCourt);
+
+        const inputOriginalCourt = document.createElement('input');
+        inputOriginalCourt.type = 'hidden';
+        inputOriginalCourt.name = 'originalCourtAmount';
+        inputOriginalCourt.value = baseTotal || 0;
+        form.appendChild(inputOriginalCourt);
+
+        const inputProduct = document.createElement('input');
+        inputProduct.type = 'hidden';
+        inputProduct.name = 'productAmount';
+        inputProduct.value = window.currentProductAmount || 0;
+        form.appendChild(inputProduct);
+
+        const inputEmail = document.createElement('input');
+        inputEmail.type = 'hidden';
+        inputEmail.name = 'email';
+        inputEmail.value = email;
+        form.appendChild(inputEmail);
+
+        // Append voucherId if selected
+        let voucherId = null;
+        const platformSelect = document.getElementById('platformVoucher');
+        const facilitySelect = document.getElementById('facilityVoucher');
+        if (platformSelect && platformSelect.value) {
+            voucherId = platformSelect.value;
+        } else if (facilitySelect && facilitySelect.value) {
+            voucherId = facilitySelect.value;
+        }
+        
+        if (voucherId) {
+            const inputVoucher = document.createElement('input');
+            inputVoucher.type = 'hidden';
+            inputVoucher.name = 'voucherId';
+            inputVoucher.value = voucherId;
+            form.appendChild(inputVoucher);
+        }
+
+        const inputName = document.createElement('input');
+        inputName.type = 'hidden';
+        inputName.name = 'guestName';
+        inputName.value = name;
+        form.appendChild(inputName);
+
+        const inputPhone = document.createElement('input');
+        inputPhone.type = 'hidden';
+        inputPhone.name = 'guestPhone';
+        inputPhone.value = phone;
+        form.appendChild(inputPhone);
+
+        // Optional: send venueId if available
+        if (typeof venueId !== 'undefined') {
+            const inputVenue = document.createElement('input');
+            inputVenue.type = 'hidden';
+            inputVenue.name = 'venueId';
+            inputVenue.value = venueId;
+            form.appendChild(inputVenue);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
     });
 });

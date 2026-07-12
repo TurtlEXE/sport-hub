@@ -13,6 +13,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.springframework.boot.json.JsonParser;
+import org.springframework.boot.json.JsonParserFactory;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,10 @@ public class BookingServiceImpl implements BookingService {
     private final BookingSlotRepository bookingSlotRepository;
     private final ProductRepository productRepository;
     private final VoucherRepository voucherRepository;
+    private final GuestRepository guestRepository;
+    private final BookingRepository bookingRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final FacilityRepository facilityRepository;
 
     @Override
     public List<Map<String, Object>> getFacilitySportsByVenue(Integer venueId) {
@@ -231,7 +237,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<Map<String, Object>> getFacilityVouchers(Integer facilityId) {
-        List<Voucher> vouchers = voucherRepository.findActiveVouchersForFacility(facilityId, java.time.LocalDateTime.now());
+        List<Voucher> vouchers = voucherRepository.findValidVouchers(facilityId, -1, java.time.LocalDateTime.now());
         return vouchers.stream().map(v -> {
             Map<String, Object> map = new HashMap<>();
             map.put("voucherId", v.getId());
@@ -244,5 +250,115 @@ public class BookingServiceImpl implements BookingService {
             map.put("issuerType", v.getIssuerType().name());
             return map;
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public Invoice createBookingTransaction(String guestName, String guestPhone, String email, 
+                                            BigDecimal courtAmount, BigDecimal productAmount, Integer facilityId,
+                                            String slotsJson, String bookingDateStr, Account account, Integer voucherId) {
+        
+        // 1. Save Guest ONLY if account is not present
+        Guest guest = null;
+        if (account == null) {
+            guest = Guest.builder()
+                    .guestName(guestName != null && !guestName.isEmpty() ? guestName : "Khách vãng lai")
+                    .phone(guestPhone != null && !guestPhone.isEmpty() ? guestPhone : "N/A")
+                    .email(email)
+                    .build();
+            guest = guestRepository.save(guest);
+        }
+
+        // 2. Fetch Facility
+        Facility facility = facilityRepository.findById(facilityId)
+                .orElseThrow(() -> new RuntimeException("Facility not found"));
+
+        // 3. Save Booking
+        Booking booking = Booking.builder()
+                .facility(facility)
+                .guest(guest)
+                .account(account)
+                .bookingStatus(com.mvc.mock_project.entities.enums.BookingStatus.PENDING)
+                .build();
+        booking = bookingRepository.save(booking);
+        
+        // 4. Parse and Save Booking Slots
+        if (slotsJson != null && !slotsJson.isEmpty() && !slotsJson.equals("[]")) {
+            try {
+                JsonParser springParser = JsonParserFactory.getJsonParser();
+                List<Object> rawList = springParser.parseList(slotsJson);
+                
+                LocalDate bookingDate = LocalDate.now();
+                if (bookingDateStr != null && !bookingDateStr.isEmpty()) {
+                    bookingDate = LocalDate.parse(bookingDateStr);
+                }
+                
+                for (Object item : rawList) {
+                    Map<String, Object> slotMap = (Map<String, Object>) item;
+                    Integer courtId = slotMap.get("courtId") != null ? Integer.parseInt(slotMap.get("courtId").toString()) : null;
+                    if (courtId == null) continue;
+                    
+                    Court court = courtRepository.findById(courtId).orElse(null);
+                    if (court == null) continue;
+                    
+                    LocalTime startTime = LocalTime.parse(slotMap.get("startTime").toString());
+                    String endStr = slotMap.get("endTime").toString();
+                    LocalTime endTime = endStr.equals("23:59") ? LocalTime.MAX : LocalTime.parse(endStr);
+                    BigDecimal price = new BigDecimal(slotMap.get("price").toString());
+                    
+                    BookingSlot bookingSlot = BookingSlot.builder()
+                            .booking(booking)
+                            .court(court)
+                            .bookingDate(bookingDate)
+                            .startTime(startTime)
+                            .endTime(endTime)
+                            .priceSnapshot(price)
+                            .slotStatus(com.mvc.mock_project.entities.enums.SlotStatus.PENDING)
+                            .build();
+                    bookingSlotRepository.save(bookingSlot);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // 5. Fetch Voucher and Calculate Discounts
+        com.mvc.mock_project.entities.Voucher voucher = null;
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        BigDecimal subtotal = courtAmount.add(productAmount);
+
+        if (voucherId != null) {
+            voucher = voucherRepository.findById(voucherId).orElse(null);
+            if (voucher != null) {
+                if (com.mvc.mock_project.entities.enums.DiscountType.PERCENTAGE.equals(voucher.getDiscountType())) {
+                    discountAmount = subtotal.multiply(voucher.getDiscountValue().divide(new BigDecimal("100")));
+                    if (voucher.getMaxDiscountAmount() != null && discountAmount.compareTo(voucher.getMaxDiscountAmount()) > 0) {
+                        discountAmount = voucher.getMaxDiscountAmount();
+                    }
+                } else {
+                    discountAmount = voucher.getDiscountValue();
+                }
+            }
+        }
+
+        BigDecimal totalAmount = subtotal.subtract(discountAmount);
+        if (totalAmount.compareTo(BigDecimal.ZERO) < 0) totalAmount = BigDecimal.ZERO;
+
+        // 6. Save Invoice
+        Invoice invoice = Invoice.builder()
+                .booking(booking)
+                .courtAmount(courtAmount) // Original Court Amount passed from PaymentController
+                .productAmount(productAmount)
+                .subtotal(subtotal)
+                .discountAmount(discountAmount) 
+                .totalAmount(totalAmount) 
+                .voucher(voucher)
+                .paymentStatus(com.mvc.mock_project.entities.enums.InvoiceStatus.UNPAID)
+                .paidAmount(BigDecimal.ZERO)
+                .depositPercent(100)
+                .refundDue(BigDecimal.ZERO)
+                .refundStatus(com.mvc.mock_project.entities.enums.RefundStatus.NONE)
+                .build();
+        return invoiceRepository.save(invoice);
     }
 }
