@@ -4,4 +4,5 @@ public interface EmailService {
     void sendVerificationEmail(String to, String otp);
     void sendPasswordResetEmail(String to, String otp);
     void sendPaymentSuccessEmail(String to, String bookingDetails);
+    void sendContactEmail(String name, String email, String message);
 }

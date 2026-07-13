@@ -38,6 +38,7 @@ public class SecurityConfig {
                     "/api/public/**", 
                     "/api/auth/**",
                     "/api/vouchers/**",
+                    "/api/contact",
                     "/auth/**", 
                     "/error",
                     "/css/**", 

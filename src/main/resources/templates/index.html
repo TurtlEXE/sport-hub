@@ -677,7 +677,7 @@
                                 <div>
                                     <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">
                                         <span th:text="#{home.contact.email_lbl}">Email Address</span></div>
-                                    <div class="text-sm font-bold text-slate-900">support@sporthub.com</div>
+                                    <div class="text-sm font-bold text-slate-900">sporthubvn.support@gmail.com</div>
                                 </div>
                             </div>
 
@@ -721,18 +721,24 @@
                         <h3 class="text-xl font-bold text-slate-900 mb-2"><span th:text="#{home.contact.form.title}">Send us a direct message</span></h3>
                         <p class="text-[13px] text-slate-500 font-medium mb-8"><span th:text="#{home.contact.form.desc}">Receive a secure reply to your verified email within 4 hours.</span></p>
 
-                        <form class="space-y-6">
+                        <!-- Custom Alert Box -->
+                        <div class="contact-alert hidden mb-6 p-4 rounded-xl border flex gap-3 items-start text-sm">
+                            <span class="alert-icon shrink-0 mt-0.5"></span>
+                            <span class="alert-msg font-medium"></span>
+                        </div>
+
+                        <form id="contactForm" class="space-y-6">
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div>
                                     <label
                                         class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2"><span th:text="#{home.contact.form.name}">Your Name</span></label>
-                                    <input type="text" th:placeholder="#{home.contact.form.name}"
+                                    <input type="text" id="senderName" required th:placeholder="#{home.contact.form.name}"
                                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all">
                                 </div>
                                 <div>
                                     <label
                                         class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2"><span th:text="#{home.contact.form.email}">Email Address</span></label>
-                                    <input type="email" th:placeholder="#{home.contact.form.email}"
+                                    <input type="email" id="senderEmail" required th:placeholder="#{home.contact.form.email}"
                                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all">
                                 </div>
                             </div>
@@ -740,12 +746,12 @@
                             <div>
                                 <label
                                     class="block text-[11px] font-bold text-slate-900 uppercase tracking-wider mb-2"><span th:text="#{home.contact.form.msg}">Message Details</span></label>
-                                <textarea rows="4" th:placeholder="#{home.contact.form.msg}"
+                                <textarea rows="4" id="messageContent" required th:placeholder="#{home.contact.form.msg}"
                                     class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 font-medium focus:bg-white focus:ring-2 focus:ring-primary-blue focus:border-transparent outline-none transition-all resize-none"></textarea>
                             </div>
 
-                            <button type="button"
-                                class="w-full bg-[#0B1120] hover:bg-slate-900 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors">
+                            <button type="submit" id="btnSubmitContact"
+                                class="w-full bg-[#0B1120] hover:bg-slate-900 text-white font-bold py-4 rounded-xl flex items-center justify-center gap-2 transition-colors disabled:opacity-70 disabled:cursor-not-allowed">
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
@@ -759,6 +765,76 @@
         </section>
 
     </main>
+
+    <th:block layout:fragment="pageScripts">
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const form = document.getElementById('contactForm');
+                const alertBox = document.querySelector('.contact-alert');
+                const alertMsg = alertBox.querySelector('.alert-msg');
+                const alertIcon = alertBox.querySelector('.alert-icon');
+                const btnSubmit = document.getElementById('btnSubmitContact');
+
+                if (form) {
+                    form.addEventListener('submit', function (e) {
+                        e.preventDefault();
+                        
+                        const data = {
+                            name: document.getElementById('senderName').value,
+                            email: document.getElementById('senderEmail').value,
+                            message: document.getElementById('messageContent').value
+                        };
+
+                        // Disable button
+                        btnSubmit.disabled = true;
+                        btnSubmit.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> <span>Sending...</span>`;
+
+                        // Hide previous alert
+                        alertBox.classList.add('hidden');
+
+                        fetch('/api/contact', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(async response => {
+                            const contentType = response.headers.get("content-type");
+                            let result;
+                            if (contentType && contentType.indexOf("application/json") !== -1) {
+                                result = await response.json();
+                            } else {
+                                throw new Error("Network response was not JSON.");
+                            }
+
+                            if (!response.ok || result.status !== 'success') {
+                                throw new Error(result.message || 'Failed to send message');
+                            }
+
+                            // Success
+                            alertBox.classList.remove('hidden', 'bg-rose-50', 'border-rose-200', 'text-rose-700');
+                            alertBox.classList.add('bg-teal-50', 'border-teal-200', 'text-teal-700');
+                            alertIcon.innerHTML = `<svg class="w-5 h-5 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                            alertMsg.textContent = result.message || 'Message sent successfully!';
+                            form.reset();
+                        })
+                        .catch(error => {
+                            // Error
+                            alertBox.classList.remove('hidden', 'bg-teal-50', 'border-teal-200', 'text-teal-700');
+                            alertBox.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-700');
+                            alertIcon.innerHTML = `<svg class="w-5 h-5 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                            alertMsg.textContent = error.message;
+                        })
+                        .finally(() => {
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerHTML = `<svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg> <span>Send Message</span>`;
+                        });
+                    });
+                }
+            });
+        </script>
+    </th:block>
 </body>
 
 </html>
