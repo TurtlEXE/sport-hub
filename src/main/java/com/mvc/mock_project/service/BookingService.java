@@ -14,6 +14,6 @@ public interface BookingService {
     com.mvc.mock_project.entities.Invoice createBookingTransaction(
         String guestName, String guestPhone, String email, 
         java.math.BigDecimal courtAmount, java.math.BigDecimal productAmount, Integer facilityId,
-        String slotsJson, String bookingDate, com.mvc.mock_project.entities.Account account, Integer voucherId
+        String slotsJson, String bookingDate, com.mvc.mock_project.entities.Account account, Integer voucherId, Integer voucherPlatformId
     );
 }

@@ -256,7 +256,7 @@ public class BookingServiceImpl implements BookingService {
     @org.springframework.transaction.annotation.Transactional
     public Invoice createBookingTransaction(String guestName, String guestPhone, String email, 
                                             BigDecimal courtAmount, BigDecimal productAmount, Integer facilityId,
-                                            String slotsJson, String bookingDateStr, Account account, Integer voucherId) {
+                                            String slotsJson, String bookingDateStr, Account account, Integer voucherId, Integer voucherPlatformId) {
         
         // 1. Save Guest ONLY if account is not present
         Guest guest = null;
@@ -322,8 +322,9 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // 5. Fetch Voucher and Calculate Discounts
+        // 5. Fetch Vouchers and Calculate Discounts
         com.mvc.mock_project.entities.Voucher voucher = null;
+        com.mvc.mock_project.entities.Voucher voucherPlatform = null;
         BigDecimal discountAmount = BigDecimal.ZERO;
         BigDecimal subtotal = courtAmount.add(productAmount);
 
@@ -331,12 +332,28 @@ public class BookingServiceImpl implements BookingService {
             voucher = voucherRepository.findById(voucherId).orElse(null);
             if (voucher != null) {
                 if (com.mvc.mock_project.entities.enums.DiscountType.PERCENTAGE.equals(voucher.getDiscountType())) {
-                    discountAmount = subtotal.multiply(voucher.getDiscountValue().divide(new BigDecimal("100")));
-                    if (voucher.getMaxDiscountAmount() != null && discountAmount.compareTo(voucher.getMaxDiscountAmount()) > 0) {
-                        discountAmount = voucher.getMaxDiscountAmount();
+                    BigDecimal d = subtotal.multiply(voucher.getDiscountValue().divide(new BigDecimal("100")));
+                    if (voucher.getMaxDiscountAmount() != null && d.compareTo(voucher.getMaxDiscountAmount()) > 0) {
+                        d = voucher.getMaxDiscountAmount();
                     }
+                    discountAmount = discountAmount.add(d);
                 } else {
-                    discountAmount = voucher.getDiscountValue();
+                    discountAmount = discountAmount.add(voucher.getDiscountValue());
+                }
+            }
+        }
+        
+        if (voucherPlatformId != null) {
+            voucherPlatform = voucherRepository.findById(voucherPlatformId).orElse(null);
+            if (voucherPlatform != null) {
+                if (com.mvc.mock_project.entities.enums.DiscountType.PERCENTAGE.equals(voucherPlatform.getDiscountType())) {
+                    BigDecimal d = subtotal.multiply(voucherPlatform.getDiscountValue().divide(new BigDecimal("100")));
+                    if (voucherPlatform.getMaxDiscountAmount() != null && d.compareTo(voucherPlatform.getMaxDiscountAmount()) > 0) {
+                        d = voucherPlatform.getMaxDiscountAmount();
+                    }
+                    discountAmount = discountAmount.add(d);
+                } else {
+                    discountAmount = discountAmount.add(voucherPlatform.getDiscountValue());
                 }
             }
         }
@@ -353,6 +370,7 @@ public class BookingServiceImpl implements BookingService {
                 .discountAmount(discountAmount) 
                 .totalAmount(totalAmount) 
                 .voucher(voucher)
+                .voucherPlatform(voucherPlatform)
                 .paymentStatus(com.mvc.mock_project.entities.enums.InvoiceStatus.UNPAID)
                 .paidAmount(BigDecimal.ZERO)
                 .depositPercent(100)

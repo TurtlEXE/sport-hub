@@ -20,6 +20,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Step 2 State
     let checkoutServices = [];
     let checkoutVouchers = [];
+    let selectedPlatformVoucherId = null;
+    let selectedFacilityVoucherId = null;
     let selectedServicesObj = {}; // { productId: qty }
     let baseTotal = 0; // Courts total
 
@@ -450,25 +452,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchVouchers() {
-        const platformSelect = document.getElementById('platformVoucher');
-        const facilitySelect = document.getElementById('facilityVoucher');
-        if (!platformSelect) return;
-
         try {
             const res = await fetch(`/api/vouchers/valid?facilityId=${venueId}`);
             if (res.ok) {
                 checkoutVouchers = await res.json();
-                platformSelect.innerHTML = '<option value="">-- Chọn ưu đãi --</option>';
-                facilitySelect.innerHTML = '<option value="">-- Chọn ưu đãi --</option>';
-
-                checkoutVouchers.forEach(v => {
-                    const opt = `<option value="${v.voucherId}">${v.name} - Giảm ${formatMoney(v.discountValue)}${v.discountType === 'PERCENTAGE' ? '%' : 'đ'}</option>`;
-                    if (v.issuerType === 'PLATFORM') {
-                        platformSelect.innerHTML += opt;
-                    } else {
-                        facilitySelect.innerHTML += opt;
-                    }
-                });
             }
         } catch (e) { console.error("Err fetching vouchers", e); }
     }
@@ -576,12 +563,18 @@ document.addEventListener('DOMContentLoaded', () => {
         let subtotal = baseTotal + servicesTotal;
         let totalDiscount = 0;
 
-        const platformSelect = document.getElementById('platformVoucher');
-        const facilitySelect = document.getElementById('facilityVoucher');
-        const summaryCourtFee = document.getElementById('summaryCourtFee');
-
-        const applyVoucher = (vId) => {
+        const applyVoucher = (vId, tagElementId) => {
             const v = checkoutVouchers.find(x => x.voucherId == vId);
+            const tagDiv = document.getElementById(tagElementId);
+            if (tagDiv) {
+                if (v && subtotal >= (v.minOrderAmount || 0)) {
+                    tagDiv.querySelector('.tag-text').textContent = v.name + (v.maxDiscountAmount > 0 ? ` (Tối đa ${formatMoney(v.maxDiscountAmount)}đ)` : '');
+                    tagDiv.classList.remove('hidden');
+                } else {
+                    tagDiv.classList.add('hidden');
+                }
+            }
+
             if (v && subtotal >= (v.minOrderAmount || 0)) {
                 let discount = 0;
                 if (v.discountType === 'PERCENTAGE') {
@@ -596,8 +589,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        if (platformSelect && platformSelect.value) applyVoucher(platformSelect.value);
-        if (facilitySelect && facilitySelect.value) applyVoucher(facilitySelect.value);
+        if (selectedPlatformVoucherId) applyVoucher(selectedPlatformVoucherId, 'platformVoucherTag');
+        else {
+            const t = document.getElementById('platformVoucherTag');
+            if(t) t.classList.add('hidden');
+        }
+
+        if (selectedFacilityVoucherId) applyVoucher(selectedFacilityVoucherId, 'facilityVoucherTag');
+        else {
+            const t = document.getElementById('facilityVoucherTag');
+            if(t) t.classList.add('hidden');
+        }
 
         if (totalDiscount > 0) {
             summaryDiscountRow.classList.remove('hidden');
@@ -686,22 +688,20 @@ document.addEventListener('DOMContentLoaded', () => {
         inputEmail.value = email;
         form.appendChild(inputEmail);
 
-        // Append voucherId if selected
-        let voucherId = null;
-        const platformSelect = document.getElementById('platformVoucher');
-        const facilitySelect = document.getElementById('facilityVoucher');
-        if (platformSelect && platformSelect.value) {
-            voucherId = platformSelect.value;
-        } else if (facilitySelect && facilitySelect.value) {
-            voucherId = facilitySelect.value;
+        if (selectedPlatformVoucherId) {
+            const inputVoucherPlat = document.createElement('input');
+            inputVoucherPlat.type = 'hidden';
+            inputVoucherPlat.name = 'voucherPlatformId';
+            inputVoucherPlat.value = selectedPlatformVoucherId;
+            form.appendChild(inputVoucherPlat);
         }
         
-        if (voucherId) {
-            const inputVoucher = document.createElement('input');
-            inputVoucher.type = 'hidden';
-            inputVoucher.name = 'voucherId';
-            inputVoucher.value = voucherId;
-            form.appendChild(inputVoucher);
+        if (selectedFacilityVoucherId) {
+            const inputVoucherFac = document.createElement('input');
+            inputVoucherFac.type = 'hidden';
+            inputVoucherFac.name = 'voucherId';
+            inputVoucherFac.value = selectedFacilityVoucherId;
+            form.appendChild(inputVoucherFac);
         }
 
         const inputName = document.createElement('input');
@@ -728,4 +728,224 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(form);
         form.submit();
     });
+
+    // --- VOUCHER MODAL & MANUAL CODE LOGIC ---
+    
+    window.applyManualCode = function(type) {
+        let inputEl = document.getElementById(type === 'PLATFORM' ? 'platformVoucherInput' : 'facilityVoucherInput');
+        let code = inputEl.value.trim().toUpperCase();
+        if (!code) {
+            alert("Vui lòng nhập mã voucher.");
+            return;
+        }
+
+        let issuerType = type === 'PLATFORM' ? 'PLATFORM' : 'OWNER';
+        let v = checkoutVouchers.find(x => x.code.toUpperCase() === code && x.issuerType === issuerType);
+        
+        if (!v) {
+            alert("Mã ưu đãi không hợp lệ hoặc không áp dụng cho loại này.");
+            return;
+        }
+
+        let currentServicesTotal = 0;
+        for (const [pId, qty] of Object.entries(selectedServicesObj)) {
+            const srv = checkoutServices.find(s => s.productId == pId);
+            if (srv) currentServicesTotal += (srv.price * qty);
+        }
+        let subtotal = baseTotal + currentServicesTotal;
+        
+        if (subtotal < (v.minOrderAmount || 0)) {
+            alert(`Đơn hàng chưa đạt giá trị tối thiểu ${formatMoney(v.minOrderAmount)}đ để áp dụng mã này.`);
+            return;
+        }
+
+        if (issuerType === 'PLATFORM') selectedPlatformVoucherId = v.voucherId;
+        else selectedFacilityVoucherId = v.voucherId;
+
+        alert("Áp dụng mã thành công!");
+        calculateCheckoutTotal(); // Recalculate
+    };
+
+    window.removeVoucher = function(type) {
+        if (type === 'PLATFORM') {
+            selectedPlatformVoucherId = null;
+            document.getElementById('platformVoucherInput').value = '';
+        } else {
+            selectedFacilityVoucherId = null;
+            document.getElementById('facilityVoucherInput').value = '';
+        }
+        calculateCheckoutTotal();
+    };
+
+    let tempSelectedPlatform = null;
+    let tempSelectedFacility = null;
+
+    window.openVoucherModal = function() {
+        tempSelectedPlatform = selectedPlatformVoucherId;
+        tempSelectedFacility = selectedFacilityVoucherId;
+        renderVoucherModal();
+        document.getElementById('voucherModal').classList.remove('hidden');
+    };
+
+    window.closeVoucherModal = function() {
+        document.getElementById('voucherModal').classList.add('hidden');
+    };
+
+    window.selectModalVoucher = function(id, type) {
+        if (type === 'PLATFORM') {
+            tempSelectedPlatform = tempSelectedPlatform === id ? null : id; // toggle
+        } else {
+            tempSelectedFacility = tempSelectedFacility === id ? null : id; // toggle
+        }
+        renderVoucherModal();
+    };
+
+    window.confirmVoucherSelection = function() {
+        selectedPlatformVoucherId = tempSelectedPlatform;
+        selectedFacilityVoucherId = tempSelectedFacility;
+        
+        // Update input fields visually
+        if (selectedPlatformVoucherId) {
+            let v = checkoutVouchers.find(x => x.voucherId == selectedPlatformVoucherId);
+            document.getElementById('platformVoucherInput').value = v ? v.code : '';
+        } else {
+            document.getElementById('platformVoucherInput').value = '';
+        }
+
+        if (selectedFacilityVoucherId) {
+            let v = checkoutVouchers.find(x => x.voucherId == selectedFacilityVoucherId);
+            document.getElementById('facilityVoucherInput').value = v ? v.code : '';
+        } else {
+            document.getElementById('facilityVoucherInput').value = '';
+        }
+
+        closeVoucherModal();
+        calculateCheckoutTotal();
+    };
+
+    function renderVoucherModal() {
+        const content = document.getElementById('voucherModalContent');
+        const summary = document.getElementById('modalVoucherSummary');
+        
+        // Compute subtotal dynamically based on current selected services + baseTotal
+        let currentServicesTotal = 0;
+        for (const [pId, qty] of Object.entries(selectedServicesObj)) {
+            const srv = checkoutServices.find(s => s.productId == pId);
+            if (srv) currentServicesTotal += (srv.price * qty);
+        }
+        let subtotal = baseTotal + currentServicesTotal;
+        
+        let validPlatform = [];
+        let validFacility = [];
+        let invalid = [];
+
+        checkoutVouchers.forEach(v => {
+            if (subtotal >= (v.minOrderAmount || 0)) {
+                if (v.issuerType === 'PLATFORM') validPlatform.push(v);
+                else validFacility.push(v);
+            } else {
+                invalid.push(v);
+            }
+        });
+
+        const renderTicket = (v, isValid, isPlatform) => {
+            let isSelected = (isPlatform ? tempSelectedPlatform : tempSelectedFacility) === v.voucherId;
+            let bgColor = isValid ? (isPlatform ? 'bg-orange-500' : 'bg-blue-500') : 'bg-slate-300';
+            let titleColor = isValid ? 'text-slate-800' : 'text-slate-400';
+            let typeLabel = isPlatform ? 'Hệ thống' : 'Chủ sân';
+
+            let discountText = `Giảm ${formatMoney(v.discountValue)}${v.discountType === 'PERCENTAGE' ? '%' : 'đ'}`;
+            if (v.maxDiscountAmount > 0) discountText += ` Giảm tối đa ${formatMoney(v.maxDiscountAmount)}đ`;
+            let conditionText = v.minOrderAmount > 0 ? `Đơn tối thiểu ${formatMoney(v.minOrderAmount)}đ` : 'Không giới hạn đơn tối thiểu';
+
+            let actionHtml = '';
+            if (isValid) {
+                actionHtml = `
+                    <div class="relative flex items-center justify-center w-6 h-6 rounded-full border-2 ${isSelected ? 'border-orange-500 bg-orange-500' : 'border-slate-300'} cursor-pointer" onclick="selectModalVoucher(${v.voucherId}, '${v.issuerType}')">
+                        ${isSelected ? '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>' : ''}
+                    </div>
+                `;
+            } else {
+                actionHtml = `<div class="text-[10px] text-slate-400 max-w-[60px] text-right leading-tight">Chưa đạt ĐTTh</div>`;
+            }
+
+            return `
+                <div class="flex bg-white rounded-lg overflow-hidden shadow-sm border ${isSelected ? 'border-orange-300 bg-orange-50/30' : 'border-slate-200'} relative mb-3">
+                    <div class="${bgColor} w-[100px] flex flex-col items-center justify-center text-white p-2 border-r border-dashed border-white relative">
+                        <div class="absolute -left-1 top-0 bottom-0 w-2 flex flex-col justify-between overflow-hidden">
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                        </div>
+                        <div class="font-bold text-lg text-center leading-tight mb-1">VOUCHER</div>
+                        <div class="text-[10px] uppercase tracking-wider">${typeLabel}</div>
+                    </div>
+                    <div class="flex-1 p-3 pl-4 flex flex-col justify-center">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex-1">
+                                <div class="font-bold text-sm ${titleColor} mb-1">${discountText}</div>
+                                <div class="text-xs text-slate-500 mb-2">${conditionText}</div>
+                                ${!isValid ? '<div class="text-[10px] text-red-500 mt-1">Chưa đạt giá trị đơn hàng tối thiểu</div>' : ''}
+                            </div>
+                            <div class="flex items-center justify-center pt-2">
+                                ${actionHtml}
+                            </div>
+                        </div>
+                        ${isValid ? `<div class="w-full bg-slate-100 rounded-full h-1 mt-2"><div class="bg-orange-500 h-1 rounded-full" style="width: 80%"></div></div><div class="text-[10px] text-slate-400 mt-1">Sắp hết hạn</div>` : ''}
+                    </div>
+                </div>
+            `;
+        };
+
+        let html = '';
+        
+        if (validPlatform.length > 0) {
+            html += `<div class="mb-5"><h3 class="text-sm font-bold text-slate-800 mb-3">Mã giảm giá Hệ thống</h3>`;
+            validPlatform.forEach(v => html += renderTicket(v, true, true));
+            html += `</div>`;
+        }
+
+        if (validFacility.length > 0) {
+            html += `<div class="mb-5"><h3 class="text-sm font-bold text-slate-800 mb-3">Ưu đãi từ Chủ sân</h3>`;
+            validFacility.forEach(v => html += renderTicket(v, true, false));
+            html += `</div>`;
+        }
+
+        if (invalid.length > 0) {
+            html += `<div class="mb-5 opacity-70"><h3 class="text-sm font-bold text-slate-800 mb-3">Voucher không khả dụng</h3>`;
+            invalid.forEach(v => html += renderTicket(v, false, v.issuerType === 'PLATFORM'));
+            html += `</div>`;
+        }
+
+        if (html === '') {
+            html = `<div class="text-center py-10 text-slate-500">Không có voucher nào.</div>`;
+        }
+
+        content.innerHTML = html;
+
+        let tempTotalDiscount = 0;
+        let count = 0;
+        [tempSelectedPlatform, tempSelectedFacility].forEach(id => {
+            if (id) {
+                let v = checkoutVouchers.find(x => x.voucherId == id);
+                if (v) {
+                    count++;
+                    if (v.discountType === 'PERCENTAGE') {
+                        let d = subtotal * (v.discountValue / 100);
+                        if (v.maxDiscountAmount && d > v.maxDiscountAmount) d = v.maxDiscountAmount;
+                        tempTotalDiscount += d;
+                    } else {
+                        tempTotalDiscount += v.discountValue;
+                    }
+                }
+            }
+        });
+
+        summary.innerHTML = count > 0 
+            ? `${count} Voucher đã được chọn. Tổng giảm <strong class="text-orange-600">${formatMoney(tempTotalDiscount)}đ</strong>`
+            : 'Chưa chọn voucher nào.';
+    }
 });

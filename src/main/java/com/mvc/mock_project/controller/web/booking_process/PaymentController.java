@@ -48,6 +48,7 @@ public class PaymentController {
             @RequestParam(value = "slotsJson", required = false) String slotsJson,
             @RequestParam(value = "bookingDate", required = false) String bookingDate,
             @RequestParam(value = "voucherId", required = false) Integer voucherId,
+            @RequestParam(value = "voucherPlatformId", required = false) Integer voucherPlatformId,
             HttpServletRequest request) {
         
         // Extract logged-in Account if available
@@ -70,7 +71,7 @@ public class PaymentController {
         // 1. Lưu Guest/Account, Booking, BookingSlot, Invoice vào DB trước
         BigDecimal baseCourt = (originalCourtAmount != null) ? originalCourtAmount : courtAmount;
         Invoice invoice = bookingService.createBookingTransaction(
-                guestName, guestPhone, email, baseCourt, productAmount, venueId, slotsJson, bookingDate, account, voucherId);
+                guestName, guestPhone, email, baseCourt, productAmount, venueId, slotsJson, bookingDate, account, voucherId, voucherPlatformId);
         
         String orderInfo = "Thanh toan tien san - Invoice ID: " + invoice.getId();
         String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
