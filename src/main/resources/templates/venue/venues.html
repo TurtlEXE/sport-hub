@@ -60,10 +60,6 @@
                                     th:classappend="${sportCode == null or sportCode == ''} ? 'bg-blue-50/50 border-blue-100' : ''">
                                     <input type="radio" name="sportCode" value="" class="filter-input hidden" th:checked="${sportCode == null or sportCode == ''}">
                                     <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-white flex items-center justify-center text-lg shadow-sm">
-                                            🎯
-                                        </div>
                                         <span class="text-sm font-bold text-primary-blue" th:text="#{venue.filter.sport.all}">All Sports</span>
                                     </div>
                                     <svg class="w-5 h-5 transition-colors" th:classappend="${sportCode == null or sportCode == ''} ? 'text-primary-blue' : 'text-transparent group-hover:text-slate-300'" fill="none" viewBox="0 0 24 24"
@@ -79,17 +75,6 @@
                                     th:classappend="${sportCode == sport.sportCode} ? 'bg-blue-50/50 border-blue-100' : 'hover:bg-slate-50 border-transparent hover:border-slate-100'">
                                     <input type="radio" name="sportCode" th:value="${sport.sportCode}" class="filter-input hidden" th:checked="${sportCode == sport.sportCode}">
                                     <div class="flex items-center gap-3">
-                                        <div
-                                            class="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-lg group-hover:bg-white group-hover:shadow-sm transition-all"
-                                            th:classappend="${sportCode == sport.sportCode} ? 'bg-white shadow-sm' : ''">
-                                            <span th:if="${sport.sportCode == 'FOOTBALL'}">⚽</span>
-                                            <span th:if="${sport.sportCode == 'BADMINTON'}">🏸</span>
-                                            <span th:if="${sport.sportCode == 'TENNIS'}">🎾</span>
-                                            <span th:if="${sport.sportCode == 'BASKETBALL'}">🏀</span>
-                                            <span th:if="${sport.sportCode == 'PICKLEBALL'}">🏓</span>
-                                            <span
-                                                th:if="${sport.sportCode != 'FOOTBALL' && sport.sportCode != 'BADMINTON' && sport.sportCode != 'TENNIS' && sport.sportCode != 'BASKETBALL' && sport.sportCode != 'PICKLEBALL'}">🏆</span>
-                                        </div>
                                         <span class="text-sm font-medium transition-colors"
                                               th:classappend="${sportCode == sport.sportCode} ? 'text-primary-blue font-bold' : 'text-slate-600 group-hover:text-slate-900'"
                                               th:text="${sport.sportName}">Sport Name</span>

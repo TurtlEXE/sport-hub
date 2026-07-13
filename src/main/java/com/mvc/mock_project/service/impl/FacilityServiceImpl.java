@@ -89,12 +89,14 @@ public class FacilityServiceImpl implements FacilityService {
 
             // Get Sports
             List<String> sports = new ArrayList<>();
+            List<String> sportNames = new ArrayList<>();
             Double minPrice = Double.MAX_VALUE;
             
             if (facility.getFacilitySports() != null) {
                 for (FacilitySport fs : facility.getFacilitySports()) {
                     if (Boolean.TRUE.equals(fs.getIsActive())) {
                         sports.add(fs.getSport().getSportCode());
+                        sportNames.add(fs.getSport().getSportName());
                         // Find min price for this sport
                         List<FacilityPriceRule> rules = facilityPriceRuleRepository.findByFacilitySportIdAndIsActiveTrue(fs.getId());
                         for (FacilityPriceRule rule : rules) {
@@ -134,6 +136,7 @@ public class FacilityServiceImpl implements FacilityService {
                     .address(facility.getAddress())
                     .imageUrl(imageUrl)
                     .sports(sports)
+                    .sportNames(sportNames)
                     .rating(Math.round(rating * 10.0) / 10.0)
                     .reviewCount(reviewCount)
                     .openingHours(openingHours)
@@ -160,12 +163,14 @@ public class FacilityServiceImpl implements FacilityService {
 
         // Get Sports
         List<String> sports = new ArrayList<>();
+        List<String> sportNames = new ArrayList<>();
         Double minPrice = Double.MAX_VALUE;
         
         if (facility.getFacilitySports() != null) {
             for (FacilitySport fs : facility.getFacilitySports()) {
                 if (Boolean.TRUE.equals(fs.getIsActive())) {
                     sports.add(fs.getSport().getSportCode());
+                    sportNames.add(fs.getSport().getSportName());
                     List<FacilityPriceRule> rules = facilityPriceRuleRepository.findByFacilitySportIdAndIsActiveTrue(fs.getId());
                     for (FacilityPriceRule rule : rules) {
                         if (rule.getPricePerSlot() != null && rule.getPricePerSlot().doubleValue() < minPrice) {
@@ -201,6 +206,7 @@ public class FacilityServiceImpl implements FacilityService {
                 .address(facility.getAddress())
                 .imageUrl(imageUrl)
                 .sports(sports)
+                .sportNames(sportNames)
                 .rating(Math.round(rating * 10.0) / 10.0)
                 .reviewCount(reviewCount)
                 .openingHours(openingHours)
@@ -277,6 +283,7 @@ public class FacilityServiceImpl implements FacilityService {
                 .address(base.getAddress())
                 .imageUrl(base.getImageUrl())
                 .sports(base.getSports())
+                .sportNames(base.getSportNames())
                 .rating(base.getRating())
                 .reviewCount(base.getReviewCount())
                 .openingHours(base.getOpeningHours())
