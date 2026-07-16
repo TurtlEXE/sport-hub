@@ -92,4 +92,29 @@ public class EmailServiceImpl implements EmailService {
             System.out.println("=========================================================");
         }
     }
+
+    @Override
+    public void sendPaymentSuccessEmail(String to, String bookingDetails) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Xác nhận thanh toán tiền sân thành công - SportHub");
+        message.setText("Chào bạn,\n\n"
+                + "Bạn đã thanh toán tiền sân thành công tại hệ thống SportHub.\n"
+                + "Chi tiết đơn hàng:\n"
+                + bookingDetails + "\n\n"
+                + "LƯU Ý: Số tiền dịch vụ đi kèm (nếu có) sẽ được thanh toán trực tiếp tại sân.\n\n"
+                + "Trân trọng,\nĐội ngũ SportHub");
+
+        try {
+            mailSender.send(message);
+            log.info("Payment success email sent to {}", to);
+        } catch (MailException e) {
+            log.error("Failed to send payment email to {}", to, e);
+            System.out.println("=========================================================");
+            System.out.println("DEVELOPMENT MODE - MOCK EMAIL (PAYMENT SUCCESS)");
+            System.out.println("To: " + to);
+            System.out.println("Details:\n" + bookingDetails);
+            System.out.println("=========================================================");
+        }
+    }
 }

@@ -1,0 +1,118 @@
+body { background-color: #f8fafc; color: #0f172a; }
+
+.timeline-grid {
+    display: grid;
+    grid-template-columns: 100px repeat(var(--total-slots), minmax(40px, 1fr));
+    border-left: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+    width: max-content;
+    min-width: 100%;
+}
+
+.timeline-cell {
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.timeline-header {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #64748b;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.court-name {
+    position: sticky;
+    left: 0;
+    background-color: #f8fafc;
+    z-index: 20;
+    font-weight: 600;
+    color: #0f172a;
+    padding: 0 8px;
+    border-right: 2px solid #cbd5e1;
+}
+
+.slot-available {
+    background-color: #ffffff;
+    cursor: pointer;
+}
+
+.slot-available:hover {
+    background-color: #eff6ff;
+}
+
+.slot-selected {
+    background-color: #eff6ff !important;
+    border: 2px solid #2563eb !important;
+    box-shadow: inset 0 0 0 1px #2563eb;
+    z-index: 5;
+}
+
+.slot-booked {
+    background-color: #fecaca;
+    cursor: not-allowed;
+}
+
+.slot-locked {
+    background-color: #f1f5f9;
+    cursor: not-allowed;
+}
+
+.timeline-container::-webkit-scrollbar { height: 8px; }
+.timeline-container::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
+.timeline-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.chip-box { width: 14px; height: 14px; border-radius: 3px; }
+
+/* Flatpickr Modal Styles */
+.flatpickr-calendar.open {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 100000 !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+    border: none !important;
+    border-radius: 12px !important;
+}
+
+#flatpickr-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(15, 23, 42, 0.4);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 99999;
+    display: none;
+    transition: opacity 0.3s;
+}
+
+#flatpickr-backdrop.show {
+    display: block;
+}
+
+/* Flatpickr Custom Green Theme */
+.flatpickr-day.selected, .flatpickr-day.selected:hover, .flatpickr-day.selected:focus {
+    background: #15803d !important;
+    border-color: #15803d !important;
+}
+.flatpickr-day:hover {
+    background: #dcfce7 !important;
+    border-color: #dcfce7 !important;
+}

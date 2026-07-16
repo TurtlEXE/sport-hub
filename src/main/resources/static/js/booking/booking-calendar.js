@@ -1,0 +1,951 @@
+/**
+ * Booking Calendar Logic - Redesigned Two-Column Layout
+ */
+document.addEventListener('DOMContentLoaded', () => {
+    // We get venueId injected from inline script in HTML
+    let currentFacilitySportId = document.querySelector('.fs-tab') ? document.querySelector('.fs-tab').dataset.fsId : null;
+    let currentDate = new Date().toISOString().split('T')[0];
+
+    // Configs from API
+    let config = {
+        openingTime: "05:00",
+        closingTime: "23:00",
+        slotDurationMinutes: 30,
+        minBookingDurationMinutes: 60
+    };
+
+    // State
+    let selectedSlots = new Map(); // key: "courtId-slotIndex", value: slot object
+
+    // Step 2 State
+    let checkoutServices = [];
+    let checkoutVouchers = [];
+    let selectedPlatformVoucherId = null;
+    let selectedFacilityVoucherId = null;
+    let selectedServicesObj = {}; // { productId: qty }
+    let baseTotal = 0; // Courts total
+
+    // DOM Elements
+    const timelineContainer = document.getElementById('timelineContainer');
+    const timelineGrid = document.getElementById('timelineGrid');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const currentDateDisplay = document.getElementById('currentDateDisplay');
+
+    // Right Summary Elements
+    const summarySlotsList = document.getElementById('summarySlotsList');
+    const summaryTotalHours = document.getElementById('summaryTotalHours');
+    const summaryBaseTotal = document.getElementById('summaryBaseTotal');
+    const summaryServicesRow = document.getElementById('summaryServicesRow');
+    const summaryServicesTotal = document.getElementById('summaryServicesTotal');
+    const summaryDiscountRow = document.getElementById('summaryDiscountRow');
+    const summaryDiscountTotal = document.getElementById('summaryDiscountTotal');
+    const summaryFinalTotal = document.getElementById('summaryFinalTotal');
+
+    const btnNextStep = document.getElementById('btnNextStep');
+    const checkoutActionButtons = document.getElementById('checkoutActionButtons');
+
+    // Step Containers
+    const step1Booking = document.getElementById('step1-booking');
+    const step2Checkout = document.getElementById('step2-checkout');
+
+    // Initialize DatePicker
+    let fpInstance = null;
+    try {
+        fpInstance = flatpickr("#datePickerInput", {
+            locale: "vn",
+            dateFormat: "Y-m-d",
+            defaultDate: currentDate,
+            minDate: "today",
+            closeOnSelect: false,
+            onChange: function(selectedDates, dateStr, instance) {
+                // Do not update the global state yet, wait for Confirm button
+            },
+            onOpen: function() {
+                let backdrop = document.getElementById('flatpickr-backdrop');
+                if (!backdrop) {
+                    backdrop = document.createElement('div');
+                    backdrop.id = 'flatpickr-backdrop';
+                    document.body.appendChild(backdrop);
+                }
+                backdrop.classList.add('show');
+            },
+            onClose: function() {
+                const backdrop = document.getElementById('flatpickr-backdrop');
+                if (backdrop) {
+                    backdrop.classList.remove('show');
+                }
+            },
+            onReady: function(selectedDates, dateStr, instance) {
+                const footer = document.createElement('div');
+                footer.className = "flex justify-end gap-3 p-3 mt-2 border-t border-slate-100";
+                
+                const btnCancel = document.createElement('button');
+                btnCancel.className = "px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50 rounded-md transition-colors";
+                btnCancel.textContent = "Hủy";
+                btnCancel.onclick = function() {
+                    instance.setDate(currentDate); // revert
+                    instance.close();
+                };
+                
+                const btnConfirm = document.createElement('button');
+                btnConfirm.className = "px-5 py-2 text-sm font-medium text-white bg-green-700 hover:bg-green-800 rounded-md transition-colors shadow-sm";
+                btnConfirm.textContent = "Xác nhận";
+                btnConfirm.onclick = function() {
+                    if (instance.selectedDates.length > 0) {
+                        currentDate = instance.formatDate(instance.selectedDates[0], "Y-m-d");
+                        updateDateDisplay(instance.selectedDates[0]);
+                        loadTimelineData();
+                    }
+                    instance.close();
+                };
+                
+                footer.appendChild(btnCancel);
+                footer.appendChild(btnConfirm);
+                instance.calendarContainer.appendChild(footer);
+            }
+        });
+        
+        window.openDatePicker = function() {
+            if (fpInstance) {
+                fpInstance.open();
+            }
+        };
+    } catch (e) {
+        console.warn("Flatpickr failed to initialize:", e);
+    }
+
+    // Initial display
+    updateDateDisplay(new Date());
+    if (currentFacilitySportId) {
+        loadTimelineData();
+    }
+
+    // --- Global Function for Tab Switching ---
+    window.switchTab = function (btn) {
+        // Reset all tabs
+        document.querySelectorAll('.fs-tab').forEach(el => {
+            el.classList.remove('text-blue-600', 'border-blue-600');
+            el.classList.add('text-slate-500', 'border-transparent');
+        });
+
+        // Highlight clicked tab
+        btn.classList.remove('text-slate-500', 'border-transparent');
+        btn.classList.add('text-blue-600', 'border-blue-600');
+
+        // Update state and load
+        currentFacilitySportId = btn.dataset.fsId;
+        loadTimelineData();
+    };
+
+    window.openPricingModal = function () {
+        document.querySelectorAll('.pricing-table').forEach(t => t.classList.add('hidden'));
+        const activeTable = document.getElementById('pricing-table-' + currentFacilitySportId);
+        if (activeTable) {
+            activeTable.classList.remove('hidden');
+        }
+        document.getElementById('modalPricing').classList.remove('hidden');
+    };
+
+    /**
+     * Load Timeline Data from API
+     */
+    async function loadTimelineData() {
+        showLoading(true);
+        selectedSlots.clear();
+        validateAndUpdateRightSummary();
+
+        if (!currentFacilitySportId) {
+            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Cơ sở này chưa cấu hình môn thể thao.</div>`;
+            showLoading(false);
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/booking/timeline?facilitySportId=${currentFacilitySportId}&date=${currentDate}`);
+            if (!res.ok) throw new Error("Failed to fetch data");
+
+            const data = await res.json();
+
+            if (data.isClosedToday) {
+                timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium col-span-full">Sân không hoạt động vào ngày này.</div>`;
+                showLoading(false);
+                return;
+            }
+
+            // Update config
+            config.slotDurationMinutes = data.slotDurationMinutes || 30;
+            config.minBookingDurationMinutes = data.minBookingDurationMinutes || 60;
+
+            const minDurText = document.getElementById('minDurationText');
+            if (minDurText) {
+                minDurText.textContent = `Thời gian thuê tối thiểu: ${config.minBookingDurationMinutes} phút`;
+                minDurText.classList.remove('hidden');
+            }
+
+            renderGrid(data);
+        } catch (error) {
+            console.error("Error loading timeline:", error);
+            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Lỗi khi tải dữ liệu. Vui lòng thử lại.</div>`;
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function isSlotInPast(dateStr, startTimeStr) {
+        const today = new Date();
+        const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0') + "-" + String(today.getDate()).padStart(2, '0');
+        
+        if (dateStr < todayStr) return true;
+        if (dateStr > todayStr) return false;
+        
+        const [slotHour, slotMinute] = startTimeStr.split(':').map(Number);
+        const currentHour = today.getHours();
+        const currentMinute = today.getMinutes();
+        
+        if (slotHour < currentHour) return true;
+        if (slotHour === currentHour && slotMinute <= currentMinute) return true; // considering it past if it has already started
+        
+        return false;
+    }
+
+    function renderGrid(data) {
+        timelineGrid.innerHTML = '';
+        const courts = data.courts || [];
+        if (courts.length === 0) {
+            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Không có sân nào hoạt động.</div>`;
+            return;
+        }
+
+        const numSlots = courts[0].slots.length;
+        timelineGrid.style.setProperty('--total-slots', numSlots);
+
+        // Render Header Row
+        const headerFrag = document.createDocumentFragment();
+        const cornerCell = document.createElement('div');
+        cornerCell.className = 'timeline-header court-name text-xs uppercase tracking-wider text-slate-400 font-bold border-b border-slate-200';
+        cornerCell.textContent = 'SÂN';
+        headerFrag.appendChild(cornerCell);
+
+        courts[0].slots.forEach(slot => {
+            const timeCell = document.createElement('div');
+            timeCell.className = 'timeline-header timeline-cell font-medium text-xs';
+            timeCell.textContent = slot.startTime;
+            headerFrag.appendChild(timeCell);
+        });
+        timelineGrid.appendChild(headerFrag);
+
+        // Render Courts and Slots
+        courts.forEach(court => {
+            const courtFrag = document.createDocumentFragment();
+
+            const nameCell = document.createElement('div');
+            nameCell.className = 'timeline-cell court-name text-xs text-slate-700';
+            nameCell.textContent = court.courtName;
+            courtFrag.appendChild(nameCell);
+
+            court.slots.forEach(slot => {
+                const slotCell = document.createElement('div');
+
+                slotCell.className = 'timeline-cell transition-all relative';
+                slotCell.dataset.courtId = court.courtId;
+                slotCell.dataset.courtName = court.courtName;
+                slotCell.dataset.slotIndex = slot.slotIndex;
+                slotCell.dataset.startTime = slot.startTime;
+                slotCell.dataset.endTime = slot.endTime;
+                slotCell.dataset.price = slot.price || 0;
+
+                const isPast = isSlotInPast(currentDate, slot.startTime);
+
+                if (slot.status === 'BOOKED') {
+                    slotCell.classList.add('slot-booked');
+                    slotCell.title = "Đã có người đặt";
+                } else if (slot.status === 'LOCKED') {
+                    slotCell.classList.add('slot-locked');
+                    slotCell.title = "Sân nghỉ / Khoá";
+                } else if (isPast) {
+                    slotCell.classList.add('slot-locked');
+                    slotCell.title = "Đã qua giờ";
+                } else {
+                    slotCell.classList.add('slot-available');
+                    slotCell.title = `${slot.price ? formatMoney(slot.price) + 'đ' : 'Trống'}`;
+                    slotCell.addEventListener('click', () => handleSlotClick(slotCell, court, slot));
+                }
+
+                courtFrag.appendChild(slotCell);
+            });
+            timelineGrid.appendChild(courtFrag);
+        });
+    }
+
+    function handleSlotClick(cell, court, slot) {
+        const key = `${court.courtId}-${slot.slotIndex}`;
+
+        if (selectedSlots.has(key)) {
+            selectedSlots.delete(key);
+            cell.classList.remove('slot-selected');
+        } else {
+            selectedSlots.set(key, {
+                courtId: court.courtId,
+                courtName: court.courtName,
+                slotIndex: slot.slotIndex,
+                startTime: slot.startTime,
+                endTime: slot.endTime,
+                price: slot.price || 0
+            });
+            cell.classList.add('slot-selected');
+        }
+
+        validateAndUpdateRightSummary();
+    }
+
+    function validateAndUpdateRightSummary() {
+        if (selectedSlots.size === 0) {
+            summarySlotsList.innerHTML = '<div class="text-slate-500 text-center py-6 bg-white rounded-lg border border-slate-200 border-dashed">Vui lòng chọn ca trên lịch</div>';
+            summaryTotalHours.textContent = "0 giờ";
+            baseTotal = 0;
+            btnNextStep.disabled = true;
+            updateFinalTotal();
+            return;
+        }
+
+        const courtGroups = new Map();
+        selectedSlots.forEach(slot => {
+            if (!courtGroups.has(slot.courtId)) courtGroups.set(slot.courtId, []);
+            courtGroups.get(slot.courtId).push(slot);
+        });
+
+        let allValid = true;
+        let continuousBlocks = [];
+        let totalMins = 0;
+        baseTotal = 0;
+
+        courtGroups.forEach((slots, courtId) => {
+            slots.sort((a, b) => a.slotIndex - b.slotIndex);
+            let currentBlock = [slots[0]];
+            for (let i = 1; i < slots.length; i++) {
+                if (slots[i].slotIndex === slots[i - 1].slotIndex + 1) {
+                    currentBlock.push(slots[i]);
+                } else {
+                    continuousBlocks.push(currentBlock);
+                    currentBlock = [slots[i]];
+                }
+            }
+            continuousBlocks.push(currentBlock);
+        });
+
+        continuousBlocks.forEach(block => {
+            const blockDuration = block.length * config.slotDurationMinutes;
+            if (blockDuration < config.minBookingDurationMinutes) {
+                allValid = false;
+            }
+            totalMins += blockDuration;
+            block.forEach(s => baseTotal += s.price);
+        });
+
+        // Update UI
+        renderSummaryBlocksUI(continuousBlocks, allValid);
+        summaryTotalHours.textContent = formatDuration(totalMins);
+        updateFinalTotal();
+
+        if (!allValid) {
+            btnNextStep.disabled = true;
+        } else {
+            btnNextStep.disabled = false;
+        }
+    }
+
+    function renderSummaryBlocksUI(blocks, allValid) {
+        summarySlotsList.innerHTML = '';
+        blocks.forEach(block => {
+            const courtName = block[0].courtName;
+            const startTime = block[0].startTime;
+            const endTime = block[block.length - 1].endTime;
+            const blockDuration = block.length * config.slotDurationMinutes;
+            const blockPrice = block.reduce((sum, slot) => sum + slot.price, 0);
+            const isValid = blockDuration >= config.minBookingDurationMinutes;
+
+            const item = document.createElement('div');
+            item.className = 'bg-white p-3.5 rounded-lg border border-slate-200 flex flex-col gap-1.5 shadow-sm';
+
+            let html = `
+                <div class="flex justify-between items-start">
+                    <div>
+                        <div class="font-bold text-slate-800">Sân ${courtName}</div>
+                        <div class="text-blue-600 font-medium text-xs mt-1 tracking-wide">${startTime} - ${endTime}</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-semibold text-slate-800">${formatMoney(blockPrice)} đ</div>
+                        <div class="text-xs text-slate-500 mt-1">${formatDuration(blockDuration)}</div>
+                    </div>
+                </div>
+            `;
+            if (!isValid) {
+                html += `<div class="text-xs text-red-500 mt-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Thiếu ${config.minBookingDurationMinutes - blockDuration}p tối thiểu</div>`;
+                item.classList.add('border-red-300', 'bg-red-50');
+            }
+
+            item.innerHTML = html;
+            summarySlotsList.appendChild(item);
+        });
+    }
+
+    function updateDateDisplay(dateObj) {
+        const d = dateObj.getDate().toString().padStart(2, '0');
+        const m = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+        const y = dateObj.getFullYear();
+        currentDateDisplay.textContent = `${d}/${m}/${y}`;
+    }
+
+    function showLoading(show) {
+        loadingOverlay.classList.toggle('hidden', !show);
+    }
+
+    function formatMoney(amount) {
+        return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    function formatDuration(totalMins) {
+        const h = Math.floor(totalMins / 60);
+        const m = totalMins % 60;
+        if (h > 0 && m > 0) return `${h}h${m}`;
+        if (h > 0) return `${h} giờ`;
+        return `${m} phút`;
+    }
+
+    // --- CHECKOUT LOGIC & STEP TOGGLING ---
+
+    btnNextStep.addEventListener('click', () => {
+        if (btnNextStep.disabled) return;
+
+        // Hide Step 1, Show Step 2
+        step1Booking.classList.add('hidden');
+        step2Checkout.classList.remove('hidden');
+        step2Checkout.classList.add('flex');
+
+        // Swap Buttons
+        btnNextStep.classList.add('hidden');
+        checkoutActionButtons.classList.remove('hidden');
+        checkoutActionButtons.classList.add('flex');
+
+        // Fetch dependencies for step 2 if not yet
+        if (checkoutServices.length === 0) fetchServices();
+        if (checkoutVouchers.length === 0) fetchVouchers();
+    });
+
+    window.backToStep1 = function () {
+        step2Checkout.classList.add('hidden');
+        step2Checkout.classList.remove('flex');
+        step1Booking.classList.remove('hidden');
+
+        checkoutActionButtons.classList.add('hidden');
+        checkoutActionButtons.classList.remove('flex');
+        btnNextStep.classList.remove('hidden');
+    };
+
+    async function fetchServices() {
+        try {
+            const res = await fetch(`/api/booking/services?facilityId=${venueId}`);
+            if (res.ok) {
+                checkoutServices = await res.json();
+            }
+        } catch (e) { console.error("Err fetching services", e); }
+    }
+
+    async function fetchVouchers() {
+        try {
+            const res = await fetch(`/api/vouchers/valid?facilityId=${venueId}`);
+            if (res.ok) {
+                checkoutVouchers = await res.json();
+            }
+        } catch (e) { console.error("Err fetching vouchers", e); }
+    }
+
+    window.openServicesModal = function () {
+        const container = document.getElementById('servicesListContainer');
+        if (checkoutServices.length === 0) {
+            container.innerHTML = '<div class="text-center text-slate-500 py-8 text-sm">Chưa có dịch vụ nào cho cơ sở này.</div>';
+        } else {
+            let html = '';
+            checkoutServices.forEach(srv => {
+                const qty = selectedServicesObj[srv.productId] || 0;
+                const imgHtml = srv.imagePath 
+                    ? `<img src="${srv.imagePath}" class="w-14 h-14 rounded-lg object-cover border border-slate-100" />`
+                    : `<div class="w-14 h-14 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 border border-slate-200"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>`;
+                
+                html += `
+                    <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-xl hover:border-blue-300 transition-colors">
+                        <div class="flex items-center gap-4">
+                            ${imgHtml}
+                            <div>
+                                <div class="font-bold text-slate-800">${srv.productName}</div>
+                                <div class="text-sm text-slate-500 mt-0.5">${formatMoney(srv.price)} đ / ${srv.unit || 'Lượt'}</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0">
+                            <button onclick="updateServiceQty(${srv.productId}, -1)" class="w-8 h-8 rounded-md flex items-center justify-center text-slate-600 hover:bg-white hover:shadow-sm transition-all">-</button>
+                            <span id="qty-${srv.productId}" class="w-10 text-center font-bold text-slate-800">${qty}</span>
+                            <button onclick="updateServiceQty(${srv.productId}, 1)" class="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700 shadow-sm transition-all">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+        updateServicesModalSubtotal();
+        document.getElementById('modalServices').classList.remove('hidden');
+    };
+
+    window.updateServiceQty = function (productId, delta) {
+        const srv = checkoutServices.find(s => s.productId === productId);
+        if (!srv) return;
+
+        let current = selectedServicesObj[productId] || 0;
+        current += delta;
+        if (current < 0) current = 0;
+        if (srv.stock && current > srv.stock) {
+            alert('Vượt quá số lượng tồn kho!');
+            return;
+        }
+
+        selectedServicesObj[productId] = current;
+        document.getElementById('qty-' + productId).innerText = current;
+
+        renderSelectedServicesList();
+        updateServicesModalSubtotal();
+        window.calculateCheckoutTotal(); // Update right sticky
+    };
+
+    function updateServicesModalSubtotal() {
+        let st = 0;
+        for (const [pId, qty] of Object.entries(selectedServicesObj)) {
+            const srv = checkoutServices.find(s => s.productId == pId);
+            if (srv) st += (srv.price * qty);
+        }
+        document.getElementById('modalServicesSubtotal').innerText = formatMoney(st) + ' đ';
+    }
+
+    function renderSelectedServicesList() {
+        const container = document.getElementById('checkoutSelectedServices');
+        let html = '';
+        for (const [pId, qty] of Object.entries(selectedServicesObj)) {
+            if (qty > 0) {
+                const srv = checkoutServices.find(s => s.productId == pId);
+                if (srv) {
+                    html += `
+                    <div class="flex justify-between items-center text-sm py-2 border-b border-slate-100 last:border-0">
+                        <span class="text-slate-700">${srv.productName} <span class="text-slate-400">× ${qty}</span></span>
+                        <span class="font-medium text-slate-800">${formatMoney(srv.price * qty)} đ</span>
+                    </div>`;
+                }
+            }
+        }
+        container.innerHTML = html;
+    }
+
+    window.calculateCheckoutTotal = function () {
+        updateFinalTotal();
+    };
+
+    function updateFinalTotal() {
+        let servicesTotal = 0;
+        for (const [pId, qty] of Object.entries(selectedServicesObj)) {
+            const srv = checkoutServices.find(s => s.productId == pId);
+            if (srv) servicesTotal += (srv.price * qty);
+        }
+
+        if (servicesTotal > 0) {
+            summaryServicesRow.classList.remove('hidden');
+            summaryServicesTotal.textContent = formatMoney(servicesTotal) + ' đ';
+        } else {
+            summaryServicesRow.classList.add('hidden');
+        }
+
+        let subtotal = baseTotal + servicesTotal;
+        let totalDiscount = 0;
+
+        const applyVoucher = (vId, tagElementId) => {
+            const v = checkoutVouchers.find(x => x.voucherId == vId);
+            const tagDiv = document.getElementById(tagElementId);
+            if (tagDiv) {
+                if (v && subtotal >= (v.minOrderAmount || 0)) {
+                    tagDiv.querySelector('.tag-text').textContent = v.name + (v.maxDiscountAmount > 0 ? ` (Tối đa ${formatMoney(v.maxDiscountAmount)}đ)` : '');
+                    tagDiv.classList.remove('hidden');
+                } else {
+                    tagDiv.classList.add('hidden');
+                }
+            }
+
+            if (v && subtotal >= (v.minOrderAmount || 0)) {
+                let discount = 0;
+                if (v.discountType === 'PERCENTAGE') {
+                    discount = subtotal * (v.discountValue / 100);
+                    if (v.maxDiscountAmount && discount > v.maxDiscountAmount) {
+                        discount = v.maxDiscountAmount;
+                    }
+                } else {
+                    discount = v.discountValue;
+                }
+                totalDiscount += discount;
+            }
+        };
+
+        if (selectedPlatformVoucherId) applyVoucher(selectedPlatformVoucherId, 'platformVoucherTag');
+        else {
+            const t = document.getElementById('platformVoucherTag');
+            if(t) t.classList.add('hidden');
+        }
+
+        if (selectedFacilityVoucherId) applyVoucher(selectedFacilityVoucherId, 'facilityVoucherTag');
+        else {
+            const t = document.getElementById('facilityVoucherTag');
+            if(t) t.classList.add('hidden');
+        }
+
+        if (totalDiscount > 0) {
+            summaryDiscountRow.classList.remove('hidden');
+            summaryDiscountRow.classList.add('flex');
+            summaryDiscountTotal.textContent = '-' + formatMoney(totalDiscount) + ' đ';
+        } else {
+            summaryDiscountRow.classList.add('hidden');
+            summaryDiscountRow.classList.remove('flex');
+        }
+
+        let courtAmount = baseTotal - totalDiscount;
+        if (courtAmount < 0) courtAmount = 0;
+        
+        let finalTotal = courtAmount; // Only pay court online
+
+        window.currentCourtAmount = courtAmount;
+        window.currentProductAmount = servicesTotal;
+
+        if (summaryCourtFee) summaryCourtFee.textContent = formatMoney(baseTotal) + ' đ';
+        summaryFinalTotal.textContent = formatMoney(finalTotal) + ' đ';
+    }
+
+    document.getElementById('btnConfirmPayment').addEventListener('click', () => {
+        const emailInput = document.getElementById('guestEmail');
+        const email = emailInput ? emailInput.value.trim() : '';
+        const nameInput = document.getElementById('guestName');
+        const name = nameInput ? nameInput.value.trim() : '';
+        const phoneInput = document.getElementById('guestPhone');
+        const phone = phoneInput ? phoneInput.value.trim() : '';
+
+        // If guest form is visible, require name and phone
+        if (nameInput && phoneInput) {
+            if (!name) {
+                alert('Vui lòng nhập Họ và tên!');
+                nameInput.focus();
+                return;
+            }
+            if (!phone) {
+                alert('Vui lòng nhập Số điện thoại!');
+                phoneInput.focus();
+                return;
+            }
+        }
+
+        // Create a dynamic form to POST to /api/payment/create-payment
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/api/payment/create-payment';
+
+        // Serialize slots
+        const slotsArray = Array.from(selectedSlots.values());
+        const inputSlots = document.createElement('input');
+        inputSlots.type = 'hidden';
+        inputSlots.name = 'slotsJson';
+        inputSlots.value = JSON.stringify(slotsArray);
+        form.appendChild(inputSlots);
+
+        // Also pass the booking date
+        const inputDate = document.createElement('input');
+        inputDate.type = 'hidden';
+        inputDate.name = 'bookingDate';
+        inputDate.value = window.currentDate || currentDate || new Date().toISOString().split('T')[0];
+        form.appendChild(inputDate);
+
+        const inputCourt = document.createElement('input');
+        inputCourt.type = 'hidden';
+        inputCourt.name = 'courtAmount';
+        inputCourt.value = window.currentCourtAmount || 0;
+        form.appendChild(inputCourt);
+
+        const inputOriginalCourt = document.createElement('input');
+        inputOriginalCourt.type = 'hidden';
+        inputOriginalCourt.name = 'originalCourtAmount';
+        inputOriginalCourt.value = baseTotal || 0;
+        form.appendChild(inputOriginalCourt);
+
+        const inputProduct = document.createElement('input');
+        inputProduct.type = 'hidden';
+        inputProduct.name = 'productAmount';
+        inputProduct.value = window.currentProductAmount || 0;
+        form.appendChild(inputProduct);
+
+        const inputEmail = document.createElement('input');
+        inputEmail.type = 'hidden';
+        inputEmail.name = 'email';
+        inputEmail.value = email;
+        form.appendChild(inputEmail);
+
+        if (selectedPlatformVoucherId) {
+            const inputVoucherPlat = document.createElement('input');
+            inputVoucherPlat.type = 'hidden';
+            inputVoucherPlat.name = 'voucherPlatformId';
+            inputVoucherPlat.value = selectedPlatformVoucherId;
+            form.appendChild(inputVoucherPlat);
+        }
+        
+        if (selectedFacilityVoucherId) {
+            const inputVoucherFac = document.createElement('input');
+            inputVoucherFac.type = 'hidden';
+            inputVoucherFac.name = 'voucherId';
+            inputVoucherFac.value = selectedFacilityVoucherId;
+            form.appendChild(inputVoucherFac);
+        }
+
+        const inputName = document.createElement('input');
+        inputName.type = 'hidden';
+        inputName.name = 'guestName';
+        inputName.value = name;
+        form.appendChild(inputName);
+
+        const inputPhone = document.createElement('input');
+        inputPhone.type = 'hidden';
+        inputPhone.name = 'guestPhone';
+        inputPhone.value = phone;
+        form.appendChild(inputPhone);
+
+        // Optional: send venueId if available
+        if (typeof venueId !== 'undefined') {
+            const inputVenue = document.createElement('input');
+            inputVenue.type = 'hidden';
+            inputVenue.name = 'venueId';
+            inputVenue.value = venueId;
+            form.appendChild(inputVenue);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+    });
+
+    // --- VOUCHER MODAL & MANUAL CODE LOGIC ---
+    
+    window.applyManualCode = function(type) {
+        let inputEl = document.getElementById(type === 'PLATFORM' ? 'platformVoucherInput' : 'facilityVoucherInput');
+        let code = inputEl.value.trim().toUpperCase();
+        if (!code) {
+            alert("Vui lòng nhập mã voucher.");
+            return;
+        }
+
+        let issuerType = type === 'PLATFORM' ? 'PLATFORM' : 'OWNER';
+        let v = checkoutVouchers.find(x => x.code.toUpperCase() === code && x.issuerType === issuerType);
+        
+        if (!v) {
+            alert("Mã ưu đãi không hợp lệ hoặc không áp dụng cho loại này.");
+            return;
+        }
+
+        let currentServicesTotal = 0;
+        for (const [pId, qty] of Object.entries(selectedServicesObj)) {
+            const srv = checkoutServices.find(s => s.productId == pId);
+            if (srv) currentServicesTotal += (srv.price * qty);
+        }
+        let subtotal = baseTotal + currentServicesTotal;
+        
+        if (subtotal < (v.minOrderAmount || 0)) {
+            alert(`Đơn hàng chưa đạt giá trị tối thiểu ${formatMoney(v.minOrderAmount)}đ để áp dụng mã này.`);
+            return;
+        }
+
+        if (issuerType === 'PLATFORM') selectedPlatformVoucherId = v.voucherId;
+        else selectedFacilityVoucherId = v.voucherId;
+
+        alert("Áp dụng mã thành công!");
+        calculateCheckoutTotal(); // Recalculate
+    };
+
+    window.removeVoucher = function(type) {
+        if (type === 'PLATFORM') {
+            selectedPlatformVoucherId = null;
+            document.getElementById('platformVoucherInput').value = '';
+        } else {
+            selectedFacilityVoucherId = null;
+            document.getElementById('facilityVoucherInput').value = '';
+        }
+        calculateCheckoutTotal();
+    };
+
+    let tempSelectedPlatform = null;
+    let tempSelectedFacility = null;
+
+    window.openVoucherModal = function() {
+        tempSelectedPlatform = selectedPlatformVoucherId;
+        tempSelectedFacility = selectedFacilityVoucherId;
+        renderVoucherModal();
+        document.getElementById('voucherModal').classList.remove('hidden');
+    };
+
+    window.closeVoucherModal = function() {
+        document.getElementById('voucherModal').classList.add('hidden');
+    };
+
+    window.selectModalVoucher = function(id, type) {
+        if (type === 'PLATFORM') {
+            tempSelectedPlatform = tempSelectedPlatform === id ? null : id; // toggle
+        } else {
+            tempSelectedFacility = tempSelectedFacility === id ? null : id; // toggle
+        }
+        renderVoucherModal();
+    };
+
+    window.confirmVoucherSelection = function() {
+        selectedPlatformVoucherId = tempSelectedPlatform;
+        selectedFacilityVoucherId = tempSelectedFacility;
+        
+        // Update input fields visually
+        if (selectedPlatformVoucherId) {
+            let v = checkoutVouchers.find(x => x.voucherId == selectedPlatformVoucherId);
+            document.getElementById('platformVoucherInput').value = v ? v.code : '';
+        } else {
+            document.getElementById('platformVoucherInput').value = '';
+        }
+
+        if (selectedFacilityVoucherId) {
+            let v = checkoutVouchers.find(x => x.voucherId == selectedFacilityVoucherId);
+            document.getElementById('facilityVoucherInput').value = v ? v.code : '';
+        } else {
+            document.getElementById('facilityVoucherInput').value = '';
+        }
+
+        closeVoucherModal();
+        calculateCheckoutTotal();
+    };
+
+    function renderVoucherModal() {
+        const content = document.getElementById('voucherModalContent');
+        const summary = document.getElementById('modalVoucherSummary');
+        
+        // Compute subtotal dynamically based on current selected services + baseTotal
+        let currentServicesTotal = 0;
+        for (const [pId, qty] of Object.entries(selectedServicesObj)) {
+            const srv = checkoutServices.find(s => s.productId == pId);
+            if (srv) currentServicesTotal += (srv.price * qty);
+        }
+        let subtotal = baseTotal + currentServicesTotal;
+        
+        let validPlatform = [];
+        let validFacility = [];
+        let invalid = [];
+
+        checkoutVouchers.forEach(v => {
+            if (subtotal >= (v.minOrderAmount || 0)) {
+                if (v.issuerType === 'PLATFORM') validPlatform.push(v);
+                else validFacility.push(v);
+            } else {
+                invalid.push(v);
+            }
+        });
+
+        const renderTicket = (v, isValid, isPlatform) => {
+            let isSelected = (isPlatform ? tempSelectedPlatform : tempSelectedFacility) === v.voucherId;
+            let bgColor = isValid ? (isPlatform ? 'bg-orange-500' : 'bg-blue-500') : 'bg-slate-300';
+            let titleColor = isValid ? 'text-slate-800' : 'text-slate-400';
+            let typeLabel = isPlatform ? 'Hệ thống' : 'Chủ sân';
+
+            let discountText = `Giảm ${formatMoney(v.discountValue)}${v.discountType === 'PERCENTAGE' ? '%' : 'đ'}`;
+            if (v.maxDiscountAmount > 0) discountText += ` Giảm tối đa ${formatMoney(v.maxDiscountAmount)}đ`;
+            let conditionText = v.minOrderAmount > 0 ? `Đơn tối thiểu ${formatMoney(v.minOrderAmount)}đ` : 'Không giới hạn đơn tối thiểu';
+
+            let actionHtml = '';
+            if (isValid) {
+                actionHtml = `
+                    <div class="relative flex items-center justify-center w-6 h-6 rounded-full border-2 ${isSelected ? 'border-orange-500 bg-orange-500' : 'border-slate-300'} cursor-pointer" onclick="selectModalVoucher(${v.voucherId}, '${v.issuerType}')">
+                        ${isSelected ? '<svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>' : ''}
+                    </div>
+                `;
+            } else {
+                actionHtml = `<div class="text-[10px] text-slate-400 max-w-[60px] text-right leading-tight">Chưa đạt ĐTTh</div>`;
+            }
+
+            return `
+                <div class="flex bg-white rounded-lg overflow-hidden shadow-sm border ${isSelected ? 'border-orange-300 bg-orange-50/30' : 'border-slate-200'} relative mb-3">
+                    <div class="${bgColor} w-[100px] flex flex-col items-center justify-center text-white p-2 border-r border-dashed border-white relative">
+                        <div class="absolute -left-1 top-0 bottom-0 w-2 flex flex-col justify-between overflow-hidden">
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                            <div class="w-2 h-2 bg-slate-50 rounded-full -ml-1"></div>
+                        </div>
+                        <div class="font-bold text-lg text-center leading-tight mb-1">VOUCHER</div>
+                        <div class="text-[10px] uppercase tracking-wider">${typeLabel}</div>
+                    </div>
+                    <div class="flex-1 p-3 pl-4 flex flex-col justify-center">
+                        <div class="flex justify-between items-start gap-2">
+                            <div class="flex-1">
+                                <div class="font-bold text-sm ${titleColor} mb-1">${discountText}</div>
+                                <div class="text-xs text-slate-500 mb-2">${conditionText}</div>
+                                ${!isValid ? '<div class="text-[10px] text-red-500 mt-1">Chưa đạt giá trị đơn hàng tối thiểu</div>' : ''}
+                            </div>
+                            <div class="flex items-center justify-center pt-2">
+                                ${actionHtml}
+                            </div>
+                        </div>
+                        ${isValid ? `<div class="w-full bg-slate-100 rounded-full h-1 mt-2"><div class="bg-orange-500 h-1 rounded-full" style="width: 80%"></div></div><div class="text-[10px] text-slate-400 mt-1">Sắp hết hạn</div>` : ''}
+                    </div>
+                </div>
+            `;
+        };
+
+        let html = '';
+        
+        if (validPlatform.length > 0) {
+            html += `<div class="mb-5"><h3 class="text-sm font-bold text-slate-800 mb-3">Mã giảm giá Hệ thống</h3>`;
+            validPlatform.forEach(v => html += renderTicket(v, true, true));
+            html += `</div>`;
+        }
+
+        if (validFacility.length > 0) {
+            html += `<div class="mb-5"><h3 class="text-sm font-bold text-slate-800 mb-3">Ưu đãi từ Chủ sân</h3>`;
+            validFacility.forEach(v => html += renderTicket(v, true, false));
+            html += `</div>`;
+        }
+
+        if (invalid.length > 0) {
+            html += `<div class="mb-5 opacity-70"><h3 class="text-sm font-bold text-slate-800 mb-3">Voucher không khả dụng</h3>`;
+            invalid.forEach(v => html += renderTicket(v, false, v.issuerType === 'PLATFORM'));
+            html += `</div>`;
+        }
+
+        if (html === '') {
+            html = `<div class="text-center py-10 text-slate-500">Không có voucher nào.</div>`;
+        }
+
+        content.innerHTML = html;
+
+        let tempTotalDiscount = 0;
+        let count = 0;
+        [tempSelectedPlatform, tempSelectedFacility].forEach(id => {
+            if (id) {
+                let v = checkoutVouchers.find(x => x.voucherId == id);
+                if (v) {
+                    count++;
+                    if (v.discountType === 'PERCENTAGE') {
+                        let d = subtotal * (v.discountValue / 100);
+                        if (v.maxDiscountAmount && d > v.maxDiscountAmount) d = v.maxDiscountAmount;
+                        tempTotalDiscount += d;
+                    } else {
+                        tempTotalDiscount += v.discountValue;
+                    }
+                }
+            }
+        });
+
+        summary.innerHTML = count > 0 
+            ? `${count} Voucher đã được chọn. Tổng giảm <strong class="text-orange-600">${formatMoney(tempTotalDiscount)}đ</strong>`
+            : 'Chưa chọn voucher nào.';
+    }
+});

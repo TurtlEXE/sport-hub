@@ -91,5 +91,21 @@ INSERT INTO product (facility_id, category_id, product_name, description, produc
 (4, 2, 'Gatorade', 'Nước thể thao', 'SALE', 25000, 'Chai', 30, 1, NOW()),
 (5, 1, 'Thuê bóng', 'Bóng Động Lực', 'RENTAL', 20000, 'Quả/Trận', 15, 1, NOW());
 
+-- 10. Voucher
+INSERT INTO voucher (code, name, description, issuer_type, issuer_account_id, discount_type, discount_value, min_order_amount, max_discount_amount, valid_from, valid_to, usage_limit, per_user_limit, applicable_to, is_active, created_at) VALUES 
+('TET2026', 'Giảm giá mừng Xuân 2026', 'Giảm 10% tối đa 50k cho tất cả dịch vụ', 'PLATFORM', 1, 'PERCENTAGE', 10, 100000, 50000, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 100, 1, 'ALL', 1, NOW()),
+('VIP50K', 'Giảm 50K cho khách VIP', 'Mã giảm trực tiếp 50K cho khách hàng VIP', 'PLATFORM', 1, 'FIXED_AMOUNT', 50000, 200000, NULL, '2026-01-01 00:00:00', '2026-12-31 23:59:59', NULL, 1, 'ALL', 1, NOW()),
+('CHAOLUA20', 'Chảo Lửa giảm 20%', 'Giảm 20% tối đa 100k tiền sân cỏ nhân tạo', 'OWNER', 2, 'PERCENTAGE', 20, 200000, 100000, '2026-01-01 00:00:00', '2026-12-31 23:59:59', 50, 2, 'COURT_BOOKING', 1, NOW()),
+('FREEWATER', 'Tặng nước suối', 'Giảm 15k khi mua sản phẩm/nước', 'OWNER', 2, 'FIXED_AMOUNT', 15000, 0, NULL, '2026-01-01 00:00:00', '2026-12-31 23:59:59', NULL, 1, 'PRODUCT', 1, NOW());
+
+-- 11. VoucherFacility
+INSERT INTO voucher_facility (voucher_id, facility_id) VALUES 
+(3, 1),
+(4, 1);
+
+-- 12. VoucherAccount
+INSERT INTO voucher_account (voucher_id, account_id) VALUES 
+(2, 4);
+
 -- Bật lại khóa ngoại
 SET FOREIGN_KEY_CHECKS = 1;
