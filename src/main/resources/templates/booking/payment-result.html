@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kết quả thanh toán - SportHub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+
+<div class="bg-white p-8 rounded-lg shadow-md max-w-md w-full text-center">
+    
+    <!-- Success Icon -->
+    <div th:if="${status == 'SUCCESS'}" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4">
+        <svg class="h-10 w-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+    </div>
+
+    <!-- Error/Failed Icon -->
+    <div th:if="${status != 'SUCCESS'}" class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+        <svg class="h-10 w-10 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </div>
+
+    <h2 class="text-2xl font-bold mb-2 text-gray-800" th:text="${status == 'SUCCESS' ? 'Thanh toán thành công!' : 'Thanh toán không thành công'}">Kết quả</h2>
+    
+    <p class="text-gray-600 mb-6" th:text="${message}">Nội dung thông báo...</p>
+
+    <div class="text-left bg-gray-50 p-4 rounded-md mb-6 text-sm">
+        <p class="mb-2"><span class="font-semibold">Mã giao dịch:</span> <span th:text="${transactionId}">-</span></p>
+        <p class="mb-2"><span class="font-semibold">Thời gian:</span> <span th:text="${paymentTime}">-</span></p>
+        <p class="mb-2"><span class="font-semibold">Tổng tiền sân:</span> <span th:text="${totalPrice}" class="text-red-500 font-bold">-</span></p>
+        <p th:if="${status == 'SUCCESS'}" class="text-orange-600 font-semibold mt-4 text-xs italic">
+            * Số tiền dịch vụ đi kèm chưa được tính. Quý khách vui lòng thanh toán trực tiếp tại quầy khi đến sân.
+        </p>
+    </div>
+
+    <a href="/venues" class="inline-block bg-blue-600 text-white font-semibold py-2 px-6 rounded hover:bg-blue-700 transition duration-300">
+        Về trang chủ
+    </a>
+
+</div>
+
+</body>
+</html>

@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface FacilitySportRepository extends JpaRepository<FacilitySport, Integer> {
     List<FacilitySport> findByIsActiveTrue();
+    List<FacilitySport> findByFacilityIdAndIsActiveTrue(Integer facilityId);
 }

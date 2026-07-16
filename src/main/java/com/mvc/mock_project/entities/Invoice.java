@@ -40,6 +40,10 @@ public class Invoice {
     @JoinColumn(name = "voucher_id")
     private Voucher voucher;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "voucher_platform_id")
+    private Voucher voucherPlatform;
+
     @Column(name = "paid_amount", precision = 12, scale = 2)
     private BigDecimal paidAmount = BigDecimal.ZERO;
 
