@@ -104,15 +104,21 @@ function renderGallery(data) {
         }, 150);
     }
 
-    document.getElementById('prevImage').onclick = () => {
-        currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
-        updateImage();
-    };
+    const prevBtn = document.getElementById('prevImage');
+    if (prevBtn) {
+        prevBtn.onclick = () => {
+            currentImageIndex = (currentImageIndex - 1 + images.length) % images.length;
+            updateImage();
+        };
+    }
 
-    document.getElementById('nextImage').onclick = () => {
-        currentImageIndex = (currentImageIndex + 1) % images.length;
-        updateImage();
-    };
+    const nextBtn = document.getElementById('nextImage');
+    if (nextBtn) {
+        nextBtn.onclick = () => {
+            currentImageIndex = (currentImageIndex + 1) % images.length;
+            updateImage();
+        };
+    }
 
     window.setGalleryImage = (idx) => {
         currentImageIndex = idx;
@@ -160,8 +166,18 @@ function renderSportContent(sport) {
     let courtsHtml = '';
     if (sport.courts && sport.courts.length > 0) {
         courtsHtml = sport.courts.map(court => {
-            const surface = court.attributes?.find(a => a.attributeCode === 'SURFACE_TYPE')?.value || 'N/A';
-            const roof = court.attributes?.find(a => a.attributeCode === 'ROOF_TYPE')?.value || 'N/A';
+            let attributesHtml = '';
+            if (court.attributes && court.attributes.length > 0) {
+                const attrsList = court.attributes.map(attr => `
+                    <div class="flex items-center text-sm">
+                        <span class="w-32 text-gray-400 font-bold">${attr.attributeName}:</span>
+                        <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${attr.value || 'N/A'}</span>
+                    </div>
+                `).join('');
+                
+                attributesHtml = `<div class="space-y-3 mt-4 pt-4 border-t border-gray-100">${attrsList}</div>`;
+            }
+            
             const courtStatus = court.isActive ? 
                 `<span class="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] font-black uppercase rounded">Active</span>` : 
                 `<span class="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-black uppercase rounded">Inactive</span>`;
@@ -172,18 +188,8 @@ function renderSportContent(sport) {
                     <h5 class="font-bold text-gray-900">${court.courtName}</h5>
                     ${courtStatus}
                 </div>
-                <p class="text-sm text-gray-500 mb-6">${court.description || 'No description provided.'}</p>
-                
-                <div class="space-y-3">
-                    <div class="flex items-center text-sm">
-                        <span class="w-24 text-gray-400 font-bold">Surface Type:</span>
-                        <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${surface}</span>
-                    </div>
-                    <div class="flex items-center text-sm">
-                        <span class="w-24 text-gray-400 font-bold">Roof Type:</span>
-                        <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">${roof}</span>
-                    </div>
-                </div>
+                <p class="text-sm text-gray-500">${court.description || 'No description provided.'}</p>
+                ${attributesHtml}
             </div>`;
         }).join('');
     } else {
@@ -273,47 +279,62 @@ function setupActions(data) {
         actionContainer.classList.remove('hidden');
         statusContainer.classList.add('hidden');
         
-        document.getElementById('btnApprove').onclick = () => {
-            if(confirm("Are you sure you want to approve this facility? It will be publicly active.")) {
-                fetch(`/api/admin/facilities/${data.facilityId}/approve`, {
-                    method: 'POST'
+        const btnApprove = document.getElementById('btnApprove');
+        if (btnApprove) {
+            btnApprove.onclick = () => {
+                if(confirm("Are you sure you want to approve this facility? It will be publicly active.")) {
+                    fetch(`/api/admin/facilities/${data.facilityId}/approve`, {
+                        method: 'POST'
+                    }).then(res => {
+                        if(res.ok) window.location.reload();
+                        else alert("An error occurred during approval.");
+                    });
+                }
+            };
+        }
+
+        const btnReject = document.getElementById('btnReject');
+        if (btnReject) {
+            btnReject.onclick = () => {
+                if(rejectModal) rejectModal.classList.remove('hidden');
+            };
+        }
+
+        const btnCloseRejectModal = document.getElementById('btnCloseRejectModal');
+        if (btnCloseRejectModal) {
+            btnCloseRejectModal.onclick = () => {
+                if(rejectModal) rejectModal.classList.add('hidden');
+            };
+        }
+
+        const btnCancelReject = document.getElementById('btnCancelReject');
+        if (btnCancelReject) {
+            btnCancelReject.onclick = () => {
+                if(rejectModal) rejectModal.classList.add('hidden');
+            };
+        }
+
+        const btnConfirmReject = document.getElementById('btnConfirmReject');
+        if (btnConfirmReject) {
+            btnConfirmReject.onclick = () => {
+                const reason = document.getElementById('rejectionReason').value.trim();
+                if(!reason) {
+                    alert("Please provide a rejection reason.");
+                    return;
+                }
+                
+                fetch(`/api/admin/facilities/${data.facilityId}/reject`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reason: reason })
                 }).then(res => {
                     if(res.ok) window.location.reload();
-                    else alert("An error occurred during approval.");
+                    else alert("An error occurred.");
                 });
-            }
-        };
-
-        document.getElementById('btnReject').onclick = () => {
-            rejectModal.classList.remove('hidden');
-        };
-
-        document.getElementById('btnCloseRejectModal').onclick = () => {
-            rejectModal.classList.add('hidden');
-        };
-
-        document.getElementById('btnCancelReject').onclick = () => {
-            rejectModal.classList.add('hidden');
-        };
-
-        document.getElementById('btnConfirmReject').onclick = () => {
-            const reason = document.getElementById('rejectionReason').value.trim();
-            if(!reason) {
-                alert("Please provide a rejection reason.");
-                return;
-            }
-            
-            fetch(`/api/admin/facilities/${data.facilityId}/reject`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ reason: reason })
-            }).then(res => {
-                if(res.ok) window.location.reload();
-                else alert("An error occurred.");
-            });
-        };
+            };
+        }
     } else {
         actionContainer.classList.add('hidden');
         statusContainer.classList.remove('hidden');
