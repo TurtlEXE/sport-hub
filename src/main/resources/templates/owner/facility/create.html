@@ -1,86 +1,613 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{dashboard-layout}">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{dashboard-layout}">
+
 <head>
-    <title>Tạo Cơ Sở Mới</title>
-    <link rel="stylesheet" th:href="@{/css/facility-management.css}">
+    <title th:text="#{facility.create.title}">Thêm mới cơ sở thể thao</title>
 </head>
+
 <body>
     <div layout:fragment="sidebar-menu" th:replace="~{owner/fragments/sidebar :: sidebar('facilities')}"></div>
 
     <div layout:fragment="header-title" class="flex-1">
-        <h1 class="text-xl font-bold text-slate-900">Tạo Cơ Sở Mới</h1>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">OWNER DASHBOARD • FACILITY MANAGEMENT</p>
+        <h1 class="text-xl font-bold text-slate-900" th:text="#{facility.management.title}">Cơ sở của tôi</h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">OWNER DASHBOARD • FACILITY
+            MANAGEMENT</p>
     </div>
 
     <div layout:fragment="content">
-        <div class="container mx-auto px-4 py-6 max-w-4xl">
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold text-gray-800">Tạo Cơ Sở Mới</h1>
-            <p class="text-gray-500">Điền thông tin để đăng ký cơ sở kinh doanh của bạn.</p>
+        <!-- Dashboard Background content (Dummy content to show it's a modal over it) -->
+        <div class="container mx-auto px-4 py-6 blur-sm pointer-events-none">
+            <div class="h-64 bg-gray-200 rounded-xl mb-6"></div>
+            <div class="grid grid-cols-3 gap-6">
+                <div class="h-48 bg-gray-200 rounded-xl"></div>
+                <div class="h-48 bg-gray-200 rounded-xl"></div>
+                <div class="h-48 bg-gray-200 rounded-xl"></div>
+            </div>
         </div>
 
-        <div class="bg-white rounded-xl shadow-md border border-gray-100 p-6">
-            <form id="createFacilityForm" class="space-y-6">
-                <!-- Basic Info -->
-                <div>
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">Thông tin cơ bản</h3>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tên cơ sở <span class="text-red-500">*</span></label>
-                            <input type="text" id="name" name="name" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
+        <!-- Modal Overlay -->
+        <div class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6">
 
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tỉnh/Thành phố <span class="text-red-500">*</span></label>
-                            <input type="text" id="province" name="province" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Quận/Huyện <span class="text-red-500">*</span></label>
-                            <input type="text" id="district" name="district" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Phường/Xã <span class="text-red-500">*</span></label>
-                            <input type="text" id="ward" name="ward" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
+            <!-- Modal Container -->
+            <div class="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-full">
 
-                        <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Địa chỉ chi tiết <span class="text-red-500">*</span></label>
-                            <input type="text" id="address" name="address" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Giờ mở cửa <span class="text-red-500">*</span></label>
-                            <select id="openTime" name="openTime" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <!-- Options populated by JS -->
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Giờ đóng cửa <span class="text-red-500">*</span></label>
-                            <select id="closeTime" name="closeTime" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
-                                <!-- Options populated by JS -->
-                            </select>
-                        </div>
-                        
-                        <div class="col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Mô tả cơ sở</label>
-                            <textarea id="description" name="description" rows="4" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
-                        </div>
+                <!-- Modal Header -->
+                <div class="px-8 py-6 border-b border-gray-100 flex justify-between items-start relative">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900" th:text="#{facility.create.title}">Thêm mới cơ sở
+                            thể thao</h2>
+                        <p class="text-sm text-gray-500 mt-1" th:text="#{facility.create.subtitle}">Nhập thông tin cơ
+                            bản của cơ sở thể thao để bắt đầu gửi kiểm định.</p>
                     </div>
+                    <a href="/owner/facilities"
+                        class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 transition absolute top-6 right-6">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </a>
                 </div>
 
-                <div class="pt-4 flex justify-end space-x-3 border-t">
-                    <a href="/owner/facilities" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition">Hủy</a>
-                    <button type="submit" id="btnSubmit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition">Tạo cơ sở</button>
+                <!-- Modal Body -->
+                <div class="p-8 overflow-y-auto custom-scrollbar flex-1">
+                    <form id="createFacilityForm" class="space-y-8">
+
+                        <!-- Row 1: Name & Address -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2"><span
+                                        th:text="#{facility.create.name}">Tên cơ sở</span> <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" id="name" name="name" required
+                                    th:placeholder="#{facility.create.name.placeholder}"
+                                    class="w-full rounded-xl border-gray-200 bg-gray-50/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:bg-white transition text-sm py-3 px-4">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2"><span
+                                        th:text="#{facility.create.address}">Địa chỉ cụ thể</span> <span
+                                        class="text-red-500">*</span></label>
+                                <input type="text" id="address" name="address" required
+                                    th:placeholder="#{facility.create.address.placeholder}"
+                                    class="w-full rounded-xl border-gray-200 bg-gray-50/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:bg-white transition text-sm py-3 px-4">
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Location Selects -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2"><span
+                                        th:text="#{facility.create.province}">Tỉnh / Thành phố</span> <span
+                                        class="text-red-500">*</span></label>
+                                <select id="province" name="province" required
+                                    class="w-full rounded-xl border-gray-200 bg-gray-50/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:bg-white transition text-sm py-3 px-4 appearance-none">
+                                    <option value="" disabled selected>-- Select Province / City --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2"><span
+                                        th:text="#{facility.create.district}">Quận / Huyện</span> <span
+                                        class="text-red-500">*</span></label>
+                                <select id="district" name="district" required
+                                    class="w-full rounded-xl border-gray-200 bg-gray-50/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:bg-white transition text-sm py-3 px-4 appearance-none" disabled>
+                                    <option value="" disabled selected>-- Select District --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2"><span
+                                        th:text="#{facility.create.ward}">Phường / Xã</span> <span
+                                        class="text-red-500">*</span></label>
+                                <select id="ward" name="ward" required
+                                    class="w-full rounded-xl border-gray-200 bg-gray-50/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:bg-white transition text-sm py-3 px-4 appearance-none" disabled>
+                                    <option value="" disabled selected>-- Select Ward / Commune --</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Hidden Map Coordinates -->
+                        <input type="hidden" id="latitude" name="latitude">
+                        <input type="hidden" id="longitude" name="longitude">
+
+                        <div class="border border-blue-100 bg-blue-50/30 rounded-2xl p-5 flex justify-between items-center">
+                            <div class="flex items-center text-blue-600 font-bold text-xs uppercase tracking-wide">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <span>Facility Location</span>
+                            </div>
+                            <button type="button" id="btnOpenMapModal" class="text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 px-5 py-2.5 rounded-xl transition shadow-sm">Choose Location on Map</button>
+                        </div>
+
+                        <!-- Row 4: Description -->
+                        <div>
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2"
+                                th:text="#{facility.create.desc.title}">Mô tả chi tiết</label>
+                            <textarea id="description" name="description" rows="3"
+                                th:placeholder="#{facility.create.desc.placeholder}"
+                                class="w-full rounded-xl border-gray-200 bg-gray-50/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:bg-white transition text-sm py-3 px-4"></textarea>
+                        </div>
+
+                        <!-- Row 5: Open & Close Time -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2"><span
+                                        th:text="#{facility.create.open_time}">Giờ mở cửa</span> <span
+                                        class="text-red-500">*</span></label>
+                                <select id="openTime" name="openTime" required
+                                    class="w-full rounded-xl border-gray-200 bg-gray-50/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:bg-white transition text-sm py-3 px-4 appearance-none">
+                                    <!-- Options populated by JS -->
+                                </select>
+                                <div
+                                    class="absolute inset-y-0 right-0 top-6 flex items-center pr-4 pointer-events-none text-gray-400">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="relative">
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-2"><span
+                                        th:text="#{facility.create.close_time}">Giờ đóng cửa</span> <span
+                                        class="text-red-500">*</span></label>
+                                <select id="closeTime" name="closeTime" required
+                                    class="w-full rounded-xl border-gray-200 bg-gray-50/50 shadow-sm focus:border-blue-500 focus:ring-blue-500 focus:bg-white transition text-sm py-3 px-4 appearance-none">
+                                    <!-- Options populated by JS -->
+                                </select>
+                                <div
+                                    class="absolute inset-y-0 right-0 top-6 flex items-center pr-4 pointer-events-none text-gray-400">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 6: Thumbnail -->
+                        <div class="border border-gray-100 bg-gray-50/30 rounded-2xl p-5">
+                            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-4"
+                                th:text="#{facility.create.thumbnail.title}">Ảnh đại diện (Thumbnail URL)</label>
+
+                            <div class="flex gap-4">
+                                <div
+                                    class="w-32 h-24 bg-gray-100 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 text-xs font-medium overflow-hidden relative text-center">
+                                    <img id="thumbnailPreview" src=""
+                                        class="absolute inset-0 w-full h-full object-cover hidden">
+                                    <svg class="w-6 h-6 mb-1 mx-auto" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                        </path>
+                                    </svg>
+                                    <span id="thumbnailText"
+                                        th:text="#{facility.create.thumbnail.preview}">Thumbnail<br>preview</span>
+                                </div>
+                                <div class="flex-1 flex flex-col justify-center">
+                                    <input type="text" id="thumbnailUrl" name="thumbnailUrl"
+                                        placeholder="https://images.unsplash.com/photo-1508098682722-e99c43a406b2"
+                                        class="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 transition text-sm py-3 px-4 mb-3">
+                                    <div class="flex gap-2">
+                                        <button type="button"
+                                            class="btn-sample-img text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition"
+                                            data-url="https://images.unsplash.com/photo-1574629810360-7efbbc292f7e"
+                                            th:text="#{facility.create.thumbnail.sample1}">Mẫu 1</button>
+                                        <button type="button"
+                                            class="btn-sample-img text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition"
+                                            data-url="https://images.unsplash.com/photo-1534438327276-14e5300c3a48"
+                                            th:text="#{facility.create.thumbnail.sample2}">Mẫu 2</button>
+                                        <button type="button"
+                                            class="btn-sample-img text-xs font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 px-3 py-1.5 rounded-md transition"
+                                            data-url="https://images.unsplash.com/photo-1526676037777-05a232554f77"
+                                            th:text="#{facility.create.thumbnail.sample3}">Mẫu 3</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p
+                                class="text-[11px] text-gray-500 flex items-start mt-4 bg-yellow-50 p-3 rounded-lg border border-yellow-100 text-yellow-700">
+                                <svg class="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <span th:text="#{facility.create.thumbnail.desc}">Theo quy chuẩn thiết kế, chức năng
+                                    đăng tải nhiều ảnh (bộ sưu tập Gallery tối đa 20 hình) sẽ được kích hoạt tại bước
+                                    "Cập nhật / Chỉnh sửa cơ sở" sau khi cơ sở được tạo lập thành công.</span>
+                            </p>
+                        </div>
+                    </form>
                 </div>
-            </form>
+
+                <!-- Modal Footer -->
+                <div class="px-8 py-5 border-t border-gray-100 bg-gray-50 flex justify-end items-center space-x-3">
+                    <a href="/owner/facilities"
+                        class="px-6 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 hover:text-gray-900 transition shadow-sm"
+                        th:text="#{facility.create.btn.cancel}">Hủy bỏ</a>
+                    <button type="button" id="btnSubmitModal"
+                        class="px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-sm hover:shadow transition"
+                        th:text="#{facility.create.btn.submit}">Gửi yêu cầu duyệt</button>
+                </div>
+            </div>
         </div>
+
+        <!-- Map Modal Overlay -->
+        <div id="mapModal" class="fixed inset-0 z-[110] hidden items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 sm:p-6">
+            <div class="bg-white w-full max-w-5xl rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[80vh]">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                    <h3 class="text-lg font-bold text-gray-900">Choose Location</h3>
+                    <button type="button" id="btnCloseMapModal" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-200 text-gray-500 hover:bg-gray-300 hover:text-gray-700 transition">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="flex-1 relative flex flex-col">
+                    <div class="absolute top-4 left-4 right-4 z-[400] flex shadow-md rounded-xl overflow-hidden">
+                        <input type="text" id="mapSearchInput" placeholder="Search a place..." class="flex-1 border-none py-3 px-4 focus:ring-0 text-sm">
+                        <button type="button" id="btnMapSearch" class="bg-blue-600 text-white px-6 font-bold hover:bg-blue-700 transition">Search</button>
+                    </div>
+                    <div id="map" class="w-full h-full z-10 flex-1"></div>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            .custom-scrollbar::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 8px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 8px;
+            }
+
+            .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background: #94a3b8;
+            }
+        </style>
     </div>
-    
+
     <th:block layout:fragment="pageScripts">
-        <script th:src="@{/js/owner-facility-create.js}"></script>
+        <script th:inline="javascript">
+            // Passing localized texts to JS
+            const i18nCreate = {
+                msgSuccess: [[#{ facility.create.msg.success }]],
+                msgFail: [[#{ facility.create.msg.fail }]]
+            };
+
+            // Populate Time Selects
+            function populateTimeSelects() {
+                const openSelect = document.getElementById('openTime');
+                const closeSelect = document.getElementById('closeTime');
+                let options = '';
+                for (let i = 0; i < 24; i++) {
+                    const hour = i.toString().padStart(2, '0');
+                    const ampm = i < 12 ? 'AM' : 'PM';
+                    const displayHour = i % 12 === 0 ? 12 : i % 12;
+                    const displayHourStr = displayHour.toString().padStart(2, '0');
+
+                    options += `<option value="${hour}:00:00">${displayHourStr}:00 ${ampm}</option>`;
+                    options += `<option value="${hour}:30:00">${displayHourStr}:30 ${ampm}</option>`;
+                }
+                openSelect.innerHTML = options;
+                closeSelect.innerHTML = options;
+
+                openSelect.value = "05:00:00"; // Default
+                closeSelect.value = "22:00:00"; // Default
+            }
+
+            // Handle Thumbnail Preview
+            const thumbInput = document.getElementById('thumbnailUrl');
+            const thumbImg = document.getElementById('thumbnailPreview');
+            const thumbText = document.getElementById('thumbnailText');
+
+            function updatePreview(url) {
+                if (url && url.trim() !== '') {
+                    thumbImg.src = url;
+                    thumbImg.classList.remove('hidden');
+                    thumbText.classList.add('hidden');
+                } else {
+                    thumbImg.classList.add('hidden');
+                    thumbText.classList.remove('hidden');
+                }
+            }
+
+            thumbInput.addEventListener('input', (e) => updatePreview(e.target.value));
+
+            document.querySelectorAll('.btn-sample-img').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const url = this.getAttribute('data-url');
+                    thumbInput.value = url;
+                    updatePreview(url);
+                });
+            });
+
+            populateTimeSelects();
+
+            // Handle Submit
+            document.getElementById('btnSubmitModal').addEventListener('click', function () {
+                const form = document.getElementById('createFacilityForm');
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const data = Object.fromEntries(formData.entries());
+                
+                // If latitude or longitude are empty, remove them from data so backend treats them as null
+                if (!data.latitude || data.latitude.trim() === '') delete data.latitude;
+                if (!data.longitude || data.longitude.trim() === '') delete data.longitude;
+
+                fetch('/api/owner/facilities', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                })
+                    .then(async res => {
+                        if (!res.ok) {
+                            const errText = await res.text();
+                            throw new Error(errText || i18nCreate.msgFail);
+                        }
+                        return res.text(); // Backend returns plain string, not JSON
+                    })
+                    .then(resText => {
+                        showCustomAlert(i18nCreate.msgSuccess, 'success', () => {
+                            window.location.href = '/owner/facilities';
+                        });
+                    })
+                    .catch(err => showCustomAlert(err.message, 'error'));
+            });
+
+            // -----------------------------------------------------
+            // 1. Province/District/Ward API Integration
+            // -----------------------------------------------------
+            const provinceSelect = document.getElementById('province');
+            const districtSelect = document.getElementById('district');
+            const wardSelect = document.getElementById('ward');
+
+            fetch('https://provinces.open-api.vn/api/p/')
+                .then(res => res.json())
+                .then(data => {
+                    data.forEach(p => {
+                        const option = document.createElement('option');
+                        option.value = p.name;
+                        option.dataset.code = p.code;
+                        option.textContent = p.name;
+                        provinceSelect.appendChild(option);
+                    });
+                })
+                .catch(err => console.error('Error fetching provinces:', err));
+
+            provinceSelect.addEventListener('change', function() {
+                const code = this.options[this.selectedIndex].dataset.code;
+                districtSelect.innerHTML = '<option value="" disabled selected>-- Select District --</option>';
+                wardSelect.innerHTML = '<option value="" disabled selected>-- Select Ward / Commune --</option>';
+                districtSelect.disabled = true;
+                wardSelect.disabled = true;
+
+                if(code) {
+                    fetch(`https://provinces.open-api.vn/api/p/${code}?depth=2`)
+                        .then(res => res.json())
+                        .then(data => {
+                            data.districts.forEach(d => {
+                                const option = document.createElement('option');
+                                option.value = d.name;
+                                option.dataset.code = d.code;
+                                option.textContent = d.name;
+                                districtSelect.appendChild(option);
+                            });
+                            districtSelect.disabled = false;
+                        });
+                }
+            });
+
+            districtSelect.addEventListener('change', function() {
+                const code = this.options[this.selectedIndex].dataset.code;
+                wardSelect.innerHTML = '<option value="" disabled selected>-- Select Ward / Commune --</option>';
+                wardSelect.disabled = true;
+
+                if(code) {
+                    fetch(`https://provinces.open-api.vn/api/d/${code}?depth=2`)
+                        .then(res => res.json())
+                        .then(data => {
+                            data.wards.forEach(w => {
+                                const option = document.createElement('option');
+                                option.value = w.name;
+                                option.textContent = w.name;
+                                wardSelect.appendChild(option);
+                            });
+                            wardSelect.disabled = false;
+                        });
+                }
+            });
+
+            // -----------------------------------------------------
+            // 2. OpenStreetMap + Leaflet + Geocoding Logic
+            // -----------------------------------------------------
+            let map, marker;
+            let currentLat = 10.762622, currentLng = 106.660172;
+            
+            function initOSM() {
+                map = L.map('map').setView([currentLat, currentLng], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap'
+                }).addTo(map);
+                
+                marker = L.marker([currentLat, currentLng], {draggable: true}).addTo(map);
+                
+                marker.on('dragend', function(event) {
+                    const pos = event.target.getLatLng();
+                    reverseGeocode(pos.lat, pos.lng);
+                });
+
+                map.on('click', function(e) {
+                    marker.setLatLng(e.latlng);
+                    reverseGeocode(e.latlng.lat, e.latlng.lng);
+                });
+            }
+
+            const cssNode = document.createElement("link");
+            cssNode.rel = "stylesheet";
+            cssNode.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+            document.head.appendChild(cssNode);
+            
+            const scriptNode = document.createElement("script");
+            scriptNode.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+            scriptNode.onload = initOSM;
+            document.head.appendChild(scriptNode);
+
+            // Modal Logic
+            const mapModal = document.getElementById('mapModal');
+            document.getElementById('btnOpenMapModal').addEventListener('click', () => {
+                mapModal.classList.remove('hidden');
+                mapModal.classList.add('flex');
+                setTimeout(() => { map.invalidateSize(); }, 100);
+            });
+            document.getElementById('btnCloseMapModal').addEventListener('click', () => {
+                mapModal.classList.add('hidden');
+                mapModal.classList.remove('flex');
+            });
+
+            // Map Search functionality
+            document.getElementById('btnMapSearch').addEventListener('click', () => {
+                const query = document.getElementById('mapSearchInput').value;
+                if(!query) return;
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data && data.length > 0) {
+                            const lat = parseFloat(data[0].lat);
+                            const lon = parseFloat(data[0].lon);
+                            map.setView([lat, lon], 16);
+                            marker.setLatLng([lat, lon]);
+                        } else {
+                            showCustomAlert('Location not found', 'warning');
+                        }
+                    });
+            });
+
+            // Reverse Geocoding (Map Click -> Form)
+            function reverseGeocode(lat, lng) {
+                document.getElementById('latitude').value = lat.toFixed(6);
+                document.getElementById('longitude').value = lng.toFixed(6);
+                
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data && data.address) {
+                            const addr = data.address;
+                            // Attempt to parse specific address
+                            let specificAddrArr = [];
+                            if (addr.house_number) specificAddrArr.push(addr.house_number);
+                            if (addr.road) specificAddrArr.push(addr.road);
+                            if (specificAddrArr.length > 0) {
+                                document.getElementById('address').value = specificAddrArr.join(' ');
+                            }
+
+                            // Match Province
+                            const apiProvince = addr.state || addr.city || addr.province || '';
+                            fuzzyMatchSelect(document.getElementById('province'), apiProvince, () => {
+                                document.getElementById('province').dispatchEvent(new Event('change'));
+                                
+                                setTimeout(() => {
+                                    const apiDistrict = addr.county || addr.city_district || addr.town || addr.district || '';
+                                    fuzzyMatchSelect(document.getElementById('district'), apiDistrict, () => {
+                                        document.getElementById('district').dispatchEvent(new Event('change'));
+                                        
+                                        setTimeout(() => {
+                                            const apiWard = addr.suburb || addr.village || addr.quarter || addr.ward || '';
+                                            fuzzyMatchSelect(document.getElementById('ward'), apiWard, null);
+                                        }, 800);
+                                    });
+                                }, 800);
+                            });
+                        }
+                        
+                        mapModal.classList.add('hidden');
+                        mapModal.classList.remove('flex');
+                        showCustomAlert('Address selected! Form auto-filled.', 'success');
+                    })
+                    .catch(e => console.error(e));
+            }
+
+            function removeAccents(str) {
+                return str.normalize('NFD')
+                          .replace(/[\u0300-\u036f]/g, '')
+                          .replace(/đ/g, 'd').replace(/Đ/g, 'D');
+            }
+
+            function fuzzyMatchSelect(selectEl, textToMatch, onSuccess) {
+                if(!textToMatch) {
+                    if(onSuccess) onSuccess();
+                    return;
+                }
+                
+                const normalize = (str) => {
+                    let s = removeAccents(str.toLowerCase());
+                    s = s.replace(/thanh pho|tinh|quan|huyen|thi xa|phuong|xa|thi tran|city|district|ward/g, '');
+                    return s.replace(/\s+/g, '').trim();
+                };
+                
+                const target = normalize(textToMatch);
+                
+                for(let i=0; i<selectEl.options.length; i++) {
+                    const optText = normalize(selectEl.options[i].text);
+                    if(optText && (optText.includes(target) || target.includes(optText))) {
+                        selectEl.selectedIndex = i;
+                        if(onSuccess) onSuccess();
+                        return;
+                    }
+                }
+                
+                // If not found, still call onSuccess to prevent breaking the chain
+                if(onSuccess) onSuccess();
+            }
+
+            // Forward Geocoding (Form -> Lat/Lng)
+            const addressFields = ['address', 'province', 'district', 'ward'];
+            let forwardGeocodeTimeout;
+            addressFields.forEach(id => {
+                document.getElementById(id).addEventListener('change', () => {
+                    clearTimeout(forwardGeocodeTimeout);
+                    forwardGeocodeTimeout = setTimeout(forwardGeocode, 1500); // Debounce 1.5s
+                });
+            });
+
+            function forwardGeocode() {
+                const address = document.getElementById('address').value;
+                const ward = document.getElementById('ward').value;
+                const district = document.getElementById('district').value;
+                const province = document.getElementById('province').value;
+                
+                if (!address || !province || !district || !ward) return;
+                
+                const fullAddress = `${address}, ${ward}, ${district}, ${province}, Vietnam`;
+                
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            const lat = parseFloat(data[0].lat);
+                            const lon = parseFloat(data[0].lon);
+                            document.getElementById('latitude').value = lat.toFixed(6);
+                            document.getElementById('longitude').value = lon.toFixed(6);
+                            if(marker && map) {
+                                marker.setLatLng([lat, lon]);
+                                map.setView([lat, lon], 16);
+                            }
+                        } else {
+                            showCustomAlert('Cannot find coordinates for this manual address. Please click "Choose Location on Map" to pin manually.', 'warning');
+                        }
+                    });
+            }
+
+        </script>
     </th:block>
+
 </html>

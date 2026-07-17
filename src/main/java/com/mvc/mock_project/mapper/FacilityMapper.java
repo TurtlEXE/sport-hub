@@ -17,6 +17,7 @@ public class FacilityMapper {
         dto.setFacilityId(facility.getId());
         dto.setName(facility.getName());
         dto.setAddress(facility.getAddress());
+        dto.setFullAddress(buildFullAddress(facility));
         
         // set thumbnail
         if (facility.getImages() != null) {
@@ -51,6 +52,7 @@ public class FacilityMapper {
         dto.setFacilityId(facility.getId());
         dto.setName(facility.getName());
         dto.setAddress(facility.getAddress());
+        dto.setFullAddress(buildFullAddress(facility));
         dto.setProvince(facility.getProvince());
         dto.setDistrict(facility.getDistrict());
         dto.setWard(facility.getWard());
@@ -67,10 +69,9 @@ public class FacilityMapper {
         if (facility.getImages() != null) {
             List<FacilityImageDTO> galleryImages = new ArrayList<>();
             for (FacilityImage img : facility.getImages()) {
+                galleryImages.add(toFacilityImageDTO(img));
                 if (Boolean.TRUE.equals(img.getIsThumbnail())) {
                     dto.setThumbnailUrl(img.getImagePath());
-                } else {
-                    galleryImages.add(toFacilityImageDTO(img));
                 }
             }
             dto.setGalleryImages(galleryImages);
@@ -149,6 +150,24 @@ public class FacilityMapper {
         return dto;
     }
 
+    private String buildFullAddress(Facility facility) {
+        if (facility == null) return null;
+        List<String> parts = new ArrayList<>();
+        if (facility.getAddress() != null && !facility.getAddress().trim().isEmpty()) {
+            parts.add(facility.getAddress().trim());
+        }
+        if (facility.getWard() != null && !facility.getWard().trim().isEmpty()) {
+            parts.add(facility.getWard().trim());
+        }
+        if (facility.getDistrict() != null && !facility.getDistrict().trim().isEmpty()) {
+            parts.add(facility.getDistrict().trim());
+        }
+        if (facility.getProvince() != null && !facility.getProvince().trim().isEmpty()) {
+            parts.add(facility.getProvince().trim());
+        }
+        return parts.isEmpty() ? null : String.join(", ", parts);
+    }
+
     public PriceRuleDetailDTO toPriceRuleDetailDTO(FacilityPriceRule rule) {
         if (rule == null) return null;
         PriceRuleDetailDTO dto = new PriceRuleDetailDTO();
@@ -169,6 +188,7 @@ public class FacilityMapper {
         dto.setFacilityId(facility.getId());
         dto.setName(facility.getName());
         dto.setAddress(facility.getAddress());
+        dto.setFullAddress(buildFullAddress(facility));
         
         if (facility.getOwner() != null) {
             dto.setOwnerName(facility.getOwner().getFullName());
@@ -182,13 +202,6 @@ public class FacilityMapper {
         dto.setApprovalStatus(facility.getApprovalStatus());
         dto.setCreatedAt(facility.getCreatedAt());
         
-        if (facility.getImages() != null) {
-            facility.getImages().stream()
-                .filter(img -> Boolean.TRUE.equals(img.getIsThumbnail()))
-                .findFirst()
-                .ifPresent(img -> dto.setThumbnailUrl(img.getImagePath()));
-        }
-        
         int totalCourts = 0;
         if (facility.getFacilitySports() != null) {
             for (FacilitySport fs : facility.getFacilitySports()) {
@@ -198,6 +211,29 @@ public class FacilityMapper {
             }
         }
         dto.setTotalCourts(totalCourts);
+        
+        dto.setDescription(facility.getDescription());
+        dto.setLatitude(facility.getLatitude());
+        dto.setLongitude(facility.getLongitude());
+        dto.setOpenTime(facility.getOpenTime());
+        dto.setCloseTime(facility.getCloseTime());
+
+        if (facility.getImages() != null) {
+            List<FacilityImageDTO> galleryImages = new ArrayList<>();
+            for (FacilityImage img : facility.getImages()) {
+                galleryImages.add(toFacilityImageDTO(img));
+                if (Boolean.TRUE.equals(img.getIsThumbnail())) {
+                    dto.setThumbnailUrl(img.getImagePath());
+                }
+            }
+            dto.setGalleryImages(galleryImages);
+        }
+
+        if (facility.getFacilitySports() != null) {
+            dto.setSports(facility.getFacilitySports().stream()
+                    .map(this::toFacilitySportDTO)
+                    .collect(Collectors.toList()));
+        }
         
         return dto;
     }

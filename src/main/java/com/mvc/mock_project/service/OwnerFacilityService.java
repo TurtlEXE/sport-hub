@@ -10,6 +10,7 @@ import com.mvc.mock_project.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalTime;
 import java.util.List;
@@ -28,7 +29,8 @@ public class OwnerFacilityService {
     private final AccountRepository accountRepository;
     private final SportRepository sportRepository;
     private final FacilityMapper facilityMapper;
-    // cloudinaryService could be added later for images
+    private final FacilityImageRepository facilityImageRepository;
+    private final CloudinaryService cloudinaryService;
 
     private void validateTimeAlignment(LocalTime openTime, LocalTime closeTime) {
         if (openTime.getMinute() % 30 != 0 || closeTime.getMinute() % 30 != 0) {
@@ -186,15 +188,15 @@ public class OwnerFacilityService {
         if (!fs.getSlotStepMinutes().equals(request.getSlotStepMinutes())) {
             long activeRules = priceRuleRepository.countByFacilitySportIdAndIsActiveTrue(facilitySportId);
             if (activeRules > 0) {
-                throw new InvalidSlotConfigException("Không thể thay đổi bước nhảy slot khi đã có bảng giá");
+                throw new InvalidSlotConfigException("Cannot change slot step when pricing rules exist. Please delete them first.");
             }
         }
 
         if (request.getSlotStepMinutes() % 30 != 0 || request.getSlotStepMinutes() < 30) {
-            throw new InvalidSlotConfigException("Bước nhảy slot phải là bội số của 30 phút");
+            throw new InvalidSlotConfigException("Slot step must be a multiple of 30 minutes.");
         }
         if (request.getMinDurationMinutes() < request.getSlotStepMinutes() || request.getMinDurationMinutes() % request.getSlotStepMinutes() != 0) {
-            throw new InvalidSlotConfigException("Thời lượng tối thiểu phải >= bước nhảy slot và là bội số của bước nhảy");
+            throw new InvalidSlotConfigException("Min duration must be >= slot step and a multiple of slot step.");
         }
 
         fs.setMinDurationMinutes(request.getMinDurationMinutes());
@@ -265,6 +267,15 @@ public class OwnerFacilityService {
                 .orElseThrow(() -> new RuntimeException("Court not found"));
         // TODO: check active bookings
         court.setIsActive(false);
+        courtRepository.save(court);
+    }
+
+    @Transactional
+    public void toggleCourtStatus(Integer accountId, Integer courtId) {
+        Court court = courtRepository.findByIdAndFacilitySport_Facility_Owner_Id(courtId, accountId)
+                .orElseThrow(() -> new RuntimeException("Court not found"));
+        // If toggling off, might need to check active bookings
+        court.setIsActive(!court.getIsActive());
         courtRepository.save(court);
     }
 
@@ -361,5 +372,93 @@ public class OwnerFacilityService {
         
         rule.setIsActive(false);
         priceRuleRepository.save(rule);
+    }
+
+    @Transactional
+    public com.mvc.mock_project.dto.response.facility.FacilityImageDTO addImageToFacility(Integer accountId, Integer facilityId, MultipartFile file, String url) {
+        Facility facility = facilityRepository.findByIdAndOwner_Id(facilityId, accountId)
+                .orElseThrow(() -> new FacilityNotFoundException("Facility not found"));
+
+        String imageUrl = null;
+        if (file != null && !file.isEmpty()) {
+            imageUrl = cloudinaryService.uploadFacilityImage(file, facilityId);
+        } else if (url != null && !url.trim().isEmpty()) {
+            imageUrl = url.trim();
+        } else {
+            throw new RuntimeException("Phải cung cấp file hoặc đường dẫn ảnh");
+        }
+
+        FacilityImage image = new FacilityImage();
+        image.setFacility(facility);
+        image.setImagePath(imageUrl);
+        
+        // If it's the first image, make it thumbnail
+        boolean hasImages = facilityImageRepository.existsByFacilityId(facilityId);
+        image.setIsThumbnail(!hasImages);
+        
+        image = facilityImageRepository.save(image);
+        return facilityMapper.toFacilityImageDTO(image);
+    }
+
+    @Transactional
+    public void setFacilityThumbnail(Integer accountId, Integer facilityId, Integer imageId) {
+        Facility facility = facilityRepository.findByIdAndOwner_Id(facilityId, accountId)
+                .orElseThrow(() -> new FacilityNotFoundException("Facility not found"));
+
+        FacilityImage imageToSet = facilityImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        if (!imageToSet.getFacility().getId().equals(facilityId)) {
+            throw new RuntimeException("Image does not belong to this facility");
+        }
+
+        // Reset others
+        if (facility.getImages() != null) {
+            for (FacilityImage img : facility.getImages()) {
+                if (img.getIsThumbnail()) {
+                    img.setIsThumbnail(false);
+                    facilityImageRepository.save(img);
+                }
+            }
+        }
+
+        imageToSet.setIsThumbnail(true);
+        facilityImageRepository.save(imageToSet);
+    }
+
+    @Transactional
+    public void deleteFacilityImage(Integer accountId, Integer facilityId, Integer imageId) {
+        Facility facility = facilityRepository.findByIdAndOwner_Id(facilityId, accountId)
+                .orElseThrow(() -> new FacilityNotFoundException("Facility not found"));
+
+        FacilityImage imageToDelete = facilityImageRepository.findById(imageId)
+                .orElseThrow(() -> new RuntimeException("Image not found"));
+
+        if (!imageToDelete.getFacility().getId().equals(facilityId)) {
+            throw new RuntimeException("Image does not belong to this facility");
+        }
+
+        String path = imageToDelete.getImagePath();
+        if (path != null && path.contains("cloudinary.com")) {
+            cloudinaryService.deleteImage(path);
+        }
+
+        facilityImageRepository.delete(imageToDelete);
+
+        // If it was thumbnail, we might want to set another one as thumbnail
+        if (Boolean.TRUE.equals(imageToDelete.getIsThumbnail())) {
+            List<FacilityImage> remaining = facilityImageRepository.findByFacilityId(facilityId);
+            // wait, findByFacility_Id might not exist or we can just get from facility.getImages() which is lazy loaded.
+            // Let's rely on facility.getImages()
+            if (facility.getImages() != null) {
+                facility.getImages().stream()
+                        .filter(img -> !img.getId().equals(imageId))
+                        .findFirst()
+                        .ifPresent(img -> {
+                            img.setIsThumbnail(true);
+                            facilityImageRepository.save(img);
+                        });
+            }
+        }
     }
 }

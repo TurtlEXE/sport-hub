@@ -67,6 +67,35 @@ public class OwnerFacilityApiController {
         return ResponseEntity.ok(ownerFacilityService.getMyFacilityDetail(userDetails.getAccount().getId(), id));
     }
 
+    // --- Images ---
+    @PostMapping("/facilities/{id}/images")
+    public ResponseEntity<com.mvc.mock_project.dto.response.facility.FacilityImageDTO> addFacilityImage(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Integer id,
+            @RequestParam(value = "file", required = false) MultipartFile file,
+            @RequestParam(value = "url", required = false) String url) {
+        com.mvc.mock_project.dto.response.facility.FacilityImageDTO dto = ownerFacilityService.addImageToFacility(userDetails.getAccount().getId(), id, file, url);
+        return ResponseEntity.ok(dto);
+    }
+
+    @PutMapping("/facilities/{id}/images/{imageId}/thumbnail")
+    public ResponseEntity<?> setFacilityThumbnail(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Integer id,
+            @PathVariable Integer imageId) {
+        ownerFacilityService.setFacilityThumbnail(userDetails.getAccount().getId(), id, imageId);
+        return ResponseEntity.ok().body("Đặt làm ảnh đại diện thành công");
+    }
+
+    @DeleteMapping("/facilities/{id}/images/{imageId}")
+    public ResponseEntity<?> deleteFacilityImage(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Integer id,
+            @PathVariable Integer imageId) {
+        ownerFacilityService.deleteFacilityImage(userDetails.getAccount().getId(), id, imageId);
+        return ResponseEntity.ok().body("Xóa ảnh thành công");
+    }
+
     // --- Sports ---
     @PostMapping("/facilities/{id}/sports")
     public ResponseEntity<?> addSportToFacility(
@@ -118,6 +147,14 @@ public class OwnerFacilityApiController {
             @PathVariable Integer courtId) {
         ownerFacilityService.deleteCourt(userDetails.getAccount().getId(), courtId);
         return ResponseEntity.ok().body("Court deactivated successfully");
+    }
+
+    @PutMapping("/courts/{courtId}/toggle")
+    public ResponseEntity<?> toggleCourt(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Integer courtId) {
+        ownerFacilityService.toggleCourtStatus(userDetails.getAccount().getId(), courtId);
+        return ResponseEntity.ok().body("Court status toggled successfully");
     }
 
     // --- Price Rules ---

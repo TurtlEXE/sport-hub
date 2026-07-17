@@ -1,41 +1,183 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{dashboard-layout}">
 <head>
-    <title>Duyệt Cơ Sở</title>
+    <title>Facility Approval</title>
 </head>
 <body>
     <div layout:fragment="sidebar-menu" th:replace="~{admin/fragments/sidebar :: sidebar('facilities')}"></div>
 
     <div layout:fragment="header-title" class="flex-1">
-        <h1 class="text-xl font-bold text-slate-900">Quản Lý Duyệt Cơ Sở</h1>
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">ADMIN DASHBOARD • FACILITY APPROVAL</p>
+        <h1 class="text-xl font-bold text-slate-900">Facility Approval Board</h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">ADMIN PORTAL • FACILITY MANAGEMENT</p>
     </div>
 
     <div layout:fragment="content">
         <div class="container mx-auto px-4 py-6">
-        <h1 class="text-2xl font-bold text-gray-800 mb-6">Quản lý duyệt cơ sở</h1>
-        
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cơ sở</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Chủ sân</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày gửi</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200" id="facilityTableBody">
-                        <!-- Data will be populated via JS -->
-                    </tbody>
-                </table>
-            </div>
             
-            <!-- Pagination -->
-            <div class="bg-white px-4 py-3 border-t border-gray-200 flex items-center justify-between sm:px-6">
-                <!-- Pagination controls via JS -->
+            <!-- Hero Banner -->
+            <div class="bg-slate-900 rounded-2xl p-8 text-white relative overflow-hidden mb-6 flex justify-between items-center shadow-lg">
+                <div class="relative z-10 max-w-2xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 bg-yellow-500/20 text-yellow-500 text-xs font-bold uppercase tracking-wider rounded-full mb-4">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        System Report
+                    </div>
+                    <h2 class="text-3xl font-bold mb-3">Partner Facility Approval System</h2>
+                    <p class="text-slate-400 text-sm leading-relaxed">Sporthub management system. Administrators are responsible for checking, verifying court quality and making decisions to approve or reject so partners can start doing business.</p>
+                </div>
+                <div class="relative z-10 bg-yellow-500 text-slate-900 rounded-2xl p-6 text-center shadow-xl transform rotate-3 hover:rotate-0 transition-transform">
+                    <p class="text-xs font-black uppercase tracking-widest mb-1 opacity-80">Action Required</p>
+                    <div class="text-4xl font-black mb-1"><span id="heroPendingCount">0</span> <span class="text-xl">facility</span></div>
+                    <p class="text-xs font-bold opacity-90">Pending review</p>
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                <!-- Total Requests -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Total Requests</p>
+                        <h3 id="statTotalRequests" class="text-3xl font-black text-gray-900">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-gray-50 text-gray-600 flex items-center justify-center border border-gray-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    </div>
+                </div>
+                <!-- Pending -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Pending Review</p>
+                        <h3 id="statPending" class="text-3xl font-black text-yellow-500">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-yellow-50 text-yellow-500 flex items-center justify-center border border-yellow-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+                <!-- Approved -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Approved</p>
+                        <h3 id="statApproved" class="text-3xl font-black text-green-500">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-green-50 text-green-500 flex items-center justify-center border border-green-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+                <!-- Rejected -->
+                <div class="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex items-center justify-between hover:shadow-md transition">
+                    <div>
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-1">Rejected</p>
+                        <h3 id="statRejected" class="text-3xl font-black text-red-500">0</h3>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-red-50 text-red-500 flex items-center justify-center border border-red-100">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts & Analytics -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <!-- Doughnut Chart -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col items-center justify-center relative">
+                    <div class="w-full text-left mb-6">
+                        <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wide">Approval Status Breakdown</h3>
+                        <p class="text-xs text-gray-500">Breakdown percentage among facilities</p>
+                    </div>
+                    
+                    <div id="doughnutChart" class="relative w-48 h-48 rounded-full mb-6 flex items-center justify-center" style="background: conic-gradient(#10b981 0% 33.3%, #f59e0b 33.3% 66.6%, #ef4444 66.6% 100%);">
+                        <div class="w-32 h-32 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total</span>
+                            <span id="chartTotalFacilities" class="text-3xl font-black text-gray-900">0</span>
+                            <span class="text-[10px] text-gray-400 font-bold uppercase mt-1">Facilities</span>
+                        </div>
+                    </div>
+                    
+                    <div class="w-full flex justify-between px-4 mt-auto pt-4 border-t border-gray-50">
+                        <div class="text-center">
+                            <div class="flex items-center gap-1 justify-center mb-1"><div class="w-3 h-3 rounded-full bg-green-500"></div><span id="chartApprovedPct" class="text-sm font-bold text-gray-900">0%</span></div>
+                            <div id="chartApprovedLabel" class="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Approved (0)</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="flex items-center gap-1 justify-center mb-1"><div class="w-3 h-3 rounded-full bg-yellow-500"></div><span id="chartPendingPct" class="text-sm font-bold text-gray-900">0%</span></div>
+                            <div id="chartPendingLabel" class="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Pending (0)</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="flex items-center gap-1 justify-center mb-1"><div class="w-3 h-3 rounded-full bg-red-500"></div><span id="chartRejectedPct" class="text-sm font-bold text-gray-900">0%</span></div>
+                            <div id="chartRejectedLabel" class="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Rejected (0)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Progress Bars -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wide">Court Density & Sport Distribution</h3>
+                        <p class="text-xs text-gray-500 mb-8">Number of active courts divided by sport</p>
+                        
+                        <div id="sportDistributionContainer" class="space-y-6">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 bg-blue-50/50 border border-blue-100 rounded-xl p-4 flex items-start gap-3">
+                        <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <p id="densityInfoText" class="text-xs text-blue-800 leading-relaxed font-medium">Density is calculated based on total active sports courts belonging to partner facilities.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table Section -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-3 mb-1">
+                            <h3 class="text-lg font-bold text-gray-900">Facility Queue</h3>
+                            <span id="queueActionCount" class="px-2.5 py-1 bg-orange-100 text-orange-700 text-[10px] font-black uppercase tracking-wider rounded-md">0 Actions</span>
+                        </div>
+                        <p class="text-xs text-gray-500">Automated approval queue for Sporthub administrators.</p>
+                    </div>
+                    <div class="flex flex-col md:flex-row items-end md:items-center gap-4">
+                        <div class="flex space-x-1 bg-gray-50 p-1 rounded-xl">
+                            <button class="filter-tab active px-4 py-1.5 text-xs font-bold rounded-lg bg-white shadow-sm text-gray-900 transition-colors" data-status="ALL">All</button>
+                            <button class="filter-tab px-4 py-1.5 text-xs font-bold rounded-lg text-gray-500 hover:text-gray-900 transition-colors" data-status="PENDING">Pending</button>
+                            <button class="filter-tab px-4 py-1.5 text-xs font-bold rounded-lg text-gray-500 hover:text-gray-900 transition-colors" data-status="APPROVED">Approved</button>
+                            <button class="filter-tab px-4 py-1.5 text-xs font-bold rounded-lg text-gray-500 hover:text-gray-900 transition-colors" data-status="REJECTED">Rejected</button>
+                        </div>
+                        <div class="relative w-full md:w-64">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            </div>
+                            <input type="text" placeholder="Search by name, owner..." class="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:ring-blue-500 focus:border-blue-500 transition focus:bg-white outline-none">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-100">
+                        <thead class="bg-gray-50/50">
+                            <tr>
+                                <th class="px-6 py-4 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest">Facility Info</th>
+                                <th class="px-6 py-4 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest">Representative (Owner)</th>
+                                <th class="px-6 py-4 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest">Sport Type</th>
+                                <th class="px-6 py-4 text-left text-[11px] font-black text-gray-400 uppercase tracking-widest">Submission Date</th>
+                                <th class="px-6 py-4 text-right text-[11px] font-black text-gray-400 uppercase tracking-widest">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100" id="facilityTableBody">
+                            <!-- Data will be populated via JS -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+                    <span class="text-sm text-gray-500">Showing <span class="font-bold text-gray-900">1</span> to <span class="font-bold text-gray-900">1</span> of <span class="font-bold text-gray-900">1</span> results</span>
+                    <div class="flex gap-2">
+                        <button class="px-3 py-1.5 text-sm font-bold text-gray-400 bg-gray-50 rounded-lg cursor-not-allowed">Previous</button>
+                        <button class="px-3 py-1.5 text-sm font-bold text-white bg-blue-600 rounded-lg shadow-sm">1</button>
+                        <button class="px-3 py-1.5 text-sm font-bold text-gray-400 bg-gray-50 rounded-lg cursor-not-allowed">Next</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -43,4 +185,5 @@
     <th:block layout:fragment="pageScripts">
         <script th:src="@{/js/admin-facility-list.js}"></script>
     </th:block>
+</body>
 </html>

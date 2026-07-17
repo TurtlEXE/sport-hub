@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.mvc.mock_project.dto.response.facility.stats.AdminFacilityStatsDTO;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,11 @@ import org.springframework.web.bind.annotation.*;
 public class AdminFacilityApiController {
 
     private final AdminFacilityService adminFacilityService;
+
+    @GetMapping("/stats")
+    public ResponseEntity<AdminFacilityStatsDTO> getFacilityStats() {
+        return ResponseEntity.ok(adminFacilityService.getFacilityStats());
+    }
 
     @GetMapping
     public ResponseEntity<Page<AdminFacilityReviewDTO>> getFacilities(

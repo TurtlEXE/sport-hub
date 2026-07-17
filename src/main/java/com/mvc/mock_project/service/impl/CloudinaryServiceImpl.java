@@ -47,6 +47,26 @@ public class CloudinaryServiceImpl implements CloudinaryService {
     }
 
     @Override
+    public String uploadFacilityImage(MultipartFile file, Integer facilityId) {
+        validateFile(file);
+
+        try {
+            String publicId = java.util.UUID.randomUUID().toString();
+            Map<?, ?> uploadResult = cloudinary.uploader().upload(file.getBytes(), ObjectUtils.asMap(
+                    "folder", "sporthub/facility/facility_" + facilityId,
+                    "public_id", publicId,
+                    "resource_type", "image",
+                    "transformation", "q_auto,f_auto"
+            ));
+
+            return (String) uploadResult.get("secure_url");
+        } catch (IOException e) {
+            log.error("Failed to upload image for facility {}: {}", facilityId, e.getMessage());
+            throw new RuntimeException("Lỗi khi tải ảnh lên server");
+        }
+    }
+
+    @Override
     public void deleteImage(String imageUrl) {
         if (imageUrl == null || imageUrl.isBlank()) {
             return;

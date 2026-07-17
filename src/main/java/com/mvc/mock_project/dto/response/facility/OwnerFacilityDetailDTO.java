@@ -16,6 +16,7 @@ public class OwnerFacilityDetailDTO {
     private String province;
     private String district;
     private String ward;
+    private String fullAddress;
     private BigDecimal latitude;
     private BigDecimal longitude;
     private String description;

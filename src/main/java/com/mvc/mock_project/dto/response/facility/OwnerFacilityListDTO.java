@@ -10,6 +10,7 @@ public class OwnerFacilityListDTO {
     private Integer facilityId;
     private String name;
     private String address;
+    private String fullAddress;
     private String thumbnailUrl;
     private ApprovalStatus approvalStatus;
     private Boolean isActive;

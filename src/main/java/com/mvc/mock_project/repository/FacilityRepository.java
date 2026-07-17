@@ -24,5 +24,11 @@ public interface FacilityRepository extends JpaRepository<Facility, Integer> {
     Optional<Facility> findByIdAndOwner_Id(Integer facilityId, Integer ownerAccountId);
 
     // For Admin: filtered by status with pagination
-    Page<Facility> findByApprovalStatus(ApprovalStatus status, Pageable pageable);
+    Page<Facility> findByApprovalStatusOrderByCreatedAtDesc(ApprovalStatus status, Pageable pageable);
+
+    @org.springframework.data.jpa.repository.Query("SELECT f FROM Facility f ORDER BY CASE WHEN f.approvalStatus = 'PENDING' THEN 1 WHEN f.approvalStatus = 'APPROVED' THEN 2 ELSE 3 END, f.createdAt DESC")
+    Page<Facility> findAllOrderByStatusAndDate(Pageable pageable);
+
+    // For Admin Stats: count by status
+    long countByApprovalStatus(ApprovalStatus status);
 }

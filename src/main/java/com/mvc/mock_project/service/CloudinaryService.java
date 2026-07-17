@@ -19,4 +19,13 @@ public interface CloudinaryService {
      * @param imageUrl the URL of the image to delete
      */
     void deleteImage(String imageUrl);
+
+    /**
+     * Upload a facility image to Cloudinary.
+     *
+     * @param file       the image file to upload
+     * @param facilityId the facility ID (used for folder organization)
+     * @return the secure URL of the uploaded image
+     */
+    String uploadFacilityImage(MultipartFile file, Integer facilityId);
 }

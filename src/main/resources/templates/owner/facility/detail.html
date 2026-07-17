@@ -1,70 +1,180 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{dashboard-layout}">
 <head>
-    <title>Chi tiết cơ sở</title>
-    <link rel="stylesheet" th:href="@{/css/facility-management.css}">
+    <title th:text="#{facility.management.title}">Quản lý Cơ sở Thể thao</title>
 </head>
 <body>
     <div layout:fragment="sidebar-menu" th:replace="~{owner/fragments/sidebar :: sidebar('facilities')}"></div>
 
     <div layout:fragment="header-title" class="flex-1">
-        <h1 class="text-xl font-bold text-slate-900">Chi Tiết Cơ Sở</h1>
+        <h1 class="text-xl font-bold text-slate-900" th:text="#{facility.management.title}">Quản lý Cơ sở Thể thao</h1>
         <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">OWNER DASHBOARD • FACILITY MANAGEMENT</p>
     </div>
 
     <div layout:fragment="content">
         <div class="container mx-auto px-4 py-6">
-        <!-- Header -->
-        <div class="mb-6 flex justify-between items-start">
-            <div>
-                <h1 id="facilityName" class="text-2xl font-bold text-gray-800">Loading...</h1>
-                <p id="facilityAddress" class="text-gray-500"></p>
-                <div class="mt-2" id="statusBadgeContainer"></div>
+            
+            <!-- Top Actions -->
+            <div class="mb-6 flex justify-between items-center">
+                <a href="/owner/facilities" class="text-sm font-semibold text-gray-500 hover:text-gray-800 flex items-center transition">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span th:text="#{facility.detail.back}">Quay lại danh sách</span>
+                </a>
+                <button onclick="renderEditGeneralInfoForm()" class="px-4 py-2 bg-blue-50 text-blue-600 rounded-xl text-sm font-bold flex items-center border border-blue-100 hover:bg-blue-100 transition shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    <span th:text="#{facility.detail.edit}">Sửa thông tin chung</span>
+                </button>
             </div>
-            <div class="space-x-2">
-                <button id="btnResubmit" class="hidden bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md">Gửi duyệt lại</button>
-                <button class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md border">Chỉnh sửa</button>
-            </div>
-        </div>
 
-        <!-- Tabs -->
-        <div class="border-b border-gray-200 mb-6">
-            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                <button class="tab-btn active border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-target="overview">Tổng quan</button>
-                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-target="sports">Môn thể thao</button>
-                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-target="courts">Quản lý sân</button>
-                <button class="tab-btn border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-target="pricing">Bảng giá</button>
-            </nav>
-        </div>
+            <!-- Modal Container -->
+            <div id="editGeneralInfoModalContainer"></div>
+            <div id="editGalleryModalContainer"></div>
 
-        <!-- Tab Content -->
-        <div id="overview" class="tab-content active">
-            <div class="bg-white p-6 rounded-lg shadow-sm border mb-6">
-                <h3 class="text-lg font-medium mb-4">Thông tin cơ bản</h3>
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div><span class="text-gray-500">Giờ hoạt động:</span> <span id="opHours" class="font-medium"></span></div>
-                    <div><span class="text-gray-500">Ngày tạo:</span> <span id="createdAt" class="font-medium"></span></div>
+            <!-- Pending Alert -->
+            <div id="pendingAlert" class="hidden mb-8 bg-yellow-50/80 border border-yellow-200 rounded-2xl p-5 flex items-start gap-4">
+                <div class="w-10 h-10 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 flex-shrink-0">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-yellow-800 text-sm" th:text="#{facility.detail.pending.title}">Cơ sở đang chờ phê duyệt</h3>
+                    <p class="text-xs text-yellow-700 mt-1" th:text="#{facility.detail.pending.desc}">Thông tin đang được kiểm tra bởi Admin. Bạn vẫn có thể cấu hình chi tiết môn học, sân bóng và bảng giá sẵn ở phía dưới.</p>
                 </div>
             </div>
-        </div>
 
-        <div id="sports" class="tab-content hidden">
-            <!-- Sports content rendered by JS -->
-        </div>
+            <!-- Main Info Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Overview Card -->
+                <div id="overviewCard" class="lg:col-span-2 bg-white rounded-3xl p-7 shadow-sm border border-gray-100 flex flex-col justify-between h-full">
+                    <!-- JS will render Title, Badge, Address, Description -->
+                </div>
+                <!-- Images Card -->
+                <div id="imagesCard" class="bg-white rounded-3xl p-7 shadow-sm border border-gray-100 flex flex-col h-full">
+                    <!-- JS will render Thumbnail -->
+                </div>
+            </div>
 
-        <div id="courts" class="tab-content hidden">
-            <!-- Courts content rendered by JS -->
-        </div>
+            <!-- Sport Tabs -->
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4 border-b border-gray-100 pb-4">
+                <div id="sportsTabsContainer" class="flex flex-wrap items-center gap-3">
+                    <!-- JS will render pills for sports -->
+                </div>
+                <div id="sportStatusContainer" class="hidden flex items-center text-sm font-semibold text-gray-600">
+                    <span th:text="#{facility.detail.sport_status}">Trạng thái môn:</span>
+                    <div id="sportStatusBadge" class="ml-2 flex items-center gap-1.5 px-3 py-1.5 rounded-full border">
+                        <!-- JS renders -->
+                    </div>
+                </div>
+            </div>
 
-        <div id="pricing" class="tab-content hidden">
-            <!-- Pricing content rendered by JS -->
+            <!-- Active Sport Details -->
+            <div id="sportDetailContent" class="space-y-12">
+                <!-- JS will render Config, Courts, Pricing for the active sport -->
+            </div>
+            
         </div>
     </div>
     
     <th:block layout:fragment="pageScripts">
         <script th:inline="javascript">
             const facilityId = /*[[${facilityId}]]*/ 0;
+            // Provide i18n texts to JS
+            const i18nDetail = {
+                statusOpen: [[#{facility.detail.status.open}]],
+                statusClosed: [[#{facility.detail.status.closed}]],
+                openTime: [[#{facility.detail.open_time}]],
+                coordinates: [[#{facility.detail.coordinates}]],
+                totalSports: [[#{facility.detail.total_sports}]],
+                sportsUnit: [[#{facility.detail.sports_unit}]],
+                imagesTitle: [[#{facility.detail.images.title}]],
+                imagesDesc: [[#{facility.detail.images.desc}]],
+                tabAddSport: [[#{facility.detail.tab.add_sport}]],
+                sportStatusActive: [[#{facility.detail.sport_status.active}]],
+                sportStatusInactive: [[#{facility.detail.sport_status.inactive}]],
+                sectionConfig: [[#{facility.detail.section.config}]],
+                configName: [[#{facility.detail.config.name}]],
+                configMinDuration: [[#{facility.detail.config.min_duration}]],
+                configSlotStep: [[#{facility.detail.config.slot_step}]],
+                sectionCourts: [[#{facility.detail.section.courts}]],
+                btnAddCourt: [[#{facility.detail.btn.add_court}]],
+                courtActive: [[#{facility.detail.court.active}]],
+                courtInactive: [[#{facility.detail.court.inactive}]],
+                courtToggleOn: [[#{facility.detail.court.toggle_on}]],
+                courtToggleOff: [[#{facility.detail.court.toggle_off}]],
+                sectionPricing: [[#{facility.detail.section.pricing}]],
+                pricingNote: [[#{facility.detail.pricing.note}]],
+                btnAddPricing: [[#{facility.detail.btn.add_pricing}]],
+                pricingDayType: [[#{facility.detail.pricing.day_type}]],
+                pricingTimeFrame: [[#{facility.detail.pricing.time_frame}]],
+                pricingPrice: [[#{facility.detail.pricing.price}]],
+                pricingDateRange: [[#{facility.detail.pricing.date_range}]],
+                pricingAction: [[#{facility.detail.pricing.action}]],
+                pricingDefaultRange: [[#{facility.detail.pricing.default_range}]],
+                pricingWeekday: [[#{facility.detail.pricing.weekday}]],
+                pricingWeekend: [[#{facility.detail.pricing.weekend}]],
+                addSportTitle: [[#{facility.detail.add_sport.title}]],
+                addSportChoose: [[#{facility.detail.add_sport.choose}]],
+                addSportMinDur: [[#{facility.detail.add_sport.min_duration}]],
+                addSportSlotStep: [[#{facility.detail.add_sport.slot_step}]],
+                addSportBtnCancel: [[#{facility.detail.add_sport.btn_cancel}]],
+                addSportBtnActivate: [[#{facility.detail.add_sport.btn_activate}]],
+                addSportSuccess: [[#{facility.detail.add_sport.success}]],
+                addSportFail: [[#{facility.detail.add_sport.fail}]],
+                addCourtTitle: [[#{facility.detail.add_court.title}]],
+                addCourtName: [[#{facility.detail.add_court.name}]],
+                addCourtNamePlaceholder: [[#{facility.detail.add_court.name_placeholder}]],
+                addCourtDesc: [[#{facility.detail.add_court.desc}]],
+                addCourtDescPlaceholder: [[#{facility.detail.add_court.desc_placeholder}]],
+                addCourtBtnCancel: [[#{facility.detail.add_court.btn_cancel}]],
+                addCourtBtnConfirm: [[#{facility.detail.add_court.btn_confirm}]],
+                addCourtSuccess: [[#{facility.detail.add_court.success}]],
+                addCourtFail: [[#{facility.detail.add_court.fail}]],
+                galleryTitle: [[#{facility.detail.gallery.title}]],
+                gallerySubtitle: [[#{facility.detail.gallery.subtitle}]],
+                galleryThumbnail: [[#{facility.detail.gallery.thumbnail}]],
+                galleryRequired: [[#{facility.detail.gallery.required}]],
+                galleryCurrent: [[#{facility.detail.gallery.current}]],
+                galleryBtnDelete: [[#{facility.detail.gallery.btn.delete}]],
+                galleryNoThumbnail: [[#{facility.detail.gallery.no_thumbnail}]],
+                galleryThumbnailSize: [[#{facility.detail.gallery.thumbnail_size}]],
+                galleryBtnChangeThumbnail: [[#{facility.detail.gallery.btn.change_thumbnail}]],
+                galleryCollection: [[#{facility.detail.gallery.collection}]],
+                galleryImagesUnit: [[#{facility.detail.gallery.images_unit}]],
+                galleryBtnHidePanel: [[#{facility.detail.gallery.btn.hide_panel}]],
+                galleryBtnAddNew: [[#{facility.detail.gallery.btn.add_new}]],
+                galleryBtnSetThumbnail: [[#{facility.detail.gallery.btn.set_thumbnail}]],
+                galleryNewBadge: [[#{facility.detail.gallery.new_badge}]],
+                galleryWillBeThumbnail: [[#{facility.detail.gallery.will_be_thumbnail}]],
+                galleryEmptySlot: [[#{facility.detail.gallery.empty_slot}]],
+                galleryAddingTo: [[#{facility.detail.gallery.adding_to}]],
+                galleryLibrary: [[#{facility.detail.gallery.library}]],
+                galleryDragDrop: [[#{facility.detail.gallery.drag_drop}]],
+                galleryBrowse: [[#{facility.detail.gallery.browse}]],
+                galleryMaxSize: [[#{facility.detail.gallery.max_size}]],
+                galleryPasteUrl: [[#{facility.detail.gallery.paste_url}]],
+                galleryBtnAdd: [[#{facility.detail.gallery.btn.add}]],
+                galleryBtnCancel: [[#{facility.detail.gallery.btn.cancel}]],
+                galleryBtnSave: [[#{facility.detail.gallery.btn.save}]],
+                galleryMsgMaxImages: [[#{facility.detail.gallery.msg.max_images}]],
+                galleryMsgFileTooLarge: [[#{facility.detail.gallery.msg.file_too_large}]],
+                galleryMsgEmptyInput: [[#{facility.detail.gallery.msg.empty_input}]],
+                galleryMsgUploading: [[#{facility.detail.gallery.msg.uploading}]],
+                galleryMsgSaving: [[#{facility.detail.gallery.msg.saving}]],
+                galleryMsgDeleteConfirm: [[#{facility.detail.gallery.msg.delete_confirm}]],
+                galleryMsgThumbnailConfirm: [[#{facility.detail.gallery.msg.thumbnail_confirm}]],
+                addPricingTitle: [[#{facility.detail.add_pricing.title}]],
+                addPricingDayType: [[#{facility.detail.add_pricing.day_type}]],
+                addPricingPricePerSlot: [[#{facility.detail.add_pricing.price_per_slot}]],
+                addPricingStartTime: [[#{facility.detail.add_pricing.start_time}]],
+                addPricingEndTime: [[#{facility.detail.add_pricing.end_time}]],
+                addPricingEffectiveFrom: [[#{facility.detail.add_pricing.effective_from}]],
+                addPricingEffectiveTo: [[#{facility.detail.add_pricing.effective_to}]],
+                addPricingBtnCancel: [[#{facility.detail.add_pricing.btn_cancel}]],
+                addPricingBtnSave: [[#{facility.detail.add_pricing.btn_save}]],
+                addPricingDayTypeWeekday: [[#{facility.detail.add_pricing.day_type.weekday}]],
+                addPricingDayTypeWeekend: [[#{facility.detail.add_pricing.day_type.weekend}]]
+            };
         </script>
         <script th:src="@{/js/owner-facility-detail.js}"></script>
     </th:block>
 </html>
+
