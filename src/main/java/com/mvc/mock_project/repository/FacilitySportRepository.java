@@ -13,5 +13,4 @@ public interface FacilitySportRepository extends JpaRepository<FacilitySport, In
     Optional<FacilitySport> findByIdAndFacility_Owner_Id(Integer facilitySportId, Integer ownerAccountId);
     boolean existsByFacility_IdAndSport_Id(Integer facilityId, Integer sportId);
     List<FacilitySport> findByIsActiveTrue();
-    List<FacilitySport> findByFacilityIdAndIsActiveTrue(Integer facilityId);
 }
