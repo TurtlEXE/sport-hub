@@ -17,4 +17,6 @@ public interface CourtRepository extends JpaRepository<Court, Integer> {
 
     @org.springframework.data.jpa.repository.Query("SELECT COUNT(c.id) FROM Court c JOIN c.facilitySport fs JOIN fs.facility f WHERE c.isActive = true AND f.isActive = true AND fs.isActive = true")
     long countTotalActiveCourts();
+
+    List<Court> findByFacilitySportIdAndIsActiveTrue(Integer facilitySportId);
 }

@@ -25,63 +25,66 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf(AbstractHttpConfigurer::disable) // Disable for development or REST APIs
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints & static resources
-                .requestMatchers(
-                    "/", 
-                    "/venues/**",
-                    "/booking/**",
-                    "/api/venues/**",
-                    "/api/public/**", 
-                    "/api/auth/**",
-                    "/auth/**", 
-                    "/error",
-                    "/css/**", 
-                    "/js/**",
-                    "/images/**", 
-                    "/webjars/**"
-                ).permitAll()
-                
-                // Role-based URL mappings according to SRS
-                // Customer
-                .requestMatchers("/api/bookings/**", "/api/reviews/**").hasAnyAuthority("ROLE_CUSTOMER", "ROLE_ADMIN")
-                
-                // Court Owner
-                .requestMatchers("/api/owner/**", "/api/facilities/manage/**", "/owner/**").hasAnyAuthority("ROLE_OWNER", "ROLE_ADMIN")
-                
-                // Staff
-                .requestMatchers("/api/staff/**", "/api/ops/**", "/staff/**").hasAnyAuthority("ROLE_STAFF", "ROLE_ADMIN")
-                
-                // Admin
-                .requestMatchers("/api/admin/**", "/admin/**").hasAuthority("ROLE_ADMIN")
-                
-                // Profile (all authenticated users)
-                .requestMatchers("/profile/**", "/api/profile/**").authenticated()
-                
-                // Any other requests require authentication
-                .anyRequest().authenticated()
-            )
-            // Form login for standard web app
-            .formLogin(form -> form
-                .loginPage("/auth/login")
-                .loginProcessingUrl("/auth/login")
-                .defaultSuccessUrl("/", true)
-                .permitAll()
-            )
-            .oauth2Login(oauth2 -> oauth2
-                .loginPage("/auth/login")
-                .userInfoEndpoint(info -> info
-                    .userService(customOAuth2UserService)
-                )
-                .successHandler(oAuth2LoginSuccessHandler)
-            )
-            .logout(logout -> logout
-                .permitAll()
-            );
+                .csrf(AbstractHttpConfigurer::disable) // Disable for development or REST APIs
+                .authorizeHttpRequests(auth -> auth
+                        // Public endpoints & static resources
+                        .requestMatchers(
+                                "/",
+                                "/venues/**",
+                                "/booking/**",
+                                "/api/booking/**",
+                                "/api/payment/**",
+                                "/api/venues/**",
+                                "/api/public/**",
+                                "/api/auth/**",
+                                "/api/contact",
+                                "/api/vouchers/**",
+                                "/auth/**",
+                                "/error",
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/webjars/**")
+                        .permitAll()
 
-        http.addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
-            
+                        // Role-based URL mappings according to SRS
+                        // Customer
+                        .requestMatchers("/api/bookings/**", "/api/reviews/**")
+                        .hasAnyAuthority("ROLE_CUSTOMER", "ROLE_ADMIN")
+
+                        // Court Owner
+                        .requestMatchers("/api/owner/**", "/api/facilities/manage/**", "/owner/**")
+                        .hasAnyAuthority("ROLE_OWNER", "ROLE_ADMIN")
+
+                        // Staff
+                        .requestMatchers("/api/staff/**", "/api/ops/**", "/staff/**")
+                        .hasAnyAuthority("ROLE_STAFF", "ROLE_ADMIN")
+
+                        // Admin
+                        .requestMatchers("/api/admin/**", "/admin/**").hasAuthority("ROLE_ADMIN")
+
+                        // Profile (all authenticated users)
+                        .requestMatchers("/profile/**", "/api/profile/**").authenticated()
+
+                        // Any other requests require authentication
+                        .anyRequest().authenticated())
+                // Form login for standard web app
+                .formLogin(form -> form
+                        .loginPage("/auth/login")
+                        .loginProcessingUrl("/auth/login")
+                        .defaultSuccessUrl("/", true)
+                        .permitAll())
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/auth/login")
+                        .userInfoEndpoint(info -> info
+                                .userService(customOAuth2UserService))
+                        .successHandler(oAuth2LoginSuccessHandler))
+                .logout(logout -> logout
+                        .permitAll());
+
+        http.addFilterBefore(jwtAuthenticationFilter,
+                org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+
         return http.build();
     }
 

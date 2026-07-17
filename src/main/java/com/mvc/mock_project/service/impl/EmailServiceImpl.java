@@ -7,6 +7,7 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
@@ -14,6 +15,9 @@ import org.springframework.stereotype.Service;
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
+
+    @Value("${app.admin.email:support@sporthub.com}")
+    private String adminEmail;
 
     @Override
     public void sendVerificationEmail(String to, String otp) {
@@ -59,6 +63,57 @@ public class EmailServiceImpl implements EmailService {
             System.out.println("DEVELOPMENT MODE - MOCK EMAIL");
             System.out.println("To: " + to);
             System.out.println("Reset OTP: " + otp);
+        }
+    }
+
+    @Override
+    public void sendContactEmail(String name, String email, String messageContent) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(adminEmail);
+        message.setSubject("Yêu cầu liên hệ mới từ: " + name);
+        message.setText("Hệ thống vừa nhận được một tin nhắn liên hệ mới.\n\n"
+                + "Thông tin người gửi:\n"
+                + "- Tên: " + name + "\n"
+                + "- Email: " + email + "\n\n"
+                + "Nội dung tin nhắn:\n"
+                + messageContent + "\n\n"
+                + "Trân trọng,\nHệ thống SportHub");
+
+        try {
+            mailSender.send(message);
+            log.info("Contact email sent from {}", email);
+        } catch (MailException e) {
+            log.error("Failed to send contact email from {}. SMTP might not be configured.", email, e);
+            System.out.println("=========================================================");
+            System.out.println("DEVELOPMENT MODE - MOCK EMAIL");
+            System.out.println("To: " + adminEmail);
+            System.out.println("From: " + email);
+            System.out.println("Message: " + messageContent);
+            System.out.println("=========================================================");
+        }
+    }
+
+    @Override
+    public void sendPaymentSuccessEmail(String to, String bookingDetails) {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo(to);
+        message.setSubject("Xác nhận thanh toán tiền sân thành công - SportHub");
+        message.setText("Chào bạn,\n\n"
+                + "Bạn đã thanh toán tiền sân thành công tại hệ thống SportHub.\n"
+                + "Chi tiết đơn hàng:\n"
+                + bookingDetails + "\n\n"
+                + "LƯU Ý: Số tiền dịch vụ đi kèm (nếu có) sẽ được thanh toán trực tiếp tại sân.\n\n"
+                + "Trân trọng,\nĐội ngũ SportHub");
+
+        try {
+            mailSender.send(message);
+            log.info("Payment success email sent to {}", to);
+        } catch (MailException e) {
+            log.error("Failed to send payment email to {}", to, e);
+            System.out.println("=========================================================");
+            System.out.println("DEVELOPMENT MODE - MOCK EMAIL (PAYMENT SUCCESS)");
+            System.out.println("To: " + to);
+            System.out.println("Details:\n" + bookingDetails);
             System.out.println("=========================================================");
         }
     }
