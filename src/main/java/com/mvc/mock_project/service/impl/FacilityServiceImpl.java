@@ -78,7 +78,7 @@ public class FacilityServiceImpl implements FacilityService {
 
     @Override
     public List<VenueCardDTO> getAllActiveVenues() {
-        List<Facility> facilities = facilityRepository.findByIsActiveTrue();
+        List<Facility> facilities = facilityRepository.findByIsActiveTrueAndApprovalStatus(com.mvc.mock_project.entities.enums.ApprovalStatus.APPROVED);
         List<VenueCardDTO> venueCards = new ArrayList<>();
         Random random = new Random();
 

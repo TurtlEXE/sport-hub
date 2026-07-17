@@ -10,4 +10,5 @@ import java.util.List;
 public interface FacilityImageRepository extends JpaRepository<FacilityImage, Integer> {
     List<FacilityImage> findByFacilityId(Integer facilityId);
     FacilityImage findFirstByFacilityIdAndIsThumbnailTrue(Integer facilityId);
+    boolean existsByFacilityId(Integer facilityId);
 }

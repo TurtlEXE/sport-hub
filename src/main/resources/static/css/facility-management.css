@@ -1,0 +1,59 @@
+/* Custom CSS for Facility Management */
+.facility-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.step-indicator {
+    transition: all 0.3s ease;
+}
+
+.step-indicator.active {
+    background-color: #3b82f6; /* blue-500 */
+    color: white;
+    border-color: #3b82f6;
+}
+
+.step-indicator.completed {
+    background-color: #10b981; /* green-500 */
+    color: white;
+    border-color: #10b981;
+}
+
+.image-preview-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+}
+
+.image-preview-card .delete-btn {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.image-preview-card:hover .delete-btn {
+    opacity: 1;
+}
+
+/* Timeline visualization */
+.timeline-container {
+    height: 24px;
+    background-color: #e5e7eb;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+}
+
+.timeline-segment {
+    position: absolute;
+    height: 100%;
+    background-color: #3b82f6;
+    opacity: 0.8;
+}
+
+.timeline-segment:hover {
+    opacity: 1;
+}
