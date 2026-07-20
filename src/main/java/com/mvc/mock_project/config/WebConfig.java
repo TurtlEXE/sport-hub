@@ -14,6 +14,12 @@ import java.util.Locale;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    private final ActivityTrackingInterceptor activityTrackingInterceptor;
+
+    public WebConfig(ActivityTrackingInterceptor activityTrackingInterceptor) {
+        this.activityTrackingInterceptor = activityTrackingInterceptor;
+    }
+
     @Bean
     public LocaleResolver localeResolver() {
         CookieLocaleResolver clr = new CookieLocaleResolver("lang_cookie");
@@ -33,5 +39,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());
+        registry.addInterceptor(activityTrackingInterceptor)
+                .excludePathPatterns("/css/**", "/js/**", "/images/**", "/webjars/**", "/api/**", "/favicon.ico");
     }
 }

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{dashboard-layout}">
+
+<head>
+    <title>Admin - Tracking Dashboard</title>
+</head>
+
+<body>
+    <!-- Sidebar Menu -->
+    <div layout:fragment="sidebar-menu" th:replace="~{admin/fragments/sidebar :: sidebar('tracking')}"></div>
+
+    <!-- Header Title -->
+    <div layout:fragment="header-title" class="flex-1">
+        <h1 class="text-xl font-bold text-slate-900">User Activity Tracking</h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">MONITORING LOGINS AND PAGE VIEWS</p>
+    </div>
+
+    <!-- Main Content -->
+    <div layout:fragment="content">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+            <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+                <div>
+                    <h2 class="text-sm font-black text-slate-900 uppercase tracking-wider">ACTIVITY LOGS</h2>
+                    <p class="text-xs text-slate-500 mt-1">Logs are automatically deleted after 3 days.</p>
+                </div>
+                
+                <form id="filterForm" th:action="@{/admin/tracking}" method="get" class="flex items-center gap-3">
+                    <input type="text" name="date" th:value="${date}" placeholder="Select date..."
+                           onfocus="this.type='date'" onblur="if(!this.value) this.type='text'"
+                           class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all w-36">
+                    
+                    <select name="role" class="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all">
+                        <option value="">All Roles</option>
+                        <option value="CUSTOMER" th:selected="${role != null and role.name() == 'CUSTOMER'}">Customer</option>
+                        <option value="OWNER" th:selected="${role != null and role.name() == 'OWNER'}">Owner</option>
+                        <option value="STAFF" th:selected="${role != null and role.name() == 'STAFF'}">Staff</option>
+                    </select>
+
+                    <div class="relative">
+                        <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input type="text" name="search" th:value="${search}" placeholder="Search username or url..." 
+                               class="pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all w-64">
+                    </div>
+                    
+                    <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-xl shadow-sm transition-colors">
+                        Filter
+                    </button>
+                    <a th:href="@{/admin/tracking}" th:if="${search != null or date != null or role != null}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-bold rounded-xl transition-colors">
+                        Clear
+                    </a>
+                </form>
+            </div>
+            
+            <div id="tableContainer" th:fragment="trackingTable">
+                <div class="w-full overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-100">
+                                <th class="pb-3 px-4">TIMESTAMP</th>
+                                <th class="pb-3 px-4">USER</th>
+                                <th class="pb-3 px-4">ACTIVITY TYPE</th>
+                                <th class="pb-3 px-4">URL / ACTION</th>
+                                <th class="pb-3 px-4">IP ADDRESS</th>
+                                <th class="pb-3 px-4">BROWSER / DEVICE</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-slate-100">
+                            <tr th:each="activity : ${activityPage.content}" class="hover:bg-slate-50 transition-colors">
+                                <td class="py-4 px-4 whitespace-nowrap">
+                                    <span class="font-bold text-slate-900" th:text="${#temporals.format(activity.timestamp, 'dd/MM/yyyy HH:mm:ss')}"></span>
+                                </td>
+                                <td class="py-4 px-4 font-bold text-slate-700" th:text="${activity.username}"></td>
+                                <td class="py-4 px-4">
+                                    <span th:if="${activity.activityType.name() == 'LOGIN'}" class="text-[9px] font-black text-emerald-600 bg-emerald-50 px-2 py-1 rounded">LOGIN</span>
+                                    <span th:if="${activity.activityType.name() == 'PAGE_VIEW'}" class="text-[9px] font-black text-blue-600 bg-blue-50 px-2 py-1 rounded">PAGE VIEW</span>
+                                </td>
+                                <td class="py-4 px-4 text-slate-600 truncate max-w-xs" th:title="${activity.url}" th:text="${activity.url}"></td>
+                                <td class="py-4 px-4 text-slate-500 font-mono text-xs" th:text="${activity.ipAddress}"></td>
+                                <td class="py-4 px-4 text-slate-400 text-xs truncate max-w-xs" th:title="${activity.userAgent}" th:text="${activity.userAgent}"></td>
+                            </tr>
+                            <tr th:if="${#lists.isEmpty(activityPage.content)}">
+                                <td colspan="6" class="py-8 text-center text-slate-400 font-semibold">No activity logs found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div th:if="${totalPages > 1}" class="flex items-center justify-between mt-6 pt-6 border-t border-slate-100">
+                    <div class="text-xs font-semibold text-slate-500">
+                        Showing <span class="text-slate-900" th:text="${currentPage * 20 + 1}"></span> to 
+                        <span class="text-slate-900" th:text="${(currentPage + 1) * 20 > totalItems ? totalItems : (currentPage + 1) * 20}"></span> of 
+                        <span class="text-slate-900" th:text="${totalItems}"></span> results
+                    </div>
+                    
+                    <div class="flex items-center gap-1">
+                        <a th:if="${currentPage > 0}" 
+                           th:href="@{/admin/tracking(page=${currentPage - 1}, search=${search}, date=${date}, role=${role})}" 
+                           class="ajax-page px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                            Previous
+                        </a>
+                        
+                        <span class="px-3 py-1.5 rounded-lg bg-slate-900 text-white text-xs font-bold" th:text="${currentPage + 1}"></span>
+                        
+                        <a th:if="${currentPage < totalPages - 1}" 
+                           th:href="@{/admin/tracking(page=${currentPage + 1}, search=${search}, date=${date}, role=${role})}" 
+                           class="ajax-page px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                            Next
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tableContainer = document.getElementById('tableContainer');
+            const filterForm = document.getElementById('filterForm');
+
+            // Handle Form Submit via AJAX
+            filterForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const url = new URL(this.action);
+                const formData = new FormData(this);
+                const searchParams = new URLSearchParams(formData);
+                url.search = searchParams.toString();
+
+                fetchFragment(url);
+                
+                // Update URL without reload
+                window.history.pushState({}, '', url);
+            });
+
+            // Handle Pagination Clicks via AJAX (Event Delegation)
+            tableContainer.addEventListener('click', function(e) {
+                const link = e.target.closest('a.ajax-page');
+                if (link) {
+                    e.preventDefault();
+                    fetchFragment(link.href);
+                    
+                    // Update URL without reload
+                    window.history.pushState({}, '', link.href);
+                }
+            });
+
+            function fetchFragment(url) {
+                // Add a small opacity transition for visual feedback
+                tableContainer.style.opacity = '0.5';
+                
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.text())
+                .then(html => {
+                    tableContainer.innerHTML = html;
+                    tableContainer.style.opacity = '1';
+                })
+                .catch(err => {
+                    console.error('Error fetching table data:', err);
+                    tableContainer.style.opacity = '1';
+                });
+            }
+        });
+    </script>
+</body>
+</html>
