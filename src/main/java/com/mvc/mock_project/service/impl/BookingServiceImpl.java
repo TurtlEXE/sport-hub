@@ -15,6 +15,10 @@ import java.util.*;
 import java.util.stream.Collectors;
 import org.springframework.boot.json.JsonParser;
 import org.springframework.boot.json.JsonParserFactory;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import com.mvc.mock_project.entities.enums.BookingStatus;
+import com.mvc.mock_project.entities.enums.InvoiceStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +33,8 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final InvoiceRepository invoiceRepository;
     private final FacilityRepository facilityRepository;
+    private final CourtSlotBookingRepository courtSlotBookingRepository;
+    private final com.mvc.mock_project.service.EmailService emailService;
 
     @Override
     public List<Map<String, Object>> getFacilitySportsByVenue(Integer venueId) {
@@ -88,9 +94,9 @@ public class BookingServiceImpl implements BookingService {
         List<Court> courtsEntity = courtRepository.findByFacilitySportIdAndIsActiveTrue(facilitySportId);
         List<Integer> courtIds = courtsEntity.stream().map(Court::getId).collect(Collectors.toList());
         
-        List<BookingSlot> bookedSlots = new ArrayList<>();
+        List<CourtSlotBooking> bookedSlots = new ArrayList<>();
         if (!courtIds.isEmpty()) {
-            bookedSlots = bookingSlotRepository.findActiveSlotsByCourtIdsAndDate(courtIds, date);
+            bookedSlots = courtSlotBookingRepository.findActiveHoldsByCourtIdsAndDate(courtIds, date);
         }
         
         // Fetch price rules for this facility sport
@@ -134,7 +140,7 @@ public class BookingServiceImpl implements BookingService {
     
     private List<Map<String, Object>> generateSlots(
             LocalTime openTime, LocalTime closeTime, int stepMins,
-            Integer courtId, List<BookingSlot> bookedSlots,
+            Integer courtId, List<CourtSlotBooking> bookedSlots,
             List<FacilityPriceRule> priceRules, DayType dayType) {
         
         List<Map<String, Object>> slots = new ArrayList<>();
@@ -159,7 +165,7 @@ public class BookingServiceImpl implements BookingService {
             
             // Check if booked
             boolean isBooked = false;
-            for (BookingSlot bs : bookedSlots) {
+            for (CourtSlotBooking bs : bookedSlots) {
                 if (bs.getCourt().getId().equals(courtId)) {
                     // Overlap check
                     if (curr.isBefore(bs.getEndTime()) && next.isAfter(bs.getStartTime())) {
@@ -278,7 +284,8 @@ public class BookingServiceImpl implements BookingService {
                 .facility(facility)
                 .guest(guest)
                 .account(account)
-                .bookingStatus(com.mvc.mock_project.entities.enums.BookingStatus.PENDING)
+                .bookingStatus(BookingStatus.PENDING)
+                .holdExpiredAt(LocalDateTime.now().plusSeconds(150))
                 .build();
         booking = bookingRepository.save(booking);
         
@@ -315,7 +322,16 @@ public class BookingServiceImpl implements BookingService {
                             .priceSnapshot(price)
                             .slotStatus(com.mvc.mock_project.entities.enums.SlotStatus.PENDING)
                             .build();
-                    bookingSlotRepository.save(bookingSlot);
+                    bookingSlot = bookingSlotRepository.save(bookingSlot);
+                    
+                    CourtSlotBooking csb = CourtSlotBooking.builder()
+                            .court(court)
+                            .bookingDate(bookingDate)
+                            .startTime(startTime)
+                            .endTime(endTime)
+                            .bookingSlot(bookingSlot)
+                            .build();
+                    courtSlotBookingRepository.save(csb);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -378,5 +394,84 @@ public class BookingServiceImpl implements BookingService {
                 .refundStatus(com.mvc.mock_project.entities.enums.RefundStatus.NONE)
                 .build();
         return invoiceRepository.save(invoice);
+    }
+    
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void cancelExpiredBookings() {
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        List<Booking> expiredBookings = bookingRepository.findExpiredPendingBookings(now);
+        
+        for (Booking b : expiredBookings) {
+            b.setBookingStatus(com.mvc.mock_project.entities.enums.BookingStatus.CANCELLED);
+            
+            if (b.getInvoice() != null) {
+                b.getInvoice().setPaymentStatus(com.mvc.mock_project.entities.enums.InvoiceStatus.CANCELLED);
+            }
+            
+            if (b.getBookingSlots() != null) {
+                for (BookingSlot bs : b.getBookingSlots()) {
+                    bs.setSlotStatus(com.mvc.mock_project.entities.enums.SlotStatus.CANCELLED);
+                    
+                    // Delete the hold
+                    List<CourtSlotBooking> holds = courtSlotBookingRepository.findByBookingId(b.getId());
+                    courtSlotBookingRepository.deleteAll(holds);
+                }
+            }
+        }
+        bookingRepository.saveAll(expiredBookings);
+    }
+    
+    @Override
+    @org.springframework.transaction.annotation.Transactional
+    public void processPaymentSuccess(Integer invoiceId, String totalPrice, String transactionId, String paymentTime, String email) {
+        Invoice invoice = invoiceRepository.findById(invoiceId).orElse(null);
+        if (invoice != null) {
+            invoice.setPaymentStatus(InvoiceStatus.PARTIAL);
+            if (totalPrice != null) {
+                try {
+                    invoice.setPaidAmount(new BigDecimal(totalPrice).divide(new BigDecimal(100)));
+                } catch (Exception e) {}
+            }
+            if (invoice.getBooking() != null) {
+                Booking booking = invoice.getBooking();
+                booking.setBookingStatus(BookingStatus.CONFIRMED);
+                
+                // Update booking slots if necessary
+                List<BookingSlot> slots = booking.getBookingSlots();
+                if (slots != null) {
+                    for (BookingSlot slot : slots) {
+                        slot.setSlotStatus(SlotStatus.PENDING); // Slot remains PENDING until check-in
+                    }
+                    bookingSlotRepository.saveAll(slots);
+                }
+                bookingRepository.save(booking);
+            }
+            invoiceRepository.save(invoice);
+            
+            // Send email
+            if (email != null && !email.isEmpty() && !email.equals("null")) {
+                String formattedTime = paymentTime;
+                try {
+                    DateTimeFormatter inputFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
+                    DateTimeFormatter outputFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+                    LocalDateTime dt = LocalDateTime.parse(paymentTime, inputFormat);
+                    formattedTime = dt.format(outputFormat);
+                } catch (Exception e) {}
+                
+                String facilityName = invoice.getBooking().getFacility().getName();
+                StringBuilder slotsInfo = new StringBuilder();
+                for (BookingSlot bs : invoice.getBooking().getBookingSlots()) {
+                    slotsInfo.append(bs.getCourt().getCourtName()).append(" (")
+                             .append(bs.getStartTime()).append("-").append(bs.getEndTime()).append("), ");
+                }
+                
+                String bookingDetails = "Mã giao dịch: " + transactionId + "\n"
+                        + "Thời gian: " + formattedTime + "\n"
+                        + "Cơ sở: " + facilityName + "\n"
+                        + "Chi tiết sân: " + slotsInfo.toString();
+                emailService.sendPaymentSuccessEmail(email, bookingDetails);
+            }
+        }
     }
 }
