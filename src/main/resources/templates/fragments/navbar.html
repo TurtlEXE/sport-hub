@@ -152,12 +152,6 @@
     </div>
     
     <script>
-        function changeLanguage(lang) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('lang', lang);
-            window.location.href = url.toString();
-        }
-
         // JS-based active nav highlighting to avoid Thymeleaf 3.1 #httpServletRequest issues
         document.addEventListener('DOMContentLoaded', function() {
             const path = window.location.pathname;

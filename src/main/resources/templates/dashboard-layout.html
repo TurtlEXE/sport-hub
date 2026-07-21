@@ -300,12 +300,6 @@
     <script th:src="@{/js/main.js}"></script>
     <script th:src="@{/js/chatbot.js}"></script>
     <script>
-        function changeLanguage(lang) {
-            const url = new URL(window.location.href);
-            url.searchParams.set('lang', lang);
-            window.location.href = url.toString();
-        }
-
         function showCustomAlert(message, type = 'success', callback = null) {
             const modal = document.getElementById('customAlertModal');
             const box = document.getElementById('customAlertBox');
