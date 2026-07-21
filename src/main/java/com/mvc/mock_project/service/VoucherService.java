@@ -11,4 +11,10 @@ public interface VoucherService {
     void save(VoucherFormDTO form);
     void update(Integer id, VoucherFormDTO form);
     void deleteById(Integer id);
+
+    List<Voucher> findByIssuerAccountId(Integer accountId);
+    Voucher findByIdAndIssuerAccountId(Integer id, Integer accountId);
+    void createOwnerVoucher(Integer ownerAccountId, VoucherFormDTO form);
+    void updateOwnerVoucher(Integer ownerAccountId, Integer voucherId, VoucherFormDTO form);
+    void deleteOwnerVoucher(Integer ownerAccountId, Integer voucherId);
 }

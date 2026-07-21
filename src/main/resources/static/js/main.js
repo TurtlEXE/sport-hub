@@ -61,22 +61,36 @@ document.addEventListener('DOMContentLoaded', () => {
 // ============================================================================
 window.googleTranslateElementInit = function() {
     new google.translate.TranslateElement({
-        pageLanguage: 'auto',
+        pageLanguage: 'vi',
         includedLanguages: 'en,vi,my,ja,ko,zh-CN,fr,de,ru,es,th',
         autoDisplay: false
     }, 'google_translate_element');
 };
 
 function initUniversalTranslator() {
-    // 1. Sync googtrans cookie with active server lang parameter (if any)
+    // 1. Sync googtrans cookie with active server lang parameter or stored preference
     const urlParams = new URLSearchParams(window.location.search);
-    const langParam = urlParams.get('lang');
+    let langParam = urlParams.get('lang');
+    if (!langParam) {
+        langParam = localStorage.getItem('preferredLang');
+        if (!langParam) {
+            const match = document.cookie.match(/googtrans=\/(auto|vi)\/([a-zA-Z-]+)/);
+            if (match && match[2]) {
+                langParam = match[2];
+            }
+        }
+    }
+
     if (langParam && ['en', 'vi', 'my', 'ja', 'ko', 'zh-CN', 'fr', 'de', 'ru', 'es', 'th'].includes(langParam)) {
-        const expectedCookie = "/auto/" + langParam;
-        if (!document.cookie.includes("googtrans=" + expectedCookie)) {
-            document.cookie = "googtrans=" + expectedCookie + "; path=/; max-age=" + (86400 * 365);
+        localStorage.setItem('preferredLang', langParam);
+        const expectedAuto = "/auto/" + langParam;
+        const expectedVi = "/vi/" + langParam;
+        if (!document.cookie.includes("googtrans=" + expectedVi) || !document.cookie.includes("googtrans=" + expectedAuto)) {
+            document.cookie = "googtrans=" + expectedVi + "; path=/; max-age=" + (86400 * 365);
+            document.cookie = "googtrans=" + expectedAuto + "; path=/; max-age=" + (86400 * 365);
             if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
-                document.cookie = "googtrans=" + expectedCookie + "; path=/; domain=" + window.location.hostname + "; max-age=" + (86400 * 365);
+                document.cookie = "googtrans=" + expectedVi + "; path=/; domain=" + window.location.hostname + "; max-age=" + (86400 * 365);
+                document.cookie = "googtrans=" + expectedAuto + "; path=/; domain=" + window.location.hostname + "; max-age=" + (86400 * 365);
             }
         }
     }
@@ -121,10 +135,13 @@ function initUniversalTranslator() {
 
 function changeLanguage(lang) {
     const targetLang = lang === 'vn' ? 'vi' : (lang === 'mm' ? 'my' : lang);
+    localStorage.setItem('preferredLang', targetLang);
     
-    // 1. Set Google Translate universal DOM translation cookie
+    // 1. Set Google Translate universal DOM translation cookie (both /vi/ and /auto/)
+    document.cookie = "googtrans=/vi/" + targetLang + "; path=/; max-age=" + (86400 * 365);
     document.cookie = "googtrans=/auto/" + targetLang + "; path=/; max-age=" + (86400 * 365);
     if (window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        document.cookie = "googtrans=/vi/" + targetLang + "; path=/; domain=" + window.location.hostname + "; max-age=" + (86400 * 365);
         document.cookie = "googtrans=/auto/" + targetLang + "; path=/; domain=" + window.location.hostname + "; max-age=" + (86400 * 365);
     }
     

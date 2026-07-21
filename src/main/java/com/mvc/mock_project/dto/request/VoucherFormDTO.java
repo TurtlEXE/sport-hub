@@ -56,5 +56,8 @@ public class VoucherFormDTO {
     @Min(value = 1, message = "Per user limit must be at least 1")
     private Integer perUserLimit;
 
+    @Builder.Default
     private Boolean isActive = true;
+
+    private java.util.List<Integer> facilityIds;
 }

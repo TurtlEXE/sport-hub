@@ -331,6 +331,24 @@ public class BookingServiceImpl implements BookingService {
         if (voucherId != null) {
             voucher = voucherRepository.findById(voucherId).orElse(null);
             if (voucher != null) {
+                if (!Boolean.TRUE.equals(voucher.getIsActive()) || voucher.getValidFrom().isAfter(java.time.LocalDateTime.now()) || voucher.getValidTo().isBefore(java.time.LocalDateTime.now())) {
+                    throw new RuntimeException("Voucher đã hết hạn hoặc không còn hiệu lực (" + voucher.getCode() + ")!");
+                }
+                if (com.mvc.mock_project.entities.enums.IssuerType.OWNER.equals(voucher.getIssuerType())) {
+                    if (voucher.getIssuerAccount() == null || booking.getFacility() == null || booking.getFacility().getOwner() == null 
+                            || !voucher.getIssuerAccount().getId().equals(booking.getFacility().getOwner().getId())) {
+                        throw new RuntimeException("Voucher này chỉ có thể được áp dụng cho sân của chủ sân phát hành (" + voucher.getCode() + ")!");
+                    }
+                    if (voucher.getApplicableFacilities() != null && !voucher.getApplicableFacilities().isEmpty()) {
+                        boolean matchFacility = voucher.getApplicableFacilities().stream().anyMatch(fac -> fac.getId().equals(facilityId));
+                        if (!matchFacility) {
+                            throw new RuntimeException("Voucher này không áp dụng cho cơ sở sân hiện tại (" + voucher.getCode() + ")!");
+                        }
+                    }
+                }
+                if (voucher.getMinOrderAmount() != null && subtotal.compareTo(voucher.getMinOrderAmount()) < 0) {
+                    throw new RuntimeException("Đơn hàng chưa đạt giá trị tối thiểu để áp dụng voucher " + voucher.getCode());
+                }
                 if (com.mvc.mock_project.entities.enums.DiscountType.PERCENTAGE.equals(voucher.getDiscountType())) {
                     BigDecimal d = subtotal.multiply(voucher.getDiscountValue().divide(new BigDecimal("100")));
                     if (voucher.getMaxDiscountAmount() != null && d.compareTo(voucher.getMaxDiscountAmount()) > 0) {
@@ -346,6 +364,15 @@ public class BookingServiceImpl implements BookingService {
         if (voucherPlatformId != null) {
             voucherPlatform = voucherRepository.findById(voucherPlatformId).orElse(null);
             if (voucherPlatform != null) {
+                if (!Boolean.TRUE.equals(voucherPlatform.getIsActive()) || voucherPlatform.getValidFrom().isAfter(java.time.LocalDateTime.now()) || voucherPlatform.getValidTo().isBefore(java.time.LocalDateTime.now())) {
+                    throw new RuntimeException("Voucher nền tảng đã hết hạn hoặc không còn hiệu lực!");
+                }
+                if (!com.mvc.mock_project.entities.enums.IssuerType.PLATFORM.equals(voucherPlatform.getIssuerType())) {
+                    throw new RuntimeException("Mã giảm giá nền tảng không hợp lệ!");
+                }
+                if (voucherPlatform.getMinOrderAmount() != null && subtotal.compareTo(voucherPlatform.getMinOrderAmount()) < 0) {
+                    throw new RuntimeException("Đơn hàng chưa đạt giá trị tối thiểu để áp dụng voucher " + voucherPlatform.getCode());
+                }
                 if (com.mvc.mock_project.entities.enums.DiscountType.PERCENTAGE.equals(voucherPlatform.getDiscountType())) {
                     BigDecimal d = subtotal.multiply(voucherPlatform.getDiscountValue().divide(new BigDecimal("100")));
                     if (voucherPlatform.getMaxDiscountAmount() != null && d.compareTo(voucherPlatform.getMaxDiscountAmount()) > 0) {
