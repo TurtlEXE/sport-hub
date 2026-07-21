@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, Integer> {
+    
+    @org.springframework.data.jpa.repository.Query("SELECT b FROM Booking b WHERE b.bookingStatus = 'PENDING' AND b.holdExpiredAt < :now")
+    java.util.List<Booking> findExpiredPendingBookings(@org.springframework.data.repository.query.Param("now") java.time.LocalDateTime now);
 }

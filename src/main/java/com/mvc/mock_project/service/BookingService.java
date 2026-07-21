@@ -2,6 +2,9 @@ package com.mvc.mock_project.service;
 
 import java.util.List;
 import java.util.Map;
+import java.math.BigDecimal;
+import com.mvc.mock_project.entities.Invoice;
+import com.mvc.mock_project.entities.Account;
 
 public interface BookingService {
     List<Map<String, Object>> getFacilitySportsByVenue(Integer venueId);
@@ -11,9 +14,13 @@ public interface BookingService {
     
     List<Map<String, Object>> getFacilityVouchers(Integer facilityId);
     
-    com.mvc.mock_project.entities.Invoice createBookingTransaction(
+    Invoice createBookingTransaction(
         String guestName, String guestPhone, String email, 
-        java.math.BigDecimal courtAmount, java.math.BigDecimal productAmount, Integer facilityId,
-        String slotsJson, String bookingDate, com.mvc.mock_project.entities.Account account, Integer voucherId, Integer voucherPlatformId
+        BigDecimal courtAmount, BigDecimal productAmount, Integer facilityId,
+        String slotsJson, String bookingDate, Account account, Integer voucherId, Integer voucherPlatformId
     );
+    
+    void cancelExpiredBookings();
+    
+    void processPaymentSuccess(Integer invoiceId, String totalPrice, String transactionId, String paymentTime, String email);
 }
