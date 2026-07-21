@@ -134,7 +134,7 @@ function renderFacilities(facilities) {
         if (f.sportNames && f.sportNames.length > 0) {
             tagsHtml = f.sportNames.map(name => `<span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full">${name}</span>`).join('');
         } else {
-            tagsHtml = `<span class="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-full">Chưa có môn nào</span>`;
+            tagsHtml = `<span class="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-full">${i18n.noSports || 'No sports'}</span>`;
         }
 
         let rejectionHtml = '';

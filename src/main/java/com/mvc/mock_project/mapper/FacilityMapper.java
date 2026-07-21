@@ -34,14 +34,19 @@ public class FacilityMapper {
         dto.setTotalSports(totalSports);
         
         int totalCourts = 0;
+        List<String> sportNames = new ArrayList<>();
         if (facility.getFacilitySports() != null) {
             for (FacilitySport fs : facility.getFacilitySports()) {
                 if (fs.getCourts() != null) {
                     totalCourts += fs.getCourts().size();
                 }
+                if (fs.getSport() != null) {
+                    sportNames.add(fs.getSport().getSportName());
+                }
             }
         }
         dto.setTotalCourts(totalCourts);
+        dto.setSportNames(sportNames);
         dto.setCreatedAt(facility.getCreatedAt());
         return dto;
     }
