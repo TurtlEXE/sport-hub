@@ -40,8 +40,14 @@ public class GlobalApiExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        // Prevent SQL leakage by returning a generic or sanitized message
-        String message = "A database error occurred (e.g., duplicate entry or constraint violation).";
+        String msg = ex.getMessage();
+        if (ex.getCause() != null) {
+            msg += " | Cause: " + ex.getCause().getMessage();
+            if (ex.getCause().getCause() != null) {
+                msg += " | Root: " + ex.getCause().getCause().getMessage();
+            }
+        }
+        String message = "A database error occurred: " + msg;
         return ResponseEntity.badRequest().body(ApiResponse.error(message));
     }
 

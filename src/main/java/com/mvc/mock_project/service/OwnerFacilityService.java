@@ -31,6 +31,7 @@ public class OwnerFacilityService {
     private final FacilityMapper facilityMapper;
     private final FacilityImageRepository facilityImageRepository;
     private final CloudinaryService cloudinaryService;
+    private final StaffRepository staffRepository;
 
     private void validateTimeAlignment(LocalTime openTime, LocalTime closeTime) {
         if (openTime.getMinute() % 30 != 0 || closeTime.getMinute() % 30 != 0) {
@@ -149,6 +150,28 @@ public class OwnerFacilityService {
         Facility facility = facilityRepository.findByIdAndOwner_Id(facilityId, accountId)
                 .orElseThrow(() -> new FacilityNotFoundException("Facility not found"));
         return facilityMapper.toOwnerFacilityDetailDTO(facility);
+    }
+
+    @Transactional
+    public void assignStaffToFacility(Integer accountId, Integer facilityId, AssignFacilityStaffRequest request) {
+        Facility facility = facilityRepository.findByIdAndOwner_Id(facilityId, accountId)
+                .orElseThrow(() -> new FacilityNotFoundException("Facility not found"));
+
+        // Get all staff of this owner
+        List<Staff> ownerStaffs = staffRepository.findByOwner_IdAndIsActiveTrue(accountId);
+        
+        for (Staff staff : ownerStaffs) {
+            boolean shouldBeAssigned = request.getStaffIds() != null && request.getStaffIds().contains(staff.getId());
+            boolean isCurrentlyAssigned = staff.getFacility() != null && staff.getFacility().getId().equals(facilityId);
+            
+            if (shouldBeAssigned && !isCurrentlyAssigned) {
+                staff.setFacility(facility);
+                staffRepository.save(staff);
+            } else if (!shouldBeAssigned && isCurrentlyAssigned) {
+                staff.setFacility(null);
+                staffRepository.save(staff);
+            }
+        }
     }
 
     @Transactional

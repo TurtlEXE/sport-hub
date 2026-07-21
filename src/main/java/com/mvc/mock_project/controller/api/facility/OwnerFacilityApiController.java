@@ -67,6 +67,15 @@ public class OwnerFacilityApiController {
         return ResponseEntity.ok(ownerFacilityService.getMyFacilityDetail(userDetails.getAccount().getId(), id));
     }
 
+    @PutMapping("/facilities/{id}/staff")
+    public ResponseEntity<?> assignStaffToFacility(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Integer id,
+            @RequestBody AssignFacilityStaffRequest request) {
+        ownerFacilityService.assignStaffToFacility(userDetails.getAccount().getId(), id, request);
+        return ResponseEntity.ok().body("Staff assigned successfully");
+    }
+
     // --- Images ---
     @PostMapping("/facilities/{id}/images")
     public ResponseEntity<com.mvc.mock_project.dto.response.facility.FacilityImageDTO> addFacilityImage(

@@ -18,6 +18,7 @@ function fetchFacilityDetail(id) {
         .then(data => {
             facilityData = data.data ? data.data : data;
             renderFacilityDetail(facilityData);
+            loadFacilityStaff(id);
         })
         .catch(error => {
             console.error('Error:', error);
@@ -256,12 +257,12 @@ function renderActiveSportDetails() {
     const hasPriceRules = sport.priceRules && sport.priceRules.length > 0;
     
     html += `
-        <div id="sportConfigSection" class="relative">
+        <div id="sportConfigSection" class="relative bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
                     ${i18nDetail.sectionConfig} <span class="text-gray-400 font-normal">(${sport.sportName})</span>
                 </h3>
-                <button onclick="toggleEditSportConfig()" id="btnEditSportConfig" class="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg flex items-center transition"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>Edit</button>
+                <button onclick="toggleEditSportConfig()" id="btnEditSportConfig" class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm px-3 py-1.5 rounded-lg flex items-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>Edit</button>
             </div>
             
             <div id="sportConfigDisplay" class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -317,12 +318,12 @@ function renderActiveSportDetails() {
     // Section B: Courts
     const courts = sport.courts || [];
     html += `
-        <div class="pt-6 border-t border-gray-100">
+        <div class="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
                     ${i18nDetail.sectionCourts} <span class="text-gray-400 font-normal">(${courts.length} sân)</span>
                 </h3>
-                <button class="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg flex items-center transition" onclick="renderAddCourtForm()"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>${i18nDetail.btnAddCourt.replace(/^\\+\\s*/, '')}</button>
+                <button class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm px-3 py-1.5 rounded-lg flex items-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-200" onclick="renderAddCourtForm()"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>${i18nDetail.btnAddCourt.replace(/^\\+\\s*/, '')}</button>
             </div>
             <div id="addCourtFormContainer"></div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -378,19 +379,19 @@ function renderActiveSportDetails() {
             `;
         });
     } else {
-        html += `<div class="col-span-full text-sm text-gray-500 italic">Chưa có sân nào.</div>`;
+        html += `<div class="col-span-full text-sm text-gray-500 italic text-center py-4">No courts yet.</div>`;
     }
     html += `</div></div>`;
 
     // Section C: Pricing
     const prices = sport.priceRules || [];
     html += `
-        <div class="pt-6 border-t border-gray-100">
+        <div class="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
                     ${i18nDetail.sectionPricing} <span class="text-[10px] font-normal text-gray-400 uppercase tracking-wider">${i18nDetail.pricingNote}</span>
                 </h3>
-                <button onclick="renderAddPricingForm(${sport.facilitySportId}, '${sport.sportName}', ${sport.slotStepMinutes || 30})" class="text-xs font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg flex items-center transition"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>${i18nDetail.btnAddPricing.replace(/^\\+\\s*/, '')}</button>
+                <button onclick="renderAddPricingForm(${sport.facilitySportId}, '${sport.sportName}', ${sport.slotStepMinutes || 30})" class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm px-3 py-1.5 rounded-lg flex items-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>${i18nDetail.btnAddPricing.replace(/^\\+\\s*/, '')}</button>
             </div>
             
             <div id="addPricingFormContainer"></div>
@@ -448,7 +449,7 @@ function renderActiveSportDetails() {
             `;
         });
     } else {
-        html += `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500 italic">Chưa có bảng giá.</td></tr>`;
+        html += `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500 italic">No pricing rules yet.</td></tr>`;
     }
 
     html += `</tbody></table></div></div>`;
@@ -1802,3 +1803,181 @@ window.submitEditSportConfig = function(event, facilitySportId, sportId) {
         showCustomAlert(error.message, "error");
     });
 }
+
+// ==================== STAFF SECTION ====================
+function loadFacilityStaff(fId) {
+    fetch(`/api/owner/staff/by-facility/${fId}`)
+        .then(res => res.json())
+        .then(response => {
+            if (response.success) {
+                renderStaffSection(response.data || []);
+            }
+        })
+        .catch(err => console.error('Error loading staff:', err));
+}
+
+function renderStaffSection(staffList) {
+    const container = document.getElementById('staffSectionContainer');
+    if (!container) return;
+
+    const sectionTitle = typeof i18nDetail !== 'undefined' && i18nDetail.sectionStaff
+        ? i18nDetail.sectionStaff : 'Assigned Staff';
+    const noStaffText = typeof i18nDetail !== 'undefined' && i18nDetail.noStaff
+        ? i18nDetail.noStaff : 'No staff assigned to this facility yet.';
+    const assignBtnText = typeof i18nDetail !== 'undefined' && i18nDetail.btnAssignStaff
+        ? i18nDetail.btnAssignStaff : 'Assign Staff';
+
+    let staffCardsHtml = '';
+    if (staffList.length === 0) {
+        staffCardsHtml = `
+            <div class="text-center py-10 text-slate-400">
+                <svg class="mx-auto h-12 w-12 mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                </svg>
+                <p class="text-sm font-medium">${noStaffText}</p>
+            </div>
+        `;
+    } else {
+        staffCardsHtml = `<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">` +
+            staffList.map(staff => `
+                <div class="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 hover:shadow-sm transition-shadow">
+                    <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden flex-shrink-0">
+                        ${staff.avatarPath
+                            ? `<img src="${staff.avatarPath}" class="w-full h-full object-cover" alt="">`
+                            : `<span>${staff.fullName.charAt(0).toUpperCase()}</span>`
+                        }
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="font-semibold text-slate-900 text-sm truncate">${staff.fullName}</div>
+                        <div class="text-xs text-slate-400 truncate">${staff.email || staff.phone || ''}</div>
+                    </div>
+                </div>
+            `).join('') + `</div>`;
+    }
+
+    container.innerHTML = `
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                ${sectionTitle}
+                <span class="text-xs font-bold text-slate-400">(${staffList.length})</span>
+            </h3>
+            <button onclick="openAssignStaffModal()"
+                class="px-5 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold flex items-center shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-blue-700 transition-all duration-200">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                ${assignBtnText}
+            </button>
+        </div>
+        ${staffCardsHtml}
+        
+        <!-- Assign Staff Modal Container (will be rendered when opened) -->
+        <div id="assignStaffModalContainer"></div>
+    `;
+}
+
+function openAssignStaffModal() {
+    fetch('/api/owner/staff')
+        .then(res => res.json())
+        .then(response => {
+            if (response.success) {
+                renderAssignStaffModal(response.data || []);
+            }
+        })
+        .catch(err => console.error('Error fetching staff list for modal:', err));
+}
+
+function renderAssignStaffModal(allStaff) {
+    let container = document.getElementById('assignStaffModalContainer');
+    if (!container) return;
+
+    // Build list items
+    let listHtml = '';
+    allStaff.forEach(staff => {
+        // If assigned to this facility, pre-check it
+        const isAssignedToThis = staff.facilityId === facilityId;
+        const isAssignedToOther = staff.facilityId && staff.facilityId !== facilityId;
+        
+        let labelAddon = '';
+        if (isAssignedToOther) {
+            labelAddon = `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded ml-2">Assigned to another facility</span>`;
+        }
+
+        listHtml += `
+            <label class="flex items-center p-3 border border-gray-100 rounded-xl hover:bg-gray-50 cursor-pointer transition mb-2 staff-checkbox-item" data-search="${(staff.fullName + ' ' + staff.email + ' ' + staff.phone).toLowerCase()}">
+                <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 mr-3 staff-checkbox" value="${staff.staffId}" ${isAssignedToThis ? 'checked' : ''}>
+                <div class="flex-1">
+                    <div class="text-sm font-semibold text-gray-900">${staff.fullName} ${labelAddon}</div>
+                    <div class="text-xs text-gray-500">${staff.email || ''} - ${staff.phone || ''}</div>
+                </div>
+            </label>
+        `;
+    });
+
+    if (allStaff.length === 0) {
+        listHtml = `<div class="text-center text-sm text-gray-500 py-6">No staff found. Please create staff first.</div>`;
+    }
+
+    container.innerHTML = `
+        <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
+                    <h3 class="text-base font-bold text-gray-900">Assign Staff</h3>
+                    <button onclick="document.getElementById('assignStaffModalContainer').innerHTML=''" class="text-gray-400 hover:text-gray-700 transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                
+                <div class="p-6 overflow-y-auto flex-1">
+                    <div class="mb-4 relative">
+                        <input type="text" id="staffSearchInput" placeholder="Search by name, email, phone..." class="w-full rounded-xl border-gray-200 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition text-sm py-2.5 pl-10 px-4" onkeyup="filterStaffList()">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                    
+                    <div class="max-h-64 overflow-y-auto pr-2 custom-scrollbar" id="staffListContainer">
+                        ${listHtml}
+                    </div>
+                </div>
+                
+                <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50/50">
+                    <button onclick="document.getElementById('assignStaffModalContainer').innerHTML=''" class="px-5 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:-translate-y-0.5 hover:shadow-md hover:text-gray-900 transition-all duration-200">Cancel</button>
+                    <button onclick="submitAssignStaff()" class="px-5 py-2 text-sm font-bold text-white bg-blue-600 rounded-xl hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-md transition-all duration-200">Confirm Assignment</button>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function filterStaffList() {
+    const term = document.getElementById('staffSearchInput').value.toLowerCase();
+    const items = document.querySelectorAll('.staff-checkbox-item');
+    items.forEach(item => {
+        const searchData = item.getAttribute('data-search');
+        if (searchData.includes(term)) {
+            item.style.display = 'flex';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+function submitAssignStaff() {
+    const checkedBoxes = document.querySelectorAll('.staff-checkbox:checked');
+    const staffIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+    
+    fetch('/api/owner/facilities/' + facilityId + '/staff', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ staffIds: staffIds })
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Lỗi khi gán nhân viên");
+        showCustomAlert("Cập nhật danh sách nhân viên phụ trách thành công!", "success", () => {
+            document.getElementById('assignStaffModalContainer').innerHTML='';
+            loadFacilityStaff(facilityId);
+        });
+    })
+    .catch(err => showCustomAlert(err.message, "error"));
+}
+
