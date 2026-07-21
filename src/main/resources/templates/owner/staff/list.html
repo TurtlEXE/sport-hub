@@ -200,13 +200,13 @@
     <th:block layout:fragment="pageScripts">
         <script th:inline="javascript">
             const i18nStaff = {
-                statusActive: [[#{staff.list.status.active}]],
-                statusInactive: [[#{staff.list.status.inactive}]],
+                statusActive: /*[[#{staff.list.status.active}]]*/ 'Active',
+                statusInactive: /*[[#{staff.list.status.inactive}]]*/ 'Inactive',
                 confirmDelete: 'Are you sure you want to deactivate this staff member?',
-                titleCreate: [[#{staff.form.title.create}]],
-                titleEdit: [[#{staff.form.title.edit}]],
-                subtitleCreate: [[#{staff.form.subtitle.create}]],
-                subtitleEdit: [[#{staff.form.subtitle.edit}]],
+                titleCreate: /*[[#{staff.form.title.create}]]*/ 'Create Staff',
+                titleEdit: /*[[#{staff.form.title.edit}]]*/ 'Edit Staff',
+                subtitleCreate: /*[[#{staff.form.subtitle.create}]]*/ 'Create a new staff member',
+                subtitleEdit: /*[[#{staff.form.subtitle.edit}]]*/ 'Edit existing staff member',
                 notAssigned: 'Not Assigned'
             };
         </script>

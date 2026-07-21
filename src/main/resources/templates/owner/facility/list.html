@@ -164,19 +164,19 @@
         <script th:inline="javascript">
             // Passing localized texts to JS
             const i18n = {
-                statusActive: [[#{ facility.list.status.active }]],
-                statusInactive: [[#{ facility.list.status.inactive }]],
-                totalCourts: [[#{ facility.list.courts.total }]],
-                totalSports: [[#{ facility.list.sports.total }]],
-                businessSports: [[#{ facility.list.sports.business }]],
-                manageDetail: [[#{ facility.list.manage_detail }]],
-                createdDate: [[#{ facility.list.created_date }]],
-                rejectionReason: [[#{ facility.list.rejection_reason }]],
-                filterApproved: [[#{ facility.list.filter.approved }]],
-                filterPending: [[#{ facility.list.filter.pending }]],
-                filterRejected: [[#{ facility.list.filter.rejected }]],
-                courtsLabel: [[#{ facility.list.courts.label }]],
-                noSports: [[#{ facility.list.no_sports }]]
+                statusActive: /*[[#{facility.list.status.active}]]*/ '',
+                statusInactive: /*[[#{facility.list.status.inactive}]]*/ '',
+                totalCourts: /*[[#{facility.list.courts.total}]]*/ '',
+                totalSports: /*[[#{facility.list.sports.total}]]*/ '',
+                businessSports: /*[[#{facility.list.sports.business}]]*/ '',
+                manageDetail: /*[[#{facility.list.manage_detail}]]*/ '',
+                createdDate: /*[[#{facility.list.created_date}]]*/ '',
+                rejectionReason: /*[[#{facility.list.rejection_reason}]]*/ '',
+                filterApproved: /*[[#{facility.list.filter.approved}]]*/ '',
+                filterPending: /*[[#{facility.list.filter.pending}]]*/ '',
+                filterRejected: /*[[#{facility.list.filter.rejected}]]*/ '',
+                courtsLabel: /*[[#{facility.list.courts.label}]]*/ '',
+                noSports: /*[[#{facility.list.no_sports}]]*/ ''
             };
         </script>
         <script th:src="@{/js/owner-facility-list.js}"></script>
