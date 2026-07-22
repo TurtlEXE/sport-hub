@@ -44,17 +44,21 @@ function updateStatsAndCounts(facilities) {
     let approved = 0;
     let pending = 0;
     let rejected = 0;
-    let sportsCount = 0;
     let courtsCount = 0;
+    let uniqueSports = new Set();
 
     facilities.forEach(f => {
         if (f.approvalStatus === 'APPROVED') approved++;
         else if (f.approvalStatus === 'PENDING') pending++;
         else if (f.approvalStatus === 'REJECTED') rejected++;
         
-        sportsCount += (f.totalSports || 0);
         courtsCount += (f.totalCourts || 0);
+        if (f.sportNames && Array.isArray(f.sportNames)) {
+            f.sportNames.forEach(sport => uniqueSports.add(sport));
+        }
     });
+
+    let sportsCount = uniqueSports.size;
 
     // Update Stats Row
     if(document.getElementById('statTotalFacilities')) document.getElementById('statTotalFacilities').innerText = total;
@@ -114,18 +118,6 @@ function renderFacilities(facilities) {
             </div>`;
         }
 
-        let activeToggle = '';
-        if (f.isActive !== false) {
-            activeToggle = `<div class="absolute top-3 right-3 bg-black/40 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-2">
-                ${i18n.statusActive}
-                <div class="w-6 h-3.5 bg-green-400 rounded-full flex items-center p-0.5"><div class="w-2.5 h-2.5 bg-white rounded-full ml-auto"></div></div>
-            </div>`;
-        } else {
-            activeToggle = `<div class="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[10px] font-bold px-3 py-1.5 rounded-full flex items-center gap-2">
-                ${i18n.statusInactive}
-                <div class="w-6 h-3.5 bg-gray-500 rounded-full flex items-center p-0.5"><div class="w-2.5 h-2.5 bg-white rounded-full"></div></div>
-            </div>`;
-        }
 
         const date = new Date(f.createdAt).toLocaleDateString('vi-VN');
         const img = f.thumbnailUrl || 'https://placehold.co/600x400?text=Sport+Facility';
@@ -134,7 +126,7 @@ function renderFacilities(facilities) {
         if (f.sportNames && f.sportNames.length > 0) {
             tagsHtml = f.sportNames.map(name => `<span class="px-3 py-1 bg-blue-50 text-blue-600 text-[10px] font-bold rounded-full">${name}</span>`).join('');
         } else {
-            tagsHtml = `<span class="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-full">Chưa có môn nào</span>`;
+            tagsHtml = `<span class="px-3 py-1 bg-gray-50 text-gray-500 text-[10px] font-bold rounded-full">${i18n.noSports || 'No sports'}</span>`;
         }
 
         let rejectionHtml = '';
@@ -152,7 +144,6 @@ function renderFacilities(facilities) {
                     <img src="${img}" alt="${f.name}" class="w-full h-full object-cover group-hover:scale-105 transition duration-500" onerror="this.src='https://placehold.co/600x400?text=No+Image'">
                     <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                     ${statusBadge}
-                    ${activeToggle}
                     <div class="absolute bottom-3 right-3 text-white text-xs flex items-center font-medium opacity-90">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         ${i18n.createdDate} ${date}

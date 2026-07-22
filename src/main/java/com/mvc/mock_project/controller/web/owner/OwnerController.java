@@ -27,4 +27,11 @@ public class OwnerController {
         model.addAttribute("facilityId", id);
         return "owner/facility/detail";
     }
+
+    @GetMapping("/staff")
+    public String staffList() {
+        return "owner/staff/list";
+    }
+
+
 }
