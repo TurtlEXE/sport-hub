@@ -250,13 +250,17 @@ public class FacilityServiceImpl implements FacilityService {
             }
         }
         
-        Map<String, List<PriceRuleDTO>> groupedPriceRules = allRules.stream().map(r -> PriceRuleDTO.builder()
-                .startTime(r.getStartTime())
-                .endTime(r.getEndTime())
-                .pricePerSlot(r.getPricePerSlot())
-                .dayType(r.getDayType() != null ? r.getDayType().name() : "ALL")
-                .build()
-        ).collect(Collectors.groupingBy(PriceRuleDTO::getDayType));
+        Map<String, List<PriceRuleDTO>> groupedPriceRules = allRules.stream().map(r -> {
+            String sportName = (r.getFacilitySport() != null && r.getFacilitySport().getSport() != null)
+                    ? r.getFacilitySport().getSport().getSportName() : "General";
+            return PriceRuleDTO.builder()
+                    .startTime(r.getStartTime())
+                    .endTime(r.getEndTime())
+                    .pricePerSlot(r.getPricePerSlot())
+                    .dayType(r.getDayType() != null ? r.getDayType().name() : "ALL")
+                    .sportName(sportName)
+                    .build();
+        }).collect(Collectors.groupingBy(PriceRuleDTO::getSportName));
 
         List<String> galleryImages = new ArrayList<>();
         if (facility.getImages() != null) {

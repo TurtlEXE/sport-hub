@@ -35,22 +35,22 @@
                     onclick="document.querySelectorAll('.popup-tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-info').classList.remove('hidden'); document.querySelectorAll('.popup-tab-btn').forEach(b=>{b.classList.remove('border-secondary-green', 'text-secondary-green'); b.classList.add('border-transparent', 'text-slate-500');}); this.classList.remove('border-transparent', 'text-slate-500'); this.classList.add('border-secondary-green', 'text-secondary-green');"
                     id="btn-tab-info"
                     class="popup-tab-btn pb-3 px-4 font-bold text-sm border-b-2 border-secondary-green text-secondary-green transition-colors"
-                    th:text="#{venue.popup.tab.info}">Thông tin</button>
+                    th:text="#{venue.popup.tab.info}">Information</button>
                 <button type="button"
                     onclick="document.querySelectorAll('.popup-tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-services').classList.remove('hidden'); document.querySelectorAll('.popup-tab-btn').forEach(b=>{b.classList.remove('border-secondary-green', 'text-secondary-green'); b.classList.add('border-transparent', 'text-slate-500');}); this.classList.remove('border-transparent', 'text-slate-500'); this.classList.add('border-secondary-green', 'text-secondary-green');"
                     id="btn-tab-services"
                     class="popup-tab-btn pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors"
-                    th:text="#{venue.popup.tab.services}">Dịch vụ</button>
+                    th:text="#{venue.popup.tab.services}">Services</button>
                 <button type="button"
                     onclick="document.querySelectorAll('.popup-tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-images').classList.remove('hidden'); document.querySelectorAll('.popup-tab-btn').forEach(b=>{b.classList.remove('border-secondary-green', 'text-secondary-green'); b.classList.add('border-transparent', 'text-slate-500');}); this.classList.remove('border-transparent', 'text-slate-500'); this.classList.add('border-secondary-green', 'text-secondary-green');"
                     id="btn-tab-images"
                     class="popup-tab-btn pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors"
-                    th:text="#{venue.popup.tab.images}">Hình ảnh</button>
+                    th:text="#{venue.popup.tab.images}">Images</button>
                 <button type="button"
                     onclick="document.querySelectorAll('.popup-tab-content').forEach(e=>e.classList.add('hidden')); document.getElementById('tab-reviews').classList.remove('hidden'); document.querySelectorAll('.popup-tab-btn').forEach(b=>{b.classList.remove('border-secondary-green', 'text-secondary-green'); b.classList.add('border-transparent', 'text-slate-500');}); this.classList.remove('border-transparent', 'text-slate-500'); this.classList.add('border-secondary-green', 'text-secondary-green');"
                     id="btn-tab-reviews"
                     class="popup-tab-btn pb-3 px-4 font-bold text-sm border-b-2 border-transparent text-slate-500 hover:text-slate-700 transition-colors"
-                    th:text="#{venue.popup.tab.reviews}">Đánh giá</button>
+                    th:text="#{venue.popup.tab.reviews}">Reviews</button>
             </div>
 
             <!-- Tab Content Container -->
@@ -61,7 +61,7 @@
                     <!-- Description -->
                     <div>
                         <h3 class="text-xs font-bold text-slate-400 uppercase mb-2"
-                            th:text="#{venue.popup.introduction}">Giới thiệu</h3>
+                            th:text="#{venue.popup.introduction}">Introduction</h3>
                         <p class="text-slate-600 text-sm leading-relaxed"
                             th:text="${venue.description != null ? venue.description : #messages.msg('venue.popup.info.updating')}">
                         </p>
@@ -70,13 +70,13 @@
                     <div class="grid grid-cols-2 gap-6">
                         <div>
                             <div class="text-xs font-bold text-slate-400 uppercase mb-1"
-                                th:text="#{venue.popup.openingHours}">Giờ hoạt động</div>
+                                th:text="#{venue.popup.openingHours}">Opening Hours</div>
                             <div class="text-sm font-bold text-slate-700" th:text="${venue.openingHours}">00:00 - 00:00
                             </div>
                         </div>
                         <div>
                             <div class="text-xs font-bold text-slate-400 uppercase mb-1"
-                                th:text="#{venue.popup.contact}">Liên hệ</div>
+                                th:text="#{venue.popup.contact}">Contact</div>
                             <div class="text-sm font-bold text-slate-700 flex items-center gap-1.5">
                                 <svg class="w-4 h-4 text-secondary-green" fill="none" viewBox="0 0 24 24"
                                     stroke="currentColor">
@@ -90,24 +90,22 @@
                     </div>
 
                     <div class="mb-8">
-                        <h4 class="text-sm font-bold text-slate-900 mb-4" th:text="#{venue.popup.sports}">Các môn thể
-                            thao</h4>
+                        <h4 class="text-sm font-bold text-slate-900 mb-4" th:text="#{venue.popup.sports}">Sports</h4>
                         <div class="flex flex-wrap gap-2">
                             <span th:each="sport, iterStat : ${venue.sports}"
                                 class="bg-blue-50 text-primary-blue text-xs font-bold px-3 py-1.5 rounded-lg flex items-center gap-1.5">
                                 <span></span>
-                                <span th:text="${venue.sportNames[iterStat.index]}">Môn thể thao</span>
+                                <span th:text="${venue.sportNames[iterStat.index]}">Sport</span>
                             </span>
                         </div>
                     </div>
 
                     <div>
-                        <h4 class="text-sm font-bold text-slate-900 mb-4" th:text="#{venue.popup.amenities}">Tiện ích &
-                            Dịch vụ</h4>
+                        <h4 class="text-sm font-bold text-slate-900 mb-4" th:text="#{venue.popup.amenities}">Amenities & Services</h4>
                         <div class="flex flex-wrap gap-2">
                             <span th:each="amenity : ${venue.amenities}"
                                 class="text-sm font-medium text-secondary-green bg-green-50 px-3 py-1.5 rounded-lg">
-                                <span th:text="${amenity}">Tiện ích</span>
+                                <span th:text="${amenity}">Amenity</span>
                             </span>
                         </div>
                     </div>
@@ -123,7 +121,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                            <span th:text="#{venue.popup.priceList}">Bảng giá sân</span>
+                            <span th:text="#{venue.popup.priceList}">Price List</span>
                             <span class="text-xs text-slate-500 font-medium normal-case ml-auto"
                                 th:if="${venue.slotDurationMinutes != null}"
                                 th:text="${#messages.msg('venue.popup.pricePerSlot', venue.slotDurationMinutes)}"></span>
@@ -131,27 +129,40 @@
 
                         <div th:if="${venue.groupedPriceRules == null or venue.groupedPriceRules.isEmpty()}"
                             class="text-sm text-slate-500 italic" th:text="#{venue.popup.priceList.updating}">
-                            Đang cập nhật bảng giá...
+                            Updating price list...
                         </div>
 
                         <div th:each="entry : ${venue.groupedPriceRules}"
                             class="mb-4 overflow-hidden rounded-xl border border-slate-200">
-                            <div class="bg-slate-50 px-4 py-2 border-b border-slate-200">
-                                <span class="font-bold text-slate-700 text-sm"
-                                    th:text="${entry.key == 'WEEKDAY' ? #messages.msg('venue.popup.weekday.text') : (entry.key == 'WEEKEND' ? #messages.msg('venue.popup.weekend.text') : (entry.key == 'ALL' ? #messages.msg('venue.popup.allDays.text') : entry.key))}">Ngày thường</span>
+                            <div class="bg-blue-50/80 px-4 py-2.5 border-b border-slate-200 flex items-center justify-between">
+                                <span class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-primary-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                    </svg>
+                                    <span th:text="${entry.key}">Sport Name</span>
+                                </span>
                             </div>
                             <table class="w-full text-sm text-left">
+                                <thead class="bg-slate-50 text-xs text-slate-500 uppercase border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-4 py-2 font-semibold" th:text="#{venue.popup.day}">Day</th>
+                                        <th class="px-4 py-2 font-semibold" th:text="#{venue.popup.timeFrame}">Time Frame</th>
+                                        <th class="px-4 py-2 text-right font-semibold" th:text="#{venue.popup.price}">Price / Slot</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     <tr th:each="rule, iterStat : ${entry.value}"
                                         th:class="${!iterStat.last} ? 'border-b border-slate-100' : ''">
-                                        <td class="px-4 py-3 font-medium text-slate-600">
-                                            <span th:text="${rule.startTime} + ' - ' + ${rule.endTime}">00:00 -
-                                                00:00</span>
+                                        <td class="px-4 py-2.5">
+                                            <span class="inline-block px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700"
+                                                th:text="${rule.dayType == 'WEEKDAY' ? #messages.msg('venue.popup.weekday.text') : (rule.dayType == 'WEEKEND' ? #messages.msg('venue.popup.weekend.text') : #messages.msg('venue.popup.allDays.text'))}">Mon - Fri</span>
                                         </td>
-                                        <td class="px-4 py-3 text-right font-bold text-slate-900">
+                                        <td class="px-4 py-2.5 font-medium text-slate-600">
+                                            <span th:text="${rule.startTime} + ' - ' + ${rule.endTime}">06:00 - 23:00</span>
+                                        </td>
+                                        <td class="px-4 py-2.5 text-right font-bold text-slate-900">
                                             <span
-                                                th:text="${#numbers.formatDecimal(rule.pricePerSlot, 0, 'COMMA', 0, 'POINT')} + ' ' + #{venue.popup.currency}">100.000
-                                                đ</span>
+                                                th:text="${#numbers.formatDecimal(rule.pricePerSlot, 0, 'COMMA', 0, 'POINT')} + ' ' + #{venue.popup.currency}">400,000 VND</span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -166,18 +177,18 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                             </svg>
-                            <span th:text="#{venue.popup.serviceList}">Danh sách dịch vụ</span>
+                            <span th:text="#{venue.popup.serviceList}">Service List</span>
                         </h3>
 
                         <div th:if="${venue.groupedServices == null or venue.groupedServices.isEmpty()}"
                             class="text-sm text-slate-500 italic" th:text="#{venue.popup.noExtraServices}">
-                            Sân chưa cung cấp dịch vụ thêm.
+                            No extra services provided.
                         </div>
 
                         <div th:each="entry : ${venue.groupedServices}"
                             class="mb-4 overflow-hidden rounded-xl border border-slate-200">
                             <div class="bg-slate-50 px-4 py-2 border-b border-slate-200">
-                                <span class="font-bold text-slate-700 text-sm" th:text="${entry.key == 'Dịch vụ khác' ? #messages.msg('venue.popup.otherServices') : entry.key}">Dịch vụ khác</span>
+                                <span class="font-bold text-slate-700 text-sm" th:text="${entry.key == 'Dịch vụ khác' ? #messages.msg('venue.popup.otherServices') : entry.key}">Other Services</span>
                             </div>
                             <table class="w-full text-sm text-left">
                                 <tbody>
@@ -185,14 +196,13 @@
                                         th:class="${!iterStat.last} ? 'border-b border-slate-100' : ''">
                                         <td class="px-4 py-3 font-medium text-slate-600"
                                             th:text="${service.productName}">
-                                            Tên dịch vụ
+                                            Service Name
                                         </td>
                                         <td class="px-4 py-3 text-right text-slate-800">
                                             <span class="font-bold"
-                                                th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT')} + ' ' + #{venue.popup.currency}">50.000
-                                                đ</span>
+                                                th:text="${#numbers.formatDecimal(service.price, 0, 'COMMA', 0, 'POINT')} + ' ' + #{venue.popup.currency}">50,000 VND</span>
                                             <span class="text-xs text-slate-500" th:if="${service.rentalUnit != null}"
-                                                th:text="' / ' + ${service.rentalUnit}">/ giờ</span>
+                                                th:text="' / ' + ${service.rentalUnit}">/ hour</span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -208,11 +218,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <span th:text="#{venue.popup.tab.images}">Hình ảnh</span>
+                        <span th:text="#{venue.popup.tab.images}">Images</span>
                     </h3>
                     <div th:if="${venue.galleryImages == null or venue.galleryImages.isEmpty()}"
                         class="text-sm text-slate-500 italic" th:text="#{venue.popup.noImages}">
-                        Chưa có hình ảnh nào.
+                        No images available.
                     </div>
                     <div class="grid grid-cols-3 gap-3">
                         <div th:each="img : ${venue.galleryImages}"
@@ -230,26 +240,25 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                         </svg>
-                        <span th:text="#{venue.popup.tab.reviews}">Đánh giá</span>
+                        <span th:text="#{venue.popup.tab.reviews}">Reviews</span>
                     </h3>
                     <div th:if="${venue.reviews == null or venue.reviews.isEmpty()}"
                         class="text-sm text-slate-500 italic" th:text="#{venue.popup.noReviews}">
-                        Chưa có đánh giá nào.
+                        No reviews available.
                     </div>
                     <div th:each="review : ${venue.reviews}" class="border-b border-slate-100 pb-4 last:border-0">
                         <div class="flex items-center gap-3 mb-2">
                             <div class="w-10 h-10 rounded-full bg-secondary-green text-white flex items-center justify-center font-bold text-lg"
-                                th:text="${review.reviewerName.substring(0,1)}">N</div>
+                                th:text="${review.reviewerName.substring(0,1)}">J</div>
                             <div>
-                                <div class="text-sm font-bold text-slate-900" th:text="${review.reviewerName}">Nguyễn
-                                    Văn A</div>
+                                <div class="text-sm font-bold text-slate-900" th:text="${review.reviewerName}">John Doe</div>
                                 <div class="flex text-yellow-400 text-xs">
                                     <span th:each="i : ${#numbers.sequence(1, 5)}"
                                         th:text="${i <= review.rating ? '★' : '☆'}">★</span>
                                 </div>
                             </div>
                         </div>
-                        <p class="text-sm text-slate-600" th:text="${review.comment}">Sân đẹp, thoáng mát...</p>
+                        <p class="text-sm text-slate-600" th:text="${review.comment}">Great venue, spacious...</p>
                     </div>
                 </div>
             </div>
@@ -258,7 +267,7 @@
             <div class="p-6 border-t border-slate-100 bg-white">
                 <a th:href="@{/booking/{id}(id=${venue.facilityId})}"
                     class="block text-center w-full bg-slate-900 hover:bg-primary-blue text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-xl">
-                    <span th:text="#{venue.card.bookNow}">ĐẶT LỊCH NGAY</span>
+                    <span th:text="#{venue.card.bookNow}">BOOK NOW</span>
                 </a>
             </div>
         </div>

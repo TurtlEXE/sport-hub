@@ -36,6 +36,15 @@ public class WebConfig implements WebMvcConfigurer {
         return lci;
     }
 
+    @Bean
+    public org.springframework.context.support.ResourceBundleMessageSource messageSource() {
+        org.springframework.context.support.ResourceBundleMessageSource messageSource = new org.springframework.context.support.ResourceBundleMessageSource();
+        messageSource.setBasenames("messages");
+        messageSource.setDefaultEncoding("UTF-8");
+        messageSource.setFallbackToSystemLocale(false);
+        return messageSource;
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(localeChangeInterceptor());

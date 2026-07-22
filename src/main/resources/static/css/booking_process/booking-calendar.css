@@ -67,6 +67,12 @@ body { background-color: #f8fafc; color: #0f172a; }
     cursor: not-allowed;
 }
 
+.slot-no-price {
+    background-color: #ffffff;
+    background-image: linear-gradient(to bottom right, transparent calc(50% - 1px), #ef4444 calc(50% - 1px), #ef4444 calc(50% + 1px), transparent calc(50% + 1px));
+    cursor: not-allowed;
+}
+
 .timeline-container::-webkit-scrollbar { height: 8px; }
 .timeline-container::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
 .timeline-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }

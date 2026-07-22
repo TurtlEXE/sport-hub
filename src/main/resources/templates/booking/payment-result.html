@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Kết quả thanh toán - SportHub</title>
+    <title>Payment Result - SportHub</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -24,21 +24,21 @@
         </svg>
     </div>
 
-    <h2 class="text-2xl font-bold mb-2 text-gray-800" th:text="${status == 'SUCCESS' ? 'Thanh toán thành công!' : 'Thanh toán không thành công'}">Kết quả</h2>
+    <h2 class="text-2xl font-bold mb-2 text-gray-800" th:text="${status == 'SUCCESS' ? 'Payment Successful!' : 'Payment Failed'}">Result</h2>
     
-    <p class="text-gray-600 mb-6" th:text="${message}">Nội dung thông báo...</p>
+    <p class="text-gray-600 mb-6" th:text="${message}">Message content...</p>
 
     <div class="text-left bg-gray-50 p-4 rounded-md mb-6 text-sm">
-        <p class="mb-2"><span class="font-semibold">Mã giao dịch:</span> <span th:text="${transactionId}">-</span></p>
-        <p class="mb-2"><span class="font-semibold">Thời gian:</span> <span th:text="${paymentTime}">-</span></p>
-        <p class="mb-2"><span class="font-semibold">Tổng tiền sân:</span> <span th:text="${totalPrice}" class="text-red-500 font-bold">-</span></p>
+        <p class="mb-2"><span class="font-semibold">Transaction ID:</span> <span th:text="${transactionId}">-</span></p>
+        <p class="mb-2"><span class="font-semibold">Time:</span> <span th:text="${paymentTime}">-</span></p>
+        <p class="mb-2"><span class="font-semibold">Total Court Fee:</span> <span th:text="${totalPrice}" class="text-red-500 font-bold">-</span></p>
         <p th:if="${status == 'SUCCESS'}" class="text-orange-600 font-semibold mt-4 text-xs italic">
-            * Số tiền dịch vụ đi kèm chưa được tính. Quý khách vui lòng thanh toán trực tiếp tại quầy khi đến sân.
+            * Add-on service fee is not included. Please pay directly at the counter upon arrival.
         </p>
     </div>
 
     <a href="/venues" class="inline-block bg-blue-600 text-white font-semibold py-2 px-6 rounded hover:bg-blue-700 transition duration-300">
-        Về trang chủ
+        Back to Venues
     </a>
 
 </div>

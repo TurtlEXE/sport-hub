@@ -131,9 +131,9 @@
                     
                     <div th:if="${venues.isEmpty()}" class="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm">
                         <div class="text-5xl mb-4">🔍</div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2" th:text="#{venue.empty.title}">Không tìm thấy sân</h3>
-                        <p class="text-slate-500" th:text="#{venue.empty.message}">Rất tiếc không có sân nào phù hợp với bộ lọc hiện tại của bạn.</p>
-                        <button onclick="resetFilters()" class="mt-6 bg-blue-50 text-primary-blue font-bold px-6 py-2.5 rounded-xl hover:bg-blue-100 transition-colors" th:text="#{venue.empty.clear}">Xóa bộ lọc</button>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2" th:text="#{venue.empty.title}">No venues found</h3>
+                        <p class="text-slate-500" th:text="#{venue.empty.message}">Sorry, no venues match your current filters.</p>
+                        <button onclick="resetFilters()" class="mt-6 bg-blue-50 text-primary-blue font-bold px-6 py-2.5 rounded-xl hover:bg-blue-100 transition-colors" th:text="#{venue.empty.clear}">Clear filters</button>
                     </div>
 
                     <div th:if="${!venues.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
@@ -238,7 +238,7 @@
                                 <div class="mt-auto border-t border-slate-100 pt-4">
                                     <div class="flex items-center justify-between mb-3">
                                         <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" th:text="#{venue.card.priceFrom}">
-                                            GIÁ TỪ
+                                            FROM
                                         </div>
                                         <div class="flex items-baseline gap-1">
                                             <span class="text-xl font-black text-slate-900"
@@ -283,7 +283,7 @@
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Đang tải dữ liệu sân...
+                        Loading venue data...
                     </div>
                 </div>
             </div>
@@ -387,7 +387,7 @@
                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    Đang tải dữ liệu sân...
+                                    Loading venue data...
                                 </div>`;
 
                             try {
@@ -398,7 +398,7 @@
                                 console.log("Fetched popup HTML successfully.");
                                 modalContent.innerHTML = html;
                             } catch (err) {
-                                modalContent.innerHTML = "<div class='p-12 text-center text-rose-500 font-bold'>Không thể tải thông tin sân. Vui lòng thử lại sau.</div>";
+                                modalContent.innerHTML = "<div class='p-12 text-center text-rose-500 font-bold'>Failed to load venue details. Please try again later.</div>";
                                 console.error("Error fetching venue popup:", err);
                             }
                         });
