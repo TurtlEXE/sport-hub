@@ -116,9 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial display
     updateDateDisplay(new Date());
-    if (currentFacilitySportId) {
-        loadTimelineData();
-    }
+    loadTimelineData();
 
     // --- Global Function for Tab Switching ---
     window.switchTab = function (btn) {
@@ -155,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validateAndUpdateRightSummary();
 
         if (!currentFacilitySportId) {
-            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Cơ sở này chưa cấu hình môn thể thao.</div>`;
+            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Cơ sở hiện đang cập nhật</div>`;
             showLoading(false);
             return;
         }
@@ -167,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (data.isClosedToday) {
-                timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium col-span-full">Sân không hoạt động vào ngày này.</div>`;
+                timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium col-span-full">Sân đang cập nhật</div>`;
                 showLoading(false);
                 return;
             }
@@ -212,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timelineGrid.innerHTML = '';
         const courts = data.courts || [];
         if (courts.length === 0) {
-            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Không có sân nào hoạt động.</div>`;
+            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Sân đang cập nhật</div>`;
             return;
         }
 
@@ -262,8 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (slot.status === 'LOCKED') {
                     slotCell.classList.add('slot-locked');
                     slotCell.title = "Sân nghỉ / Khoá";
+                } else if (slot.price === null || slot.price === undefined || slot.price === 0) {
+                    slotCell.classList.add('slot-no-price', 'border-slate-300');
+                    slotCell.title = "Chưa có giá";
                 } else if (isPast) {
-                    slotCell.classList.add('slot-locked');
+                    slotCell.classList.add('bg-slate-300', 'border-slate-400', 'cursor-not-allowed');
                     slotCell.title = "Đã qua giờ";
                 } else {
                     slotCell.classList.add('slot-available');
