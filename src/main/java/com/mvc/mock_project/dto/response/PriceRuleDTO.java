@@ -17,4 +17,5 @@ public class PriceRuleDTO {
     private LocalTime endTime;
     private BigDecimal pricePerSlot;
     private String dayType;
+    private String sportName;
 }

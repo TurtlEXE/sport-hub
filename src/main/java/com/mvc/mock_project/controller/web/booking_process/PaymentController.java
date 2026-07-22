@@ -11,15 +11,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.mvc.mock_project.service.BookingService;
-import com.mvc.mock_project.repository.InvoiceRepository;
-import com.mvc.mock_project.repository.BookingSlotRepository;
-import com.mvc.mock_project.repository.BookingRepository;
+import com.mvc.mock_project.entities.Account;
+import com.mvc.mock_project.security.CustomUserDetails;
+import com.mvc.mock_project.security.CustomOAuth2User;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import com.mvc.mock_project.entities.Invoice;
-import com.mvc.mock_project.entities.Booking;
-import com.mvc.mock_project.entities.BookingSlot;
-import com.mvc.mock_project.entities.enums.InvoiceStatus;
-import com.mvc.mock_project.entities.enums.BookingStatus;
-import com.mvc.mock_project.entities.enums.SlotStatus;
 import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,11 +27,7 @@ import java.util.List;
 public class PaymentController {
 
     private final VNPayService vnPayService;
-    private final EmailService emailService;
     private final BookingService bookingService;
-    private final InvoiceRepository invoiceRepository;
-    private final BookingSlotRepository bookingSlotRepository;
-    private final BookingRepository bookingRepository;
 
     @PostMapping("/create-payment")
     public String createPayment(
@@ -52,14 +45,14 @@ public class PaymentController {
             HttpServletRequest request) {
         
         // Extract logged-in Account if available
-        org.springframework.security.core.Authentication authentication = org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
-        com.mvc.mock_project.entities.Account account = null;
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Account account = null;
         if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getPrincipal())) {
             Object principal = authentication.getPrincipal();
-            if (principal instanceof com.mvc.mock_project.security.CustomUserDetails) {
-                account = ((com.mvc.mock_project.security.CustomUserDetails) principal).getAccount();
-            } else if (principal instanceof com.mvc.mock_project.security.CustomOAuth2User) {
-                account = ((com.mvc.mock_project.security.CustomOAuth2User) principal).getAccount();
+            if (principal instanceof CustomUserDetails) {
+                account = ((CustomUserDetails) principal).getAccount();
+            } else if (principal instanceof CustomOAuth2User) {
+                account = ((CustomOAuth2User) principal).getAccount();
             }
         }
         
@@ -96,45 +89,14 @@ public class PaymentController {
         String totalPrice = request.getParameter("vnp_Amount"); 
 
         if (paymentStatus == 1) {
-            // Thanh toán thành công -> Update DB
+            // Thanh toán thành công -> Update DB & Gửi email
             if (invoiceIdStr != null && !invoiceIdStr.isEmpty()) {
                 try {
                     Integer invId = Integer.parseInt(invoiceIdStr);
-                    Invoice invoice = invoiceRepository.findById(invId).orElse(null);
-                    if (invoice != null) {
-                        invoice.setPaymentStatus(InvoiceStatus.PARTIAL);
-                        if (totalPrice != null) {
-                            try {
-                                invoice.setPaidAmount(new java.math.BigDecimal(totalPrice).divide(new java.math.BigDecimal(100)));
-                            } catch (Exception e) {}
-                        }
-                        if (invoice.getBooking() != null) {
-                            Booking booking = invoice.getBooking();
-                            booking.setBookingStatus(BookingStatus.CONFIRMED);
-                            
-                            // Update booking slots if necessary
-                            List<BookingSlot> slots = booking.getBookingSlots();
-                            if (slots != null) {
-                                for (BookingSlot slot : slots) {
-                                    slot.setSlotStatus(SlotStatus.PENDING); // Slot remains PENDING until check-in
-                                }
-                                bookingSlotRepository.saveAll(slots);
-                            }
-                            bookingRepository.save(booking);
-                        }
-                        invoiceRepository.save(invoice);
-                    }
+                    bookingService.processPaymentSuccess(invId, totalPrice, transactionId, paymentTime, email);
                 } catch (Exception e) {
                     e.printStackTrace(); // Log error processing invoice ID
                 }
-            }
-            
-            // Gửi email xác nhận
-            if (email != null && !email.isEmpty() && !email.equals("null")) {
-                String bookingDetails = "Mã giao dịch: " + transactionId + "\n"
-                        + "Thời gian: " + paymentTime + "\n"
-                        + "Nội dung: " + orderInfo;
-                emailService.sendPaymentSuccessEmail(email, bookingDetails);
             }
             
             model.addAttribute("status", "SUCCESS");
