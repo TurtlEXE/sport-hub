@@ -153,9 +153,15 @@ public class OwnerFacilityApiController {
     @DeleteMapping("/courts/{courtId}")
     public ResponseEntity<?> deleteCourt(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Integer courtId) {
-        ownerFacilityService.deleteCourt(userDetails.getAccount().getId(), courtId);
-        return ResponseEntity.ok().body("Court deactivated successfully");
+            @PathVariable Integer courtId,
+            @RequestParam(defaultValue = "false") boolean forceDeactivate) {
+        try {
+            ownerFacilityService.deleteCourt(userDetails.getAccount().getId(), courtId, forceDeactivate);
+            return ResponseEntity.ok().body("Xóa/Vô hiệu hóa sân thành công");
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+                    .body(com.mvc.mock_project.dto.response.ApiResponse.error("COURT_HAS_BOOKINGS"));
+        }
     }
 
     @PutMapping("/courts/{courtId}/toggle")
@@ -189,7 +195,7 @@ public class OwnerFacilityApiController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Integer ruleId) {
         ownerFacilityService.deletePriceRule(userDetails.getAccount().getId(), ruleId);
-        return ResponseEntity.ok().body("Price rule deactivated successfully");
+        return ResponseEntity.ok().body("Price rule deleted successfully");
     }
 
 }

@@ -336,8 +336,14 @@ function renderActiveSportDetails() {
                 : `<span class="text-[10px] font-extrabold text-gray-500 bg-gray-100 px-2.5 py-1 rounded-full border border-gray-200">${i18nDetail.courtInactive}</span>`;
 
             const toggleIcon = court.isActive !== false
-                ? `<div class="flex items-center gap-1.5 text-green-600 font-semibold text-xs"><svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg> ${i18nDetail.courtToggleOn}</div>`
-                : `<div class="flex items-center gap-1.5 text-gray-400 font-semibold text-xs"><svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 9a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1zm1 4a1 1 0 100 2h.01a1 1 0 100-2H9z" clip-rule="evenodd"></path></svg> ${i18nDetail.courtToggleOff}</div>`;
+                ? `<label class="relative inline-flex items-center cursor-pointer" title="Toggle Court">
+                     <input type="checkbox" class="sr-only peer" checked onchange="toggleCourt(${court.courtId})">
+                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                   </label>`
+                : `<label class="relative inline-flex items-center cursor-pointer" title="Toggle Court">
+                     <input type="checkbox" class="sr-only peer" onchange="toggleCourt(${court.courtId})">
+                     <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                   </label>`;
 
             let attributesHtml = '';
             if (court.attributes && court.attributes.length > 0) {
@@ -357,15 +363,15 @@ function renderActiveSportDetails() {
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <h4 class="font-bold text-gray-900">${court.courtName}</h4>
-                            ${courtStatusBadge}
                         </div>
                         <p class="text-xs text-gray-500 mb-4">${court.description || 'Không có mô tả'}</p>
                         ${attributesHtml}
                     </div>
                     <div class="flex justify-between items-center pt-3 border-t border-gray-50">
-                        <button onclick="toggleCourt(${court.courtId})" class="focus:outline-none" title="Bật/Tắt Sân">
+                        <div class="flex items-center gap-3">
                             ${toggleIcon}
-                        </button>
+                            ${courtStatusBadge}
+                        </div>
                         <div class="flex gap-3">
                             <button onclick="renderEditCourtForm(${court.courtId})" class="text-gray-400 hover:text-blue-500 transition focus:outline-none" title="Chỉnh sửa sân">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -384,7 +390,7 @@ function renderActiveSportDetails() {
     html += `</div></div>`;
 
     // Section C: Pricing
-    const prices = sport.priceRules || [];
+    const prices = (sport.priceRules || []).filter(rule => rule.isActive !== false);
     html += `
         <div class="bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
             <div class="flex justify-between items-center mb-4">
@@ -403,7 +409,6 @@ function renderActiveSportDetails() {
                             <th class="px-6 py-4 font-bold">${i18nDetail.pricingDayType}</th>
                             <th class="px-6 py-4 font-bold">${i18nDetail.pricingTimeFrame}</th>
                             <th class="px-6 py-4 font-bold">${i18nDetail.pricingPrice}</th>
-                            <th class="px-6 py-4 font-bold">${i18nDetail.pricingDateRange}</th>
                             <th class="px-6 py-4 font-bold text-center">${i18nDetail.pricingAction}</th>
                         </tr>
                     </thead>
@@ -437,11 +442,11 @@ function renderActiveSportDetails() {
                     <td class="px-6 py-4 font-black text-blue-600">
                         ${new Intl.NumberFormat('vi-VN').format(rule.pricePerSlot)} đ
                     </td>
-                    <td class="px-6 py-4 text-gray-500 italic text-xs">
-                        ${i18nDetail.pricingDefaultRange}
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        <button onclick="deletePriceRule(${rule.priceRuleId})" class="text-gray-300 hover:text-red-500 transition focus:outline-none">
+                    <td class="px-6 py-4 text-center flex justify-center gap-2">
+                        <button onclick="editPriceRule(${rule.priceRuleId}, ${sport.facilitySportId}, '${sport.sportName}', ${sport.slotStepMinutes || 30})" class="text-gray-300 hover:text-blue-500 transition focus:outline-none" title="Edit">
+                            <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        </button>
+                        <button onclick="deletePriceRule(${rule.priceRuleId})" class="text-gray-300 hover:text-red-500 transition focus:outline-none" title="Delete">
                             <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                     </td>
@@ -449,7 +454,7 @@ function renderActiveSportDetails() {
             `;
         });
     } else {
-        html += `<tr><td colspan="5" class="px-6 py-8 text-center text-gray-500 italic">No pricing rules yet.</td></tr>`;
+        html += `<tr><td colspan="4" class="px-6 py-8 text-center text-gray-500 italic">No pricing rules yet.</td></tr>`;
     }
 
     html += `</tbody></table></div></div>`;
@@ -518,7 +523,9 @@ function renderAddCourtForm() {
                 </div>
             `;
 
-            document.getElementById('addCourtFormContainer').innerHTML = formHtml;
+            const container = document.getElementById('addCourtFormContainer');
+            container.innerHTML = formHtml;
+            container.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
             document.getElementById('addCourtForm').addEventListener('submit', function (e) {
                 e.preventDefault();
@@ -562,21 +569,59 @@ function renderAddCourtForm() {
 function toggleCourt(courtId) {
     fetch('/api/owner/courts/' + courtId + '/toggle', { method: 'PUT' })
         .then(res => {
-            if (!res.ok) throw new Error('Không thể thay đổi trạng thái sân');
-            showCustomAlert('Thay đổi trạng thái sân thành công!', 'success', () => fetchFacilityDetail(facilityId));
+            if (!res.ok) throw new Error('Cannot toggle court status');
+            showCustomAlert('Court status toggled successfully!', 'success', () => fetchFacilityDetail(facilityId));
         })
         .catch(err => showCustomAlert(err.message, 'error'));
 }
 
 function deleteCourt(courtId) {
-    if (confirm('Bạn có chắc chắn muốn xóa sân này? (Sân sẽ bị ẩn khỏi hệ thống)')) {
-        fetch('/api/owner/courts/' + courtId, { method: 'DELETE' })
-            .then(res => {
-                if (!res.ok) throw new Error('Không thể xóa sân');
-                showCustomAlert('Xóa sân thành công!', 'success', () => fetchFacilityDetail(facilityId));
-            })
-            .catch(err => showCustomAlert(err.message, 'error'));
+    if (typeof showCustomConfirm === 'function') {
+        showCustomConfirm('Are you sure you want to delete this court? (It will be permanently deleted if there are no bookings)', () => {
+            performDelete(courtId);
+        });
+    } else {
+        if (confirm('Are you sure you want to delete this court? (It will be permanently deleted if there are no bookings)')) {
+            performDelete(courtId);
+        }
     }
+}
+
+function performDelete(courtId) {
+    fetch('/api/owner/courts/' + courtId, { method: 'DELETE' })
+        .then(async res => {
+            if (res.status === 409) {
+                const data = await res.json();
+                if (data.message === 'COURT_HAS_BOOKINGS') {
+                    if (typeof showCustomConfirm === 'function') {
+                        showCustomConfirm('This court has bookings or dependencies so it cannot be permanently deleted. Would you like to deactivate it instead?', () => {
+                            performForceDeactivate(courtId);
+                        });
+                    } else {
+                        if (confirm('This court has bookings or dependencies so it cannot be permanently deleted. Would you like to deactivate it instead?')) {
+                            performForceDeactivate(courtId);
+                        }
+                    }
+                } else {
+                    showCustomAlert(data.message || 'Data error', 'error');
+                }
+                return;
+            }
+            if (!res.ok) throw new Error('Cannot delete court');
+            showCustomAlert('Court deleted successfully!', 'success', () => fetchFacilityDetail(facilityId));
+        })
+        .catch(err => {
+            if (err) showCustomAlert(err.message, 'error');
+        });
+}
+
+function performForceDeactivate(courtId) {
+    fetch('/api/owner/courts/' + courtId + '?forceDeactivate=true', { method: 'DELETE' })
+        .then(r => {
+            if (!r.ok) throw new Error('Cannot deactivate court');
+            showCustomAlert('Court deactivated successfully!', 'success', () => fetchFacilityDetail(facilityId));
+        })
+        .catch(err => showCustomAlert(err.message, 'error'));
 }
 
 function renderEditCourtForm(courtId) {
@@ -1633,7 +1678,7 @@ function renderAddPricingForm(sportId, sportName, stepMinutes = 30) {
                     </div>
                     
                     <!-- Effective From -->
-                    <div>
+                    <div class="hidden">
                         <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">${i18nDetail.addPricingEffectiveFrom}</label>
                         <div class="relative">
                             <input type="date" name="effectiveFrom" required class="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 transition text-sm py-2.5 pl-4 pr-10" value="${new Date().toISOString().split('T')[0]}">
@@ -1644,7 +1689,7 @@ function renderAddPricingForm(sportId, sportName, stepMinutes = 30) {
                     </div>
                     
                     <!-- Effective To -->
-                    <div>
+                    <div class="hidden">
                         <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">${i18nDetail.addPricingEffectiveTo}</label>
                         <div class="relative">
                             <input type="date" name="effectiveTo" class="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-blue-500 focus:ring-blue-500 transition text-sm py-2.5 pl-4 pr-10">
@@ -1666,6 +1711,7 @@ function renderAddPricingForm(sportId, sportName, stepMinutes = 30) {
             </form>
         </div>
     `;
+    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 async function submitPriceRule(e, sportId) {
@@ -1739,6 +1785,81 @@ function deletePriceRule(ruleId) {
             showCustomAlert(error.message, 'error');
         }
     }, "error");
+}
+
+function editPriceRule(ruleId, sportId, sportName, stepMinutes) {
+    const sport = facilityData.sports.find(s => s.facilitySportId === sportId);
+    if (!sport) return;
+    const rule = sport.priceRules.find(r => r.priceRuleId === ruleId);
+    if (!rule) return;
+
+    renderAddPricingForm(sportId, sportName, stepMinutes);
+    const form = document.getElementById('addPricingForm');
+    
+    form.previousElementSibling.innerText = "Chỉnh sửa giá cho " + sportName;
+    form.setAttribute('onsubmit', `submitEditPriceRule(event, ${ruleId}, ${sportId})`);
+    
+    form.querySelector('[name="dayType"]').value = rule.dayType;
+    form.querySelector('[name="pricePerSlot"]').value = rule.pricePerSlot;
+    form.querySelector('[name="startTime"]').value = rule.startTime ? rule.startTime.substring(0, 5) : '';
+    form.querySelector('[name="endTime"]').value = rule.endTime ? rule.endTime.substring(0, 5) : '';
+    if (rule.effectiveFrom) {
+        form.querySelector('[name="effectiveFrom"]').value = rule.effectiveFrom;
+    }
+    if (rule.effectiveTo) {
+        form.querySelector('[name="effectiveTo"]').value = rule.effectiveTo;
+    }
+    
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+async function submitEditPriceRule(e, ruleId, sportId) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    
+    let start = formData.get('startTime');
+    let end = formData.get('endTime');
+    if (start && start.length === 5) start += ":00";
+    if (end && end.length === 5) end += ":00";
+    
+    const payload = {
+        facilitySportId: sportId,
+        dayType: formData.get('dayType'),
+        pricePerSlot: parseFloat(formData.get('pricePerSlot')),
+        startTime: start,
+        endTime: end,
+        effectiveFrom: formData.get('effectiveFrom')
+    };
+    
+    const effectiveTo = formData.get('effectiveTo');
+    if (effectiveTo) {
+        payload.effectiveTo = effectiveTo;
+    }
+    
+    try {
+        const response = await fetch('/api/owner/price-rules/' + ruleId, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        
+        if (response.ok) {
+            cancelAddPricing();
+            showCustomAlert(await response.text(), 'success', () => fetchFacilityDetail(facilityId));
+        } else {
+            let msg = await response.text();
+            try {
+                const json = JSON.parse(msg);
+                msg = json.message || msg;
+            } catch (e) {}
+            showCustomAlert(msg, 'error');
+        }
+    } catch (error) {
+        showCustomAlert(error.message, 'error');
+    }
 }
 
 window.toggleEditSportConfig = function() {

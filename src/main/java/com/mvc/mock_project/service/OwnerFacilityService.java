@@ -32,6 +32,7 @@ public class OwnerFacilityService {
     private final FacilityImageRepository facilityImageRepository;
     private final CloudinaryService cloudinaryService;
     private final StaffRepository staffRepository;
+    private final BookingSlotRepository bookingSlotRepository;
 
     private void validateTimeAlignment(LocalTime openTime, LocalTime closeTime) {
         if (openTime.getMinute() % 30 != 0 || closeTime.getMinute() % 30 != 0) {
@@ -285,12 +286,22 @@ public class OwnerFacilityService {
     }
 
     @Transactional
-    public void deleteCourt(Integer accountId, Integer courtId) {
+    public void deleteCourt(Integer accountId, Integer courtId, boolean forceDeactivate) {
         Court court = courtRepository.findByIdAndFacilitySport_Facility_Owner_Id(courtId, accountId)
                 .orElseThrow(() -> new RuntimeException("Court not found"));
-        // TODO: check active bookings
-        court.setIsActive(false);
-        courtRepository.save(court);
+        
+        boolean hasConstraints = bookingSlotRepository.existsByCourt_Id(courtId);
+        
+        if (hasConstraints) {
+            if (forceDeactivate) {
+                court.setIsActive(false);
+                courtRepository.save(court);
+            } else {
+                throw new org.springframework.dao.DataIntegrityViolationException("COURT_HAS_BOOKINGS");
+            }
+        } else {
+            courtRepository.delete(court);
+        }
     }
 
     @Transactional
@@ -298,7 +309,8 @@ public class OwnerFacilityService {
         Court court = courtRepository.findByIdAndFacilitySport_Facility_Owner_Id(courtId, accountId)
                 .orElseThrow(() -> new RuntimeException("Court not found"));
         // If toggling off, might need to check active bookings
-        court.setIsActive(!court.getIsActive());
+        boolean currentStatus = court.getIsActive() != null ? court.getIsActive() : true;
+        court.setIsActive(!currentStatus);
         courtRepository.save(court);
     }
 
@@ -393,8 +405,7 @@ public class OwnerFacilityService {
         facilitySportRepository.findByIdAndFacility_Owner_Id(rule.getFacilitySport().getId(), accountId)
                 .orElseThrow(() -> new RuntimeException("Access denied"));
         
-        rule.setIsActive(false);
-        priceRuleRepository.save(rule);
+        priceRuleRepository.delete(rule);
     }
 
     @Transactional
