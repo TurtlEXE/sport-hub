@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const btnCancel = document.createElement('button');
                 btnCancel.className = "px-4 py-2 text-sm font-medium text-green-700 hover:bg-green-50 rounded-md transition-colors";
-                btnCancel.textContent = "Hủy";
+                btnCancel.textContent = "Cancel";
                 btnCancel.onclick = function() {
                     instance.setDate(currentDate); // revert
                     instance.close();
@@ -89,7 +89,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 const btnConfirm = document.createElement('button');
                 btnConfirm.className = "px-5 py-2 text-sm font-medium text-white bg-green-700 hover:bg-green-800 rounded-md transition-colors shadow-sm";
-                btnConfirm.textContent = "Xác nhận";
+                btnConfirm.textContent = "Confirm";
                 btnConfirm.onclick = function() {
                     if (instance.selectedDates.length > 0) {
                         currentDate = instance.formatDate(instance.selectedDates[0], "Y-m-d");
@@ -153,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         validateAndUpdateRightSummary();
 
         if (!currentFacilitySportId) {
-            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Cơ sở hiện đang cập nhật</div>`;
+            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Facility currently updating</div>`;
             showLoading(false);
             return;
         }
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await res.json();
 
             if (data.isClosedToday) {
-                timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium col-span-full">Sân đang cập nhật</div>`;
+                timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 font-medium col-span-full">Facility currently closed today</div>`;
                 showLoading(false);
                 return;
             }
@@ -176,14 +176,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             const minDurText = document.getElementById('minDurationText');
             if (minDurText) {
-                minDurText.textContent = `Thời gian thuê tối thiểu: ${config.minBookingDurationMinutes} phút`;
+                minDurText.textContent = `Minimum booking duration: ${config.minBookingDurationMinutes} mins`;
                 minDurText.classList.remove('hidden');
             }
 
             renderGrid(data);
         } catch (error) {
             console.error("Error loading timeline:", error);
-            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Lỗi khi tải dữ liệu. Vui lòng thử lại.</div>`;
+            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Error loading data. Please try again.</div>`;
         } finally {
             showLoading(false);
         }
@@ -210,7 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timelineGrid.innerHTML = '';
         const courts = data.courts || [];
         if (courts.length === 0) {
-            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Sân đang cập nhật</div>`;
+            timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Facility currently updating</div>`;
             return;
         }
 
@@ -221,7 +221,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const headerFrag = document.createDocumentFragment();
         const cornerCell = document.createElement('div');
         cornerCell.className = 'timeline-header court-name text-xs uppercase tracking-wider text-slate-400 font-bold border-b border-slate-200';
-        cornerCell.textContent = 'SÂN';
+        cornerCell.textContent = 'COURT';
         headerFrag.appendChild(cornerCell);
 
         courts[0].slots.forEach(slot => {
@@ -256,19 +256,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (slot.status === 'BOOKED') {
                     slotCell.classList.add('slot-booked');
-                    slotCell.title = "Đã có người đặt";
+                    slotCell.title = "Booked";
                 } else if (slot.status === 'LOCKED') {
                     slotCell.classList.add('slot-locked');
-                    slotCell.title = "Sân nghỉ / Khoá";
+                    slotCell.title = "Locked";
                 } else if (slot.price === null || slot.price === undefined || slot.price === 0) {
                     slotCell.classList.add('slot-no-price', 'border-slate-300');
-                    slotCell.title = "Chưa có giá";
+                    slotCell.title = "No price";
                 } else if (isPast) {
                     slotCell.classList.add('bg-slate-300', 'border-slate-400', 'cursor-not-allowed');
-                    slotCell.title = "Đã qua giờ";
+                    slotCell.title = "Past time";
                 } else {
                     slotCell.classList.add('slot-available');
-                    slotCell.title = `${slot.price ? formatMoney(slot.price) + 'đ' : 'Trống'}`;
+                    slotCell.title = `${slot.price ? formatMoney(slot.price) + ' VND' : 'Available'}`;
                     slotCell.addEventListener('click', () => handleSlotClick(slotCell, court, slot));
                 }
 
@@ -301,8 +301,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function validateAndUpdateRightSummary() {
         if (selectedSlots.size === 0) {
-            summarySlotsList.innerHTML = '<div class="text-slate-500 text-center py-6 bg-white rounded-lg border border-slate-200 border-dashed">Vui lòng chọn ca trên lịch</div>';
-            summaryTotalHours.textContent = "0 giờ";
+            summarySlotsList.innerHTML = '<div class="text-slate-500 text-center py-6 bg-white rounded-lg border border-slate-200 border-dashed">Please select time slots from calendar</div>';
+            summaryTotalHours.textContent = "0 hours";
             baseTotal = 0;
             btnNextStep.disabled = true;
             updateFinalTotal();
@@ -371,17 +371,17 @@ document.addEventListener('DOMContentLoaded', () => {
             let html = `
                 <div class="flex justify-between items-start">
                     <div>
-                        <div class="font-bold text-slate-800">Sân ${courtName}</div>
+                        <div class="font-bold text-slate-800">Court ${courtName}</div>
                         <div class="text-blue-600 font-medium text-xs mt-1 tracking-wide">${startTime} - ${endTime}</div>
                     </div>
                     <div class="text-right">
-                        <div class="font-semibold text-slate-800">${formatMoney(blockPrice)} đ</div>
+                        <div class="font-semibold text-slate-800">${formatMoney(blockPrice)} VND</div>
                         <div class="text-xs text-slate-500 mt-1">${formatDuration(blockDuration)}</div>
                     </div>
                 </div>
             `;
             if (!isValid) {
-                html += `<div class="text-xs text-red-500 mt-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Thiếu ${config.minBookingDurationMinutes - blockDuration}p tối thiểu</div>`;
+                html += `<div class="text-xs text-red-500 mt-1 flex items-center gap-1"><svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Missing ${config.minBookingDurationMinutes - blockDuration}m min duration</div>`;
                 item.classList.add('border-red-300', 'bg-red-50');
             }
 
@@ -408,9 +408,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function formatDuration(totalMins) {
         const h = Math.floor(totalMins / 60);
         const m = totalMins % 60;
-        if (h > 0 && m > 0) return `${h}h${m}`;
-        if (h > 0) return `${h} giờ`;
-        return `${m} phút`;
+        if (h > 0 && m > 0) return `${h}h ${m}m`;
+        if (h > 0) return `${h} hours`;
+        return `${m} mins`;
     }
 
     // --- CHECKOUT LOGIC & STEP TOGGLING ---
@@ -464,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.openServicesModal = function () {
         const container = document.getElementById('servicesListContainer');
         if (checkoutServices.length === 0) {
-            container.innerHTML = '<div class="text-center text-slate-500 py-8 text-sm">Chưa có dịch vụ nào cho cơ sở này.</div>';
+            container.innerHTML = '<div class="text-center text-slate-500 py-8 text-sm">No services available for this facility.</div>';
         } else {
             let html = '';
             checkoutServices.forEach(srv => {
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${imgHtml}
                             <div>
                                 <div class="font-bold text-slate-800">${srv.productName}</div>
-                                <div class="text-sm text-slate-500 mt-0.5">${formatMoney(srv.price)} đ / ${srv.unit || 'Lượt'}</div>
+                                <div class="text-sm text-slate-500 mt-0.5">${formatMoney(srv.price)} VND / ${srv.unit || 'Item'}</div>
                             </div>
                         </div>
                         <div class="flex items-center bg-slate-50 border border-slate-200 rounded-lg p-1 shrink-0">
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
         current += delta;
         if (current < 0) current = 0;
         if (srv.stock && current > srv.stock) {
-            alert('Vượt quá số lượng tồn kho!');
+            alert('Exceeds available stock!');
             return;
         }
 
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const srv = checkoutServices.find(s => s.productId == pId);
             if (srv) st += (srv.price * qty);
         }
-        document.getElementById('modalServicesSubtotal').innerText = formatMoney(st) + ' đ';
+        document.getElementById('modalServicesSubtotal').innerText = formatMoney(st) + ' VND';
     }
 
     function renderSelectedServicesList() {
@@ -535,7 +535,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     html += `
                     <div class="flex justify-between items-center text-sm py-2 border-b border-slate-100 last:border-0">
                         <span class="text-slate-700">${srv.productName} <span class="text-slate-400">× ${qty}</span></span>
-                        <span class="font-medium text-slate-800">${formatMoney(srv.price * qty)} đ</span>
+                        <span class="font-medium text-slate-800">${formatMoney(srv.price * qty)} VND</span>
                     </div>`;
                 }
             }
@@ -556,7 +556,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (servicesTotal > 0) {
             summaryServicesRow.classList.remove('hidden');
-            summaryServicesTotal.textContent = formatMoney(servicesTotal) + ' đ';
+            summaryServicesTotal.textContent = formatMoney(servicesTotal) + ' VND';
         } else {
             summaryServicesRow.classList.add('hidden');
         }
@@ -569,7 +569,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const tagDiv = document.getElementById(tagElementId);
             if (tagDiv) {
                 if (v && subtotal >= (v.minOrderAmount || 0)) {
-                    tagDiv.querySelector('.tag-text').textContent = v.name + (v.maxDiscountAmount > 0 ? ` (Tối đa ${formatMoney(v.maxDiscountAmount)}đ)` : '');
+                    tagDiv.querySelector('.tag-text').textContent = v.name + (v.maxDiscountAmount > 0 ? ` (Max ${formatMoney(v.maxDiscountAmount)} VND)` : '');
                     tagDiv.classList.remove('hidden');
                 } else {
                     tagDiv.classList.add('hidden');
@@ -605,7 +605,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (totalDiscount > 0) {
             summaryDiscountRow.classList.remove('hidden');
             summaryDiscountRow.classList.add('flex');
-            summaryDiscountTotal.textContent = '-' + formatMoney(totalDiscount) + ' đ';
+            summaryDiscountTotal.textContent = '-' + formatMoney(totalDiscount) + ' VND';
         } else {
             summaryDiscountRow.classList.add('hidden');
             summaryDiscountRow.classList.remove('flex');
@@ -619,8 +619,8 @@ document.addEventListener('DOMContentLoaded', () => {
         window.currentCourtAmount = courtAmount;
         window.currentProductAmount = servicesTotal;
 
-        if (summaryCourtFee) summaryCourtFee.textContent = formatMoney(baseTotal) + ' đ';
-        summaryFinalTotal.textContent = formatMoney(finalTotal) + ' đ';
+        if (summaryCourtFee) summaryCourtFee.textContent = formatMoney(baseTotal) + ' VND';
+        summaryFinalTotal.textContent = formatMoney(finalTotal) + ' VND';
     }
 
     document.getElementById('btnConfirmPayment').addEventListener('click', () => {
@@ -634,12 +634,12 @@ document.addEventListener('DOMContentLoaded', () => {
         // If guest form is visible, require name and phone
         if (nameInput && phoneInput) {
             if (!name) {
-                alert('Vui lòng nhập Họ và tên!');
+                alert('Please enter your Full Name!');
                 nameInput.focus();
                 return;
             }
             if (!phone) {
-                alert('Vui lòng nhập Số điện thoại!');
+                alert('Please enter your Phone Number!');
                 phoneInput.focus();
                 return;
             }
@@ -736,7 +736,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let inputEl = document.getElementById(type === 'PLATFORM' ? 'platformVoucherInput' : 'facilityVoucherInput');
         let code = inputEl.value.trim().toUpperCase();
         if (!code) {
-            alert("Vui lòng nhập mã voucher.");
+            alert("Please enter a voucher code.");
             return;
         }
 
@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let v = checkoutVouchers.find(x => x.code.toUpperCase() === code && x.issuerType === issuerType);
         
         if (!v) {
-            alert("Mã ưu đãi không hợp lệ hoặc không áp dụng cho loại này.");
+            alert("Invalid voucher code or not applicable to this category.");
             return;
         }
 
@@ -756,14 +756,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let subtotal = baseTotal + currentServicesTotal;
         
         if (subtotal < (v.minOrderAmount || 0)) {
-            alert(`Đơn hàng chưa đạt giá trị tối thiểu ${formatMoney(v.minOrderAmount)}đ để áp dụng mã này.`);
+            alert(`Order minimum of ${formatMoney(v.minOrderAmount)} VND required for this voucher.`);
             return;
         }
 
         if (issuerType === 'PLATFORM') selectedPlatformVoucherId = v.voucherId;
         else selectedFacilityVoucherId = v.voucherId;
 
-        alert("Áp dụng mã thành công!");
+        alert("Voucher applied successfully!");
         calculateCheckoutTotal(); // Recalculate
     };
 
@@ -853,11 +853,11 @@ document.addEventListener('DOMContentLoaded', () => {
             let isSelected = (isPlatform ? tempSelectedPlatform : tempSelectedFacility) === v.voucherId;
             let bgColor = isValid ? (isPlatform ? 'bg-orange-500' : 'bg-blue-500') : 'bg-slate-300';
             let titleColor = isValid ? 'text-slate-800' : 'text-slate-400';
-            let typeLabel = isPlatform ? 'Hệ thống' : 'Chủ sân';
+            let typeLabel = isPlatform ? 'Platform' : 'Owner';
 
-            let discountText = `Giảm ${formatMoney(v.discountValue)}${v.discountType === 'PERCENTAGE' ? '%' : 'đ'}`;
-            if (v.maxDiscountAmount > 0) discountText += ` Giảm tối đa ${formatMoney(v.maxDiscountAmount)}đ`;
-            let conditionText = v.minOrderAmount > 0 ? `Đơn tối thiểu ${formatMoney(v.minOrderAmount)}đ` : 'Không giới hạn đơn tối thiểu';
+            let discountText = `Discount ${formatMoney(v.discountValue)}${v.discountType === 'PERCENTAGE' ? '%' : ' VND'}`;
+            if (v.maxDiscountAmount > 0) discountText += ` Max discount ${formatMoney(v.maxDiscountAmount)} VND`;
+            let conditionText = v.minOrderAmount > 0 ? `Min order ${formatMoney(v.minOrderAmount)} VND` : 'No min order required';
 
             let actionHtml = '';
             if (isValid) {
@@ -867,7 +867,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                 `;
             } else {
-                actionHtml = `<div class="text-[10px] text-slate-400 max-w-[60px] text-right leading-tight">Chưa đạt ĐTTh</div>`;
+                actionHtml = `<div class="text-[10px] text-slate-400 max-w-[60px] text-right leading-tight">Min order not met</div>`;
             }
 
             return `
@@ -889,13 +889,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             <div class="flex-1">
                                 <div class="font-bold text-sm ${titleColor} mb-1">${discountText}</div>
                                 <div class="text-xs text-slate-500 mb-2">${conditionText}</div>
-                                ${!isValid ? '<div class="text-[10px] text-red-500 mt-1">Chưa đạt giá trị đơn hàng tối thiểu</div>' : ''}
+                                ${!isValid ? '<div class="text-[10px] text-red-500 mt-1">Minimum order value not met</div>' : ''}
                             </div>
                             <div class="flex items-center justify-center pt-2">
                                 ${actionHtml}
                             </div>
                         </div>
-                        ${isValid ? `<div class="w-full bg-slate-100 rounded-full h-1 mt-2"><div class="bg-orange-500 h-1 rounded-full" style="width: 80%"></div></div><div class="text-[10px] text-slate-400 mt-1">Sắp hết hạn</div>` : ''}
+                        ${isValid ? `<div class="w-full bg-slate-100 rounded-full h-1 mt-2"><div class="bg-orange-500 h-1 rounded-full" style="width: 80%"></div></div><div class="text-[10px] text-slate-400 mt-1">Expiring soon</div>` : ''}
                     </div>
                 </div>
             `;
@@ -904,25 +904,25 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '';
         
         if (validPlatform.length > 0) {
-            html += `<div class="mb-5"><h3 class="text-sm font-bold text-slate-800 mb-3">Mã giảm giá Hệ thống</h3>`;
+            html += `<div class="mb-5"><h3 class="text-sm font-bold text-slate-800 mb-3">Platform Vouchers</h3>`;
             validPlatform.forEach(v => html += renderTicket(v, true, true));
             html += `</div>`;
         }
 
         if (validFacility.length > 0) {
-            html += `<div class="mb-5"><h3 class="text-sm font-bold text-slate-800 mb-3">Ưu đãi từ Chủ sân</h3>`;
+            html += `<div class="mb-5"><h3 class="text-sm font-bold text-slate-800 mb-3">Venue Owner Vouchers</h3>`;
             validFacility.forEach(v => html += renderTicket(v, true, false));
             html += `</div>`;
         }
 
         if (invalid.length > 0) {
-            html += `<div class="mb-5 opacity-70"><h3 class="text-sm font-bold text-slate-800 mb-3">Voucher không khả dụng</h3>`;
+            html += `<div class="mb-5 opacity-70"><h3 class="text-sm font-bold text-slate-800 mb-3">Unavailable Vouchers</h3>`;
             invalid.forEach(v => html += renderTicket(v, false, v.issuerType === 'PLATFORM'));
             html += `</div>`;
         }
 
         if (html === '') {
-            html = `<div class="text-center py-10 text-slate-500">Không có voucher nào.</div>`;
+            html = `<div class="text-center py-10 text-slate-500">No vouchers available.</div>`;
         }
 
         content.innerHTML = html;
@@ -946,7 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         summary.innerHTML = count > 0 
-            ? `${count} Voucher đã được chọn. Tổng giảm <strong class="text-orange-600">${formatMoney(tempTotalDiscount)}đ</strong>`
-            : 'Chưa chọn voucher nào.';
+            ? `${count} Voucher(s) selected. Total discount <strong class="text-orange-600">${formatMoney(tempTotalDiscount)} VND</strong>`
+            : 'No voucher selected.';
     }
 });
