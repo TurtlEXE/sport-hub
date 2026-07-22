@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -18,4 +19,7 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
            "WHERE (b.account.id = :accountId) OR (b.guest IS NOT NULL AND LOWER(b.guest.email) = LOWER(:email)) " +
            "ORDER BY b.createdAt DESC")
     List<Booking> findMyBookings(@Param("accountId") Integer accountId, @Param("email") String email);
+
+    @Query("SELECT b FROM Booking b WHERE b.bookingStatus = 'PENDING' AND b.holdExpiredAt < :now")
+    List<Booking> findExpiredPendingBookings(@Param("now") LocalDateTime now);
 }

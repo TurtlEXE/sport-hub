@@ -1,5 +1,5 @@
 package com.mvc.mock_project.entities.enums;
 
 public enum InvoiceStatus {
-    UNPAID, PARTIAL, PAID
+    UNPAID, PARTIAL, PAID, CANCELLED
 }
