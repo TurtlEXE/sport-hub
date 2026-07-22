@@ -1156,14 +1156,14 @@ function renderImagesCard() {
     let galleryImg = document.getElementById('galleryMainImage');
     if (!galleryImg) {
         // Initial DOM structure
-        const arrowsHtml = galleryImagesList.length > 1 ? `
-            <button onclick="prevImage()" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-black/30 hover:bg-black/50 text-white rounded-full transition focus:outline-none z-10">
+        const arrowsHtml = `
+            <button id="prevGalleryBtn" onclick="prevImage()" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-black/30 hover:bg-black/50 text-white rounded-full transition focus:outline-none z-10 hidden">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
             </button>
-            <button onclick="nextImage()" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-black/30 hover:bg-black/50 text-white rounded-full transition focus:outline-none z-10">
+            <button id="nextGalleryBtn" onclick="nextImage()" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center bg-black/30 hover:bg-black/50 text-white rounded-full transition focus:outline-none z-10 hidden">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
             </button>
-        ` : '';
+        `;
 
         container.innerHTML = `
             <div class="flex justify-between items-center mb-4">
@@ -1194,6 +1194,18 @@ function renderImagesCard() {
             tagEl.classList.remove('hidden');
         } else {
             tagEl.classList.add('hidden');
+        }
+    }
+
+    const prevBtn = document.getElementById('prevGalleryBtn');
+    const nextBtn = document.getElementById('nextGalleryBtn');
+    if (prevBtn && nextBtn) {
+        if (galleryImagesList.length > 1) {
+            prevBtn.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+        } else {
+            prevBtn.classList.add('hidden');
+            nextBtn.classList.add('hidden');
         }
     }
 
