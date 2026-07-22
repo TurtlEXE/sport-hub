@@ -8,4 +8,6 @@ public interface EmailService {
     void sendContactEmail(String name, String email, String message);
 
     void sendPaymentSuccessEmail(String to, String bookingDetails);
+
+    void sendFeedbackConfirmationEmail(String name, String email, String messageContent);
 }
