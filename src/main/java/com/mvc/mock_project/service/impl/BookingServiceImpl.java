@@ -109,10 +109,8 @@ public class BookingServiceImpl implements BookingService {
         boolean hasPriceRuleForDay = priceRules.stream()
                 .anyMatch(r -> r.getIsActive() && r.getDayType() == dayType);
                 
-        // If there are price rules in general but none for today, it's closed.
-        // If there are NO price rules at all, we might fallback to default, or we can just mark it closed.
-        // The safest approach is marking it closed if hasPriceRuleForDay is false.
-        boolean isClosedToday = !priceRules.isEmpty() && !hasPriceRuleForDay;
+        // If there are NO price rules at all for this day type, it's closed.
+        boolean isClosedToday = !hasPriceRuleForDay;
         response.put("isClosedToday", isClosedToday);
 
         List<Map<String, Object>> courtsData = new ArrayList<>();
@@ -179,10 +177,11 @@ public class BookingServiceImpl implements BookingService {
             
             // Calculate price based on FacilityPriceRule
             BigDecimal price = calculatePrice(curr, next, priceRules, dayType);
-            slot.put("price", price);
             
+            slot.put("price", price);
             slots.add(slot);
             slotIndex++;
+            
             curr = next;
             if (curr.equals(LocalTime.MAX) || curr.equals(closeTime)) {
                 break;
@@ -193,11 +192,8 @@ public class BookingServiceImpl implements BookingService {
     }
     
     private BigDecimal calculatePrice(LocalTime start, LocalTime end, List<FacilityPriceRule> rules, DayType dayType) {
-        // Fallback default price if no rules
-        BigDecimal defaultPrice = new BigDecimal("50000");
-        
         for (FacilityPriceRule rule : rules) {
-            if (!rule.getIsActive()) continue;
+            if (!Boolean.TRUE.equals(rule.getIsActive())) continue;
             if (rule.getDayType() != dayType) continue;
             
             // Time overlap
@@ -210,7 +206,7 @@ public class BookingServiceImpl implements BookingService {
                 return rule.getPricePerSlot();
             }
         }
-        return defaultPrice;
+        return null; // Return null if no rule is found, to hide the slot
     }
     
     private String formatTime(LocalTime time) {
