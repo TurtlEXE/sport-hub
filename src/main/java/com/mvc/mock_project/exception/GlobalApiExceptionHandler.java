@@ -31,10 +31,10 @@ public class GlobalApiExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        
+
         ApiResponse<Void> response = ApiResponse.error("Validation failed");
         response.setErrors(errors);
-        
+
         return ResponseEntity.badRequest().body(response);
     }
 
@@ -61,5 +61,14 @@ public class GlobalApiExceptionHandler {
             // keep original message if no translation is found
         }
         return ResponseEntity.internalServerError().body(ApiResponse.error(errorMessage));
+    }
+
+    @ExceptionHandler(BatchValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleBatchValidationException(BatchValidationException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", ex.getMessage());
+        response.put("data", ex.getErrors()); // The array of errors with row indices
+        return ResponseEntity.badRequest().body(response);
     }
 }

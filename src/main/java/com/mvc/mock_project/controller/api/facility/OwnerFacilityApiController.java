@@ -83,7 +83,8 @@ public class OwnerFacilityApiController {
             @PathVariable Integer id,
             @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "url", required = false) String url) {
-        com.mvc.mock_project.dto.response.facility.FacilityImageDTO dto = ownerFacilityService.addImageToFacility(userDetails.getAccount().getId(), id, file, url);
+        com.mvc.mock_project.dto.response.facility.FacilityImageDTO dto = ownerFacilityService
+                .addImageToFacility(userDetails.getAccount().getId(), id, file, url);
         return ResponseEntity.ok(dto);
     }
 
@@ -179,6 +180,14 @@ public class OwnerFacilityApiController {
             @Valid @RequestBody CreatePriceRuleRequest request) {
         ownerFacilityService.createPriceRule(userDetails.getAccount().getId(), request);
         return ResponseEntity.ok().body("Price rule created successfully");
+    }
+
+    @PostMapping("/price-rules/batch")
+    public ResponseEntity<?> batchSavePriceRules(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody com.mvc.mock_project.dto.request.facility.BatchSavePriceRulesRequest request) {
+        ownerFacilityService.batchSavePriceRules(userDetails.getAccount().getId(), request);
+        return ResponseEntity.ok().body(java.util.Map.of("message", "Pricing configuration saved successfully"));
     }
 
     @PutMapping("/price-rules/{ruleId}")

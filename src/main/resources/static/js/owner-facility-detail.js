@@ -255,7 +255,7 @@ function renderActiveSportDetails() {
 
     // Section A: Config
     const hasPriceRules = sport.priceRules && sport.priceRules.length > 0;
-    
+
     html += `
         <div id="sportConfigSection" class="relative bg-slate-50/50 p-6 rounded-2xl border border-slate-100">
             <div class="flex justify-between items-center mb-4">
@@ -397,12 +397,18 @@ function renderActiveSportDetails() {
                 <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
                     ${i18nDetail.sectionPricing} <span class="text-[10px] font-normal text-gray-400 uppercase tracking-wider">${i18nDetail.pricingNote}</span>
                 </h3>
-                <button onclick="renderAddPricingForm(${sport.facilitySportId}, '${sport.sportName}', ${sport.slotStepMinutes || 30})" class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm px-3 py-1.5 rounded-lg flex items-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>${i18nDetail.btnAddPricing.replace(/^\\+\\s*/, '')}</button>
+                <div class="flex items-center gap-2">
+                    <button onclick="renderPricingConfigForm(${sport.facilitySportId}, '${sport.sportName}', ${sport.slotStepMinutes || 30})" class="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 shadow-sm px-3 py-1.5 rounded-lg flex items-center hover:-translate-y-0.5 transition-all duration-200">
+                        <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>Smart Setup
+                    </button>
+                    <button onclick="renderAddPricingForm(${sport.facilitySportId}, '${sport.sportName}', ${sport.slotStepMinutes || 30})" class="text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 shadow-sm px-3 py-1.5 rounded-lg flex items-center hover:-translate-y-0.5 hover:shadow-md transition-all duration-200"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>${i18nDetail.btnAddPricing.replace(/^\\+\\s*/, '')}</button>
+                </div>
             </div>
             
             <div id="addPricingFormContainer"></div>
+            <div id="pricingConfigFormContainer"></div>
             
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div id="pricingTableContainer" class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <table class="w-full text-sm text-left">
                     <thead class="text-xs text-gray-400 uppercase tracking-wider bg-gray-50/50 border-b border-gray-100">
                         <tr>
@@ -866,10 +872,10 @@ function renderEditGeneralInfoForm() {
 
     document.getElementById('editGeneralInfoForm').addEventListener('submit', function (e) {
         e.preventDefault();
-        
+
         const lat = document.getElementById('editLatitude').value;
         const lng = document.getElementById('editLongitude').value;
-        if(!lat || !lng) {
+        if (!lat || !lng) {
             showCustomAlert('Please set the facility location either by typing Address or using "Choose Location on Map" before submitting.', 'warning');
             return;
         }
@@ -882,14 +888,14 @@ function renderEditGeneralInfoForm() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         })
-        .then(res => {
-            if (!res.ok) throw new Error('Could not update general information');
-            closeEditGeneralInfoForm();
-            showCustomAlert('General information updated successfully!', 'success', () => {
-                fetchFacilityDetail(facilityId);
-            });
-        })
-        .catch(err => showCustomAlert(err.message, 'error'));
+            .then(res => {
+                if (!res.ok) throw new Error('Could not update general information');
+                closeEditGeneralInfoForm();
+                showCustomAlert('General information updated successfully!', 'success', () => {
+                    fetchFacilityDetail(facilityId);
+                });
+            })
+            .catch(err => showCustomAlert(err.message, 'error'));
     });
 }
 
@@ -905,7 +911,7 @@ function initEditMapAndGeocodingLogic() {
             let options = '<option value="" disabled>-- Select Province / City --</option>';
             data.forEach(p => { options += `<option value="${p.name}" data-code="${p.code}">${p.name}</option>`; });
             provinceSelect.innerHTML = options;
-            
+
             // Set initial value
             fuzzyMatchSelect(provinceSelect, facilityData.province, () => {
                 const selectedCode = provinceSelect.options[provinceSelect.selectedIndex]?.getAttribute('data-code');
@@ -932,7 +938,7 @@ function initEditMapAndGeocodingLogic() {
                 let options = '<option value="" disabled>-- Select District --</option>';
                 data.districts.forEach(d => { options += `<option value="${d.name}" data-code="${d.code}">${d.name}</option>`; });
                 districtSelect.innerHTML = options;
-                
+
                 if (defaultDistrict) {
                     fuzzyMatchSelect(districtSelect, defaultDistrict, () => {
                         const dCode = districtSelect.options[districtSelect.selectedIndex]?.getAttribute('data-code');
@@ -950,7 +956,7 @@ function initEditMapAndGeocodingLogic() {
                 let options = '<option value="" disabled>-- Select Ward / Commune --</option>';
                 data.wards.forEach(w => { options += `<option value="${w.name}">${w.name}</option>`; });
                 wardSelect.innerHTML = options;
-                
+
                 if (defaultWard) {
                     fuzzyMatchSelect(wardSelect, defaultWard, null);
                 }
@@ -962,8 +968,8 @@ function initEditMapAndGeocodingLogic() {
     }
 
     function fuzzyMatchSelect(selectEl, textToMatch, onSuccess) {
-        if(!textToMatch) {
-            if(onSuccess) onSuccess();
+        if (!textToMatch) {
+            if (onSuccess) onSuccess();
             return;
         }
         const normalize = (str) => {
@@ -972,15 +978,15 @@ function initEditMapAndGeocodingLogic() {
             return s.replace(/\s+/g, '').trim();
         };
         const target = normalize(textToMatch);
-        for(let i=0; i<selectEl.options.length; i++) {
+        for (let i = 0; i < selectEl.options.length; i++) {
             const optText = normalize(selectEl.options[i].text);
-            if(optText && (optText.includes(target) || target.includes(optText))) {
+            if (optText && (optText.includes(target) || target.includes(optText))) {
                 selectEl.selectedIndex = i;
-                if(onSuccess) onSuccess();
+                if (onSuccess) onSuccess();
                 return;
             }
         }
-        if(onSuccess) onSuccess();
+        if (onSuccess) onSuccess();
     }
 
     // 2. Map Logic
@@ -991,7 +997,7 @@ function initEditMapAndGeocodingLogic() {
     document.getElementById('btnOpenEditMapModal').addEventListener('click', () => {
         mapModal.classList.remove('hidden');
         mapModal.classList.add('flex');
-        
+
         if (!mapInitialized) {
             // Load leaflet if not loaded (or just init if already in head)
             if (typeof L === 'undefined') {
@@ -999,7 +1005,7 @@ function initEditMapAndGeocodingLogic() {
                 cssNode.rel = "stylesheet";
                 cssNode.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
                 document.head.appendChild(cssNode);
-                
+
                 const scriptNode = document.createElement("script");
                 scriptNode.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
                 scriptNode.onload = initOSM;
@@ -1021,35 +1027,35 @@ function initEditMapAndGeocodingLogic() {
     function initOSM() {
         let lat = parseFloat(document.getElementById('editLatitude').value) || 10.762622;
         let lng = parseFloat(document.getElementById('editLongitude').value) || 106.660172;
-        
+
         map = L.map('editMap').setView([lat, lng], 14);
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '© OpenStreetMap'
         }).addTo(map);
-        
-        marker = L.marker([lat, lng], {draggable: true}).addTo(map);
-        
-        marker.on('dragend', function(event) {
+
+        marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+        marker.on('dragend', function (event) {
             const pos = event.target.getLatLng();
             reverseGeocode(pos.lat, pos.lng);
         });
 
-        map.on('click', function(e) {
+        map.on('click', function (e) {
             marker.setLatLng(e.latlng);
             reverseGeocode(e.latlng.lat, e.latlng.lng);
         });
-        
+
         setTimeout(() => { map.invalidateSize(); }, 100);
     }
 
     document.getElementById('btnEditMapSearch').addEventListener('click', () => {
         const query = document.getElementById('editMapSearchInput').value;
-        if(!query) return;
+        if (!query) return;
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`)
             .then(res => res.json())
             .then(data => {
-                if(data && data.length > 0) {
+                if (data && data.length > 0) {
                     const lat = parseFloat(data[0].lat);
                     const lon = parseFloat(data[0].lon);
                     map.setView([lat, lon], 16);
@@ -1063,11 +1069,11 @@ function initEditMapAndGeocodingLogic() {
     function reverseGeocode(lat, lng) {
         document.getElementById('editLatitude').value = lat.toFixed(6);
         document.getElementById('editLongitude').value = lng.toFixed(6);
-        
+
         fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`)
             .then(res => res.json())
             .then(data => {
-                if(data && data.address) {
+                if (data && data.address) {
                     const addr = data.address;
                     let specificAddrArr = [];
                     if (addr.house_number) specificAddrArr.push(addr.house_number);
@@ -1091,7 +1097,7 @@ function initEditMapAndGeocodingLogic() {
                         }, 800);
                     });
                 }
-                
+
                 mapModal.classList.add('hidden');
                 mapModal.classList.remove('flex');
                 showCustomAlert('Address selected! Form auto-filled.', 'success');
@@ -1114,11 +1120,11 @@ function initEditMapAndGeocodingLogic() {
         const ward = document.getElementById('editWard').value;
         const district = document.getElementById('editDistrict').value;
         const province = document.getElementById('editProvince').value;
-        
+
         if (!address || !province || !district || !ward) return;
-        
+
         const fullAddress = `${address}, ${ward}, ${district}, ${province}, Vietnam`;
-        
+
         fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(fullAddress)}&limit=1`)
             .then(res => res.json())
             .then(data => {
@@ -1127,7 +1133,7 @@ function initEditMapAndGeocodingLogic() {
                     const lon = parseFloat(data[0].lon);
                     document.getElementById('editLatitude').value = lat.toFixed(6);
                     document.getElementById('editLongitude').value = lon.toFixed(6);
-                    if(marker && map) {
+                    if (marker && map) {
                         marker.setLatLng([lat, lon]);
                         map.setView([lat, lon], 16);
                     }
@@ -1615,11 +1621,11 @@ function cancelAddPricing() {
 function renderAddPricingForm(sportId, sportName, stepMinutes = 30) {
     const container = document.getElementById('addPricingFormContainer');
     if (!container) return;
-    
+
     // Add margin bottom to separate from table
     container.className = 'mb-6';
-    
-    let timeOptionsHtml = '<option value="" disabled selected>Chọn giờ</option>';
+
+    let timeOptionsHtml = '<option value="" disabled selected>Select time</option>';
     for (let h = 0; h < 24; h++) {
         for (let m = 0; m < 60; m += stepMinutes) {
             const hh = h.toString().padStart(2, '0');
@@ -1628,7 +1634,7 @@ function renderAddPricingForm(sportId, sportName, stepMinutes = 30) {
             timeOptionsHtml += `<option value="${timeStr}">${timeStr}</option>`;
         }
     }
-    
+
     container.innerHTML = `
         <div class="bg-gray-50/50 rounded-2xl p-6 border border-gray-100 relative">
             <h4 class="font-bold text-gray-900 mb-4 text-sm">${i18nDetail.addPricingTitle} ${sportName}</h4>
@@ -1718,13 +1724,13 @@ async function submitPriceRule(e, sportId) {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
-    
+
     // Convert time HH:mm to HH:mm:00
     let start = formData.get('startTime');
     let end = formData.get('endTime');
     if (start && start.length === 5) start += ":00";
     if (end && end.length === 5) end += ":00";
-    
+
     const payload = {
         facilitySportId: sportId,
         dayType: formData.get('dayType'),
@@ -1733,12 +1739,12 @@ async function submitPriceRule(e, sportId) {
         endTime: end,
         effectiveFrom: formData.get('effectiveFrom')
     };
-    
+
     const effectiveTo = formData.get('effectiveTo');
     if (effectiveTo) {
         payload.effectiveTo = effectiveTo;
     }
-    
+
     try {
         const response = await fetch('/api/owner/price-rules', {
             method: 'POST',
@@ -1747,7 +1753,7 @@ async function submitPriceRule(e, sportId) {
             },
             body: JSON.stringify(payload)
         });
-        
+
         if (response.ok) {
             cancelAddPricing();
             showCustomAlert(await response.text(), 'success', () => fetchFacilityDetail(facilityId));
@@ -1756,7 +1762,7 @@ async function submitPriceRule(e, sportId) {
             try {
                 const json = JSON.parse(msg);
                 msg = json.message || msg;
-            } catch (e) {}
+            } catch (e) { }
             showCustomAlert(msg, 'error');
         }
     } catch (error) {
@@ -1770,7 +1776,7 @@ function deletePriceRule(ruleId) {
             const response = await fetch('/api/owner/price-rules/' + ruleId, {
                 method: 'DELETE'
             });
-            
+
             if (response.ok) {
                 showCustomAlert(await response.text(), 'success', () => fetchFacilityDetail(facilityId));
             } else {
@@ -1778,7 +1784,7 @@ function deletePriceRule(ruleId) {
                 try {
                     const json = JSON.parse(msg);
                     msg = json.message || msg;
-                } catch (e) {}
+                } catch (e) { }
                 showCustomAlert(msg, 'error');
             }
         } catch (error) {
@@ -1795,10 +1801,10 @@ function editPriceRule(ruleId, sportId, sportName, stepMinutes) {
 
     renderAddPricingForm(sportId, sportName, stepMinutes);
     const form = document.getElementById('addPricingForm');
-    
+
     form.previousElementSibling.innerText = "Chỉnh sửa giá cho " + sportName;
     form.setAttribute('onsubmit', `submitEditPriceRule(event, ${ruleId}, ${sportId})`);
-    
+
     form.querySelector('[name="dayType"]').value = rule.dayType;
     form.querySelector('[name="pricePerSlot"]').value = rule.pricePerSlot;
     form.querySelector('[name="startTime"]').value = rule.startTime ? rule.startTime.substring(0, 5) : '';
@@ -1809,7 +1815,7 @@ function editPriceRule(ruleId, sportId, sportName, stepMinutes) {
     if (rule.effectiveTo) {
         form.querySelector('[name="effectiveTo"]').value = rule.effectiveTo;
     }
-    
+
     form.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
@@ -1817,12 +1823,12 @@ async function submitEditPriceRule(e, ruleId, sportId) {
     e.preventDefault();
     const form = e.target;
     const formData = new FormData(form);
-    
+
     let start = formData.get('startTime');
     let end = formData.get('endTime');
     if (start && start.length === 5) start += ":00";
     if (end && end.length === 5) end += ":00";
-    
+
     const payload = {
         facilitySportId: sportId,
         dayType: formData.get('dayType'),
@@ -1831,12 +1837,12 @@ async function submitEditPriceRule(e, ruleId, sportId) {
         endTime: end,
         effectiveFrom: formData.get('effectiveFrom')
     };
-    
+
     const effectiveTo = formData.get('effectiveTo');
     if (effectiveTo) {
         payload.effectiveTo = effectiveTo;
     }
-    
+
     try {
         const response = await fetch('/api/owner/price-rules/' + ruleId, {
             method: 'PUT',
@@ -1845,7 +1851,7 @@ async function submitEditPriceRule(e, ruleId, sportId) {
             },
             body: JSON.stringify(payload)
         });
-        
+
         if (response.ok) {
             cancelAddPricing();
             showCustomAlert(await response.text(), 'success', () => fetchFacilityDetail(facilityId));
@@ -1854,7 +1860,7 @@ async function submitEditPriceRule(e, ruleId, sportId) {
             try {
                 const json = JSON.parse(msg);
                 msg = json.message || msg;
-            } catch (e) {}
+            } catch (e) { }
             showCustomAlert(msg, 'error');
         }
     } catch (error) {
@@ -1862,11 +1868,226 @@ async function submitEditPriceRule(e, ruleId, sportId) {
     }
 }
 
-window.toggleEditSportConfig = function() {
+// --- SMART PRICING CONFIGURATION ---
+
+let currentPricingConfig = [];
+
+function cancelPricingConfig() {
+    const container = document.getElementById('pricingConfigFormContainer');
+    if (container) container.innerHTML = '';
+    const display = document.getElementById('pricingTableContainer');
+    if (display) display.style.display = 'block';
+}
+
+function renderPricingConfigForm(sportId, sportName, stepMinutes = 30) {
+    const sport = facilityData.sports.find(s => s.facilitySportId === sportId);
+    if (!sport) return;
+
+    // Build current config from prices
+    const prices = (sport.priceRules || []).filter(rule => rule.isActive !== false);
+    const timeSlots = {};
+    prices.forEach(rule => {
+        const key = rule.startTime + '-' + rule.endTime;
+        if (!timeSlots[key]) {
+            timeSlots[key] = {
+                startTime: rule.startTime ? rule.startTime.substring(0, 5) : '',
+                endTime: rule.endTime ? rule.endTime.substring(0, 5) : '',
+                weekdayPrice: '',
+                weekendPrice: ''
+            };
+        }
+        if (rule.dayType === 'WEEKDAY') timeSlots[key].weekdayPrice = rule.pricePerSlot;
+        if (rule.dayType === 'WEEKEND') timeSlots[key].weekendPrice = rule.pricePerSlot;
+    });
+
+    currentPricingConfig = Object.keys(timeSlots).sort().map(key => timeSlots[key]);
+    if (currentPricingConfig.length === 0) {
+        currentPricingConfig.push({ startTime: '', endTime: '', weekdayPrice: '', weekendPrice: '' });
+    }
+
+    const display = document.getElementById('pricingTableContainer');
+    if (display) display.style.display = 'none';
+
+    renderPricingRows(sportId, sportName, stepMinutes);
+    document.getElementById('pricingConfigFormContainer').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function getPricingTimeOptions(stepMinutes, selectedTime = '') {
+    let html = '<option value="" disabled selected>Select time</option>';
+    for (let h = 0; h < 24; h++) {
+        for (let m = 0; m < 60; m += stepMinutes) {
+            const hh = h.toString().padStart(2, '0');
+            const mm = m.toString().padStart(2, '0');
+            const timeStr = `${hh}:${mm}`;
+            const selected = (timeStr === selectedTime) ? 'selected' : '';
+            html += `<option value="${timeStr}" ${selected}>${timeStr}</option>`;
+        }
+    }
+    return html;
+}
+
+function renderPricingRows(sportId, sportName, stepMinutes) {
+    const container = document.getElementById('pricingConfigFormContainer');
+    
+    let rowsHtml = '';
+    currentPricingConfig.forEach((row, index) => {
+        rowsHtml += `
+            <div class="flex items-start gap-4 mb-1" data-index="${index}">
+                <div class="flex-1">
+                    <select class="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-blue-500 transition text-sm py-2 px-3" onchange="updatePricingConfig(${index}, 'startTime', this.value)">
+                        ${getPricingTimeOptions(stepMinutes, row.startTime)}
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <select class="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-blue-500 transition text-sm py-2 px-3" onchange="updatePricingConfig(${index}, 'endTime', this.value)">
+                        ${getPricingTimeOptions(stepMinutes, row.endTime)}
+                    </select>
+                </div>
+                <div class="flex-1">
+                    <input type="number" min="0" placeholder="Weekday Price" class="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-blue-500 transition text-sm py-2 px-3" value="${row.weekdayPrice}" onchange="updatePricingConfig(${index}, 'weekdayPrice', this.value)">
+                </div>
+                <div class="flex-1">
+                    <input type="number" min="0" placeholder="Weekend Price" class="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-blue-500 transition text-sm py-2 px-3" value="${row.weekendPrice}" onchange="updatePricingConfig(${index}, 'weekendPrice', this.value)">
+                </div>
+                <div class="pt-1">
+                    <button type="button" onclick="removePricingRow(${index}, ${sportId}, '${sportName}', ${stepMinutes})" class="text-gray-400 hover:text-red-500 transition p-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="pricing-error-${index}" class="text-red-500 text-xs mt-0.5 mb-4 hidden font-medium"></div>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-4 text-sm text-yellow-800 flex items-start gap-3 shadow-sm">
+            <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            <div>
+                <strong>Note:</strong> Saving this configuration will <b>overwrite</b> all existing pricing rules for this sport.
+            </div>
+        </div>
+        <div class="bg-gray-50/50 rounded-2xl p-6 border border-gray-100 mb-6 shadow-sm">
+            <h4 class="font-bold text-gray-900 mb-4 text-sm">Smart Pricing Configuration: ${sportName}</h4>
+            <div class="flex items-center gap-4 mb-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <div class="flex-1">Start Time</div>
+                <div class="flex-1">End Time</div>
+                <div class="flex-1">Weekday Price (VND/slot)</div>
+                <div class="flex-1">Weekend Price (VND/slot)</div>
+                <div class="w-6"></div>
+            </div>
+            ${rowsHtml}
+            
+            <button type="button" onclick="addPricingRow(${sportId}, '${sportName}', ${stepMinutes})" class="mt-2 flex items-center gap-2 text-sm text-green-600 border border-green-200 bg-green-50 hover:bg-green-100 px-3 py-1.5 rounded-lg transition font-medium">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+                Add time frame
+            </button>
+            
+            <div class="flex justify-end gap-3 pt-6 mt-4 border-t border-gray-100">
+                <button type="button" onclick="cancelPricingConfig()" class="px-5 py-2 text-sm font-semibold text-gray-600 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 hover:text-gray-900 transition shadow-sm">
+                    Cancel
+                </button>
+                <button type="button" onclick="savePricingConfig(${sportId})" class="px-5 py-2 text-sm font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 transition shadow-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Save Configuration
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function updatePricingConfig(index, field, value) {
+    currentPricingConfig[index][field] = value;
+}
+
+function addPricingRow(sportId, sportName, stepMinutes) {
+    currentPricingConfig.push({ startTime: '', endTime: '', weekdayPrice: '', weekendPrice: '' });
+    renderPricingRows(sportId, sportName, stepMinutes);
+}
+
+function removePricingRow(index, sportId, sportName, stepMinutes) {
+    currentPricingConfig.splice(index, 1);
+    if (currentPricingConfig.length === 0) {
+        currentPricingConfig.push({ startTime: '', endTime: '', weekdayPrice: '', weekendPrice: '' });
+    }
+    renderPricingRows(sportId, sportName, stepMinutes);
+}
+
+async function savePricingConfig(sportId) {
+    currentPricingConfig.forEach((_, index) => {
+        const errDiv = document.getElementById(`pricing-error-${index}`);
+        if (errDiv) { errDiv.classList.add('hidden'); errDiv.innerText = ''; }
+    });
+
+    let hasClientError = false;
+    const payloadRows = [];
+
+    currentPricingConfig.forEach((row, index) => {
+        let errStr = [];
+        if (!row.startTime) errStr.push('Start time is required.');
+        if (!row.endTime) errStr.push('End time is required.');
+        if (!row.weekdayPrice) errStr.push('Weekday price is required.');
+        if (!row.weekendPrice) errStr.push('Weekend price is required.');
+        if (row.startTime && row.endTime && row.startTime >= row.endTime) errStr.push('Start time must be before end time.');
+        if (row.weekdayPrice && parseFloat(row.weekdayPrice) <= 0) errStr.push('Weekday price must be > 0.');
+        if (row.weekendPrice && parseFloat(row.weekendPrice) <= 0) errStr.push('Weekend price must be > 0.');
+
+        if (errStr.length > 0) {
+            const errDiv = document.getElementById(`pricing-error-${index}`);
+            errDiv.innerText = errStr.join(' ');
+            errDiv.classList.remove('hidden');
+            hasClientError = true;
+        } else {
+            payloadRows.push({
+                startTime: row.startTime + ':00',
+                endTime: row.endTime + ':00',
+                weekdayPrice: parseFloat(row.weekdayPrice),
+                weekendPrice: parseFloat(row.weekendPrice)
+            });
+        }
+    });
+
+    if (hasClientError) return;
+
+    try {
+        const response = await fetch('/api/owner/price-rules/batch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ facilitySportId: sportId, rows: payloadRows })
+        });
+        
+        const resData = await response.json();
+
+        if (response.ok) {
+            cancelPricingConfig();
+            showCustomAlert(resData.message, 'success', () => fetchFacilityDetail(facilityId));
+        } else {
+            if (resData.data && Array.isArray(resData.data)) {
+                resData.data.forEach(err => {
+                    if (err.row !== undefined) {
+                        const errDiv = document.getElementById(`pricing-error-${err.row}`);
+                        if (errDiv) {
+                            errDiv.innerText = err.message;
+                            errDiv.classList.remove('hidden');
+                        }
+                    }
+                });
+                showCustomAlert("Please fix the errors in the configuration.", 'error');
+            } else {
+                showCustomAlert(resData.message || 'Error saving configuration', 'error');
+            }
+        }
+    } catch (error) {
+        showCustomAlert(error.message, 'error');
+    }
+}
+
+// ------------------------------------------
+
+window.toggleEditSportConfig = function () {
     const display = document.getElementById('sportConfigDisplay');
     const form = document.getElementById('sportConfigEditForm');
     const btnEdit = document.getElementById('btnEditSportConfig');
-    
+
     if (display.classList.contains('hidden')) {
         display.classList.remove('hidden');
         form.classList.add('hidden');
@@ -1878,11 +2099,11 @@ window.toggleEditSportConfig = function() {
     }
 }
 
-window.submitEditSportConfig = function(event, facilitySportId, sportId) {
+window.submitEditSportConfig = function (event, facilitySportId, sportId) {
     event.preventDefault();
     const form = event.target;
     const minDur = parseInt(form.minDurationMinutes.value);
-    
+
     const selectElem = document.getElementById('slotStepMinutesSelect');
     const hiddenElem = document.getElementById('slotStepMinutesHidden');
     let slotStep;
@@ -1911,18 +2132,18 @@ window.submitEditSportConfig = function(event, facilitySportId, sportId) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
     })
-    .then(async response => {
-        if (!response.ok) {
-            const err = await response.json().catch(() => ({}));
-            throw new Error(err.message || 'Failed to update sport configuration.');
-        }
-        showCustomAlert('Sport configuration updated successfully.', 'success', () => {
-            fetchFacilityDetail(facilityId); // Refresh data
+        .then(async response => {
+            if (!response.ok) {
+                const err = await response.json().catch(() => ({}));
+                throw new Error(err.message || 'Failed to update sport configuration.');
+            }
+            showCustomAlert('Sport configuration updated successfully.', 'success', () => {
+                fetchFacilityDetail(facilityId); // Refresh data
+            });
+        })
+        .catch(error => {
+            showCustomAlert(error.message, "error");
         });
-    })
-    .catch(error => {
-        showCustomAlert(error.message, "error");
-    });
 }
 
 // ==================== STAFF SECTION ====================
@@ -1964,9 +2185,9 @@ function renderStaffSection(staffList) {
                 <div class="bg-white border border-gray-100 rounded-xl p-4 flex items-center gap-3 hover:shadow-sm transition-shadow">
                     <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden flex-shrink-0">
                         ${staff.avatarPath
-                            ? `<img src="${staff.avatarPath}" class="w-full h-full object-cover" alt="">`
-                            : `<span>${staff.fullName.charAt(0).toUpperCase()}</span>`
-                        }
+                    ? `<img src="${staff.avatarPath}" class="w-full h-full object-cover" alt="">`
+                    : `<span>${staff.fullName.charAt(0).toUpperCase()}</span>`
+                }
                     </div>
                     <div class="min-w-0 flex-1">
                         <div class="font-semibold text-slate-900 text-sm truncate">${staff.fullName}</div>
@@ -2017,7 +2238,7 @@ function renderAssignStaffModal(allStaff) {
         // If assigned to this facility, pre-check it
         const isAssignedToThis = staff.facilityId === facilityId;
         const isAssignedToOther = staff.facilityId && staff.facilityId !== facilityId;
-        
+
         let labelAddon = '';
         if (isAssignedToOther) {
             labelAddon = `<span class="text-[10px] bg-orange-100 text-orange-600 px-2 py-0.5 rounded ml-2">Assigned to another facility</span>`;
@@ -2086,19 +2307,19 @@ function filterStaffList() {
 function submitAssignStaff() {
     const checkedBoxes = document.querySelectorAll('.staff-checkbox:checked');
     const staffIds = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
-    
+
     fetch('/api/owner/facilities/' + facilityId + '/staff', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ staffIds: staffIds })
     })
-    .then(res => {
-        if (!res.ok) throw new Error("Lỗi khi gán nhân viên");
-        showCustomAlert("Cập nhật danh sách nhân viên phụ trách thành công!", "success", () => {
-            document.getElementById('assignStaffModalContainer').innerHTML='';
-            loadFacilityStaff(facilityId);
-        });
-    })
-    .catch(err => showCustomAlert(err.message, "error"));
+        .then(res => {
+            if (!res.ok) throw new Error("Lỗi khi gán nhân viên");
+            showCustomAlert("Cập nhật danh sách nhân viên phụ trách thành công!", "success", () => {
+                document.getElementById('assignStaffModalContainer').innerHTML = '';
+                loadFacilityStaff(facilityId);
+            });
+        })
+        .catch(err => showCustomAlert(err.message, "error"));
 }
 
