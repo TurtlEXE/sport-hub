@@ -1,24 +1,30 @@
 package com.mvc.mock_project.service.impl;
 
+import com.mvc.mock_project.dto.request.OnSiteBookingRequestDTO;
 import com.mvc.mock_project.entities.*;
+import com.mvc.mock_project.entities.enums.BookingStatus;
 import com.mvc.mock_project.entities.enums.DayType;
+import com.mvc.mock_project.entities.enums.InvoiceStatus;
+import com.mvc.mock_project.entities.enums.PaymentMethod;
+import com.mvc.mock_project.entities.enums.PaymentStatus;
+import com.mvc.mock_project.entities.enums.PaymentType;
 import com.mvc.mock_project.entities.enums.SlotStatus;
 import com.mvc.mock_project.repository.*;
 import com.mvc.mock_project.service.BookingService;
+import com.mvc.mock_project.service.EmailService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.json.JsonParser;
+import org.springframework.boot.json.JsonParserFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
-import org.springframework.boot.json.JsonParser;
-import org.springframework.boot.json.JsonParserFactory;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import com.mvc.mock_project.entities.enums.BookingStatus;
-import com.mvc.mock_project.entities.enums.InvoiceStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +40,10 @@ public class BookingServiceImpl implements BookingService {
     private final InvoiceRepository invoiceRepository;
     private final FacilityRepository facilityRepository;
     private final CourtSlotBookingRepository courtSlotBookingRepository;
-    private final com.mvc.mock_project.service.EmailService emailService;
+    private final StaffRepository staffRepository;
+    private final OrderItemRepository orderItemRepository;
+    private final PaymentRepository paymentRepository;
+    private final EmailService emailService;
 
     @Override
     public List<Map<String, Object>> getFacilitySportsByVenue(Integer venueId) {
@@ -393,81 +402,236 @@ public class BookingServiceImpl implements BookingService {
     }
     
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void cancelExpiredBookings() {
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now();
         List<Booking> expiredBookings = bookingRepository.findExpiredPendingBookings(now);
         
         for (Booking b : expiredBookings) {
-            b.setBookingStatus(com.mvc.mock_project.entities.enums.BookingStatus.CANCELLED);
+            if (b.getInvoice() != null && (paymentRepository.existsByInvoiceIdAndPaymentStatus(b.getInvoice().getId(), PaymentStatus.PAID)
+                    || paymentRepository.existsByInvoiceIdAndPaymentStatus(b.getInvoice().getId(), PaymentStatus.PARTIAL))) {
+                continue;
+            }
+
+            b.setBookingStatus(BookingStatus.CANCELLED);
             
             if (b.getInvoice() != null) {
-                b.getInvoice().setPaymentStatus(com.mvc.mock_project.entities.enums.InvoiceStatus.CANCELLED);
+                b.getInvoice().setPaymentStatus(InvoiceStatus.CANCELLED);
             }
             
             if (b.getBookingSlots() != null) {
                 for (BookingSlot bs : b.getBookingSlots()) {
-                    bs.setSlotStatus(com.mvc.mock_project.entities.enums.SlotStatus.CANCELLED);
-                    
-                    // Delete the hold
-                    List<CourtSlotBooking> holds = courtSlotBookingRepository.findByBookingId(b.getId());
-                    courtSlotBookingRepository.deleteAll(holds);
+                    bs.setSlotStatus(SlotStatus.CANCELLED);
                 }
+            }
+
+            List<CourtSlotBooking> holds = courtSlotBookingRepository.findByBookingId(b.getId());
+            if (holds != null && !holds.isEmpty()) {
+                courtSlotBookingRepository.deleteAll(holds);
             }
         }
         bookingRepository.saveAll(expiredBookings);
     }
     
     @Override
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void processPaymentSuccess(Integer invoiceId, String totalPrice, String transactionId, String paymentTime, String email) {
         Invoice invoice = invoiceRepository.findById(invoiceId).orElse(null);
-        if (invoice != null) {
-            invoice.setPaymentStatus(InvoiceStatus.PARTIAL);
-            if (totalPrice != null) {
-                try {
-                    invoice.setPaidAmount(new BigDecimal(totalPrice).divide(new BigDecimal(100)));
-                } catch (Exception e) {}
-            }
-            if (invoice.getBooking() != null) {
-                Booking booking = invoice.getBooking();
-                booking.setBookingStatus(BookingStatus.CONFIRMED);
-                
-                // Update booking slots if necessary
-                List<BookingSlot> slots = booking.getBookingSlots();
-                if (slots != null) {
-                    for (BookingSlot slot : slots) {
-                        slot.setSlotStatus(SlotStatus.PENDING); // Slot remains PENDING until check-in
-                    }
-                    bookingSlotRepository.saveAll(slots);
-                }
-                bookingRepository.save(booking);
-            }
-            invoiceRepository.save(invoice);
+        if (invoice == null) {
+            return;
+        }
+
+        if (paymentRepository.existsByInvoiceIdAndPaymentStatus(invoiceId, PaymentStatus.PAID)
+                || paymentRepository.existsByInvoiceIdAndPaymentStatus(invoiceId, PaymentStatus.PARTIAL)) {
+            return;
+        }
+
+        BigDecimal paidAmount = invoice.getTotalAmount();
+        if (totalPrice != null && !totalPrice.trim().isEmpty()) {
+            try {
+                paidAmount = new BigDecimal(totalPrice).divide(new BigDecimal(100));
+            } catch (Exception ignored) {}
+        }
+
+        invoice.setPaymentStatus(InvoiceStatus.PARTIAL);
+        invoice.setPaidAmount(paidAmount);
+
+        if (invoice.getBooking() != null) {
+            Booking booking = invoice.getBooking();
+            booking.setBookingStatus(BookingStatus.CONFIRMED);
             
-            // Send email
-            if (email != null && !email.isEmpty() && !email.equals("null")) {
-                String formattedTime = paymentTime;
-                try {
-                    DateTimeFormatter inputFormat = DateTimeFormatter.ofPattern("yyyyMMddHHmmss");
-                    DateTimeFormatter outputFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-                    LocalDateTime dt = LocalDateTime.parse(paymentTime, inputFormat);
-                    formattedTime = dt.format(outputFormat);
-                } catch (Exception e) {}
-                
-                String facilityName = invoice.getBooking().getFacility().getName();
-                StringBuilder slotsInfo = new StringBuilder();
+            List<BookingSlot> slots = booking.getBookingSlots();
+            if (slots != null) {
+                for (BookingSlot slot : slots) {
+                    slot.setSlotStatus(SlotStatus.PENDING);
+                }
+                bookingSlotRepository.saveAll(slots);
+            }
+            bookingRepository.save(booking);
+        }
+        invoiceRepository.save(invoice);
+
+        LocalDateTime payTime = LocalDateTime.now();
+        if (paymentTime != null && !paymentTime.isEmpty() && !"null".equals(paymentTime)) {
+            try {
+                payTime = LocalDateTime.parse(paymentTime, DateTimeFormatter.ofPattern("yyyyMMddHHmmss"));
+            } catch (Exception ignored) {}
+        }
+
+        Payment payment = Payment.builder()
+                .invoice(invoice)
+                .vnpayTxnNo(transactionId)
+                .vnpayResponseCode("00")
+                .transactionCode(String.valueOf(invoiceId))
+                .paidAmount(paidAmount)
+                .paymentTime(payTime)
+                .paymentType(PaymentType.DEPOSIT)
+                .method(PaymentMethod.VNPAY)
+                .paymentStatus(PaymentStatus.PARTIAL)
+                .build();
+        paymentRepository.save(payment);
+        
+        if (email != null && !email.isEmpty() && !"null".equals(email)) {
+            String formattedTime = payTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
+            String facilityName = (invoice.getBooking() != null && invoice.getBooking().getFacility() != null) 
+                    ? invoice.getBooking().getFacility().getName() : "Venue";
+            StringBuilder slotsInfo = new StringBuilder();
+            if (invoice.getBooking() != null && invoice.getBooking().getBookingSlots() != null) {
                 for (BookingSlot bs : invoice.getBooking().getBookingSlots()) {
                     slotsInfo.append(bs.getCourt().getCourtName()).append(" (")
                              .append(bs.getStartTime()).append("-").append(bs.getEndTime()).append("), ");
                 }
-                
-                String bookingDetails = "Mã giao dịch: " + transactionId + "\n"
-                        + "Thời gian: " + formattedTime + "\n"
-                        + "Cơ sở: " + facilityName + "\n"
-                        + "Chi tiết sân: " + slotsInfo.toString();
-                emailService.sendPaymentSuccessEmail(email, bookingDetails);
+            }
+            
+            String bookingDetails = "Mã giao dịch: " + transactionId + "\n"
+                    + "Thời gian: " + formattedTime + "\n"
+                    + "Cơ sở: " + facilityName + "\n"
+                    + "Chi tiết sân: " + slotsInfo.toString();
+            emailService.sendPaymentSuccessEmail(email, bookingDetails);
+        }
+    }
+
+    @Override
+    @Transactional
+    public Invoice createOnSiteBooking(OnSiteBookingRequestDTO request, Account creatorAccount) {
+        // 1. Save Guest entity for walk-in customer
+        Guest guest = Guest.builder()
+                .guestName(request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty() 
+                        ? request.getCustomerName().trim() : "Khách vãng lai")
+                .phone(request.getCustomerPhone() != null && !request.getCustomerPhone().trim().isEmpty() 
+                        ? request.getCustomerPhone().trim() : "N/A")
+                .email(request.getCustomerEmail())
+                .build();
+        guest = guestRepository.save(guest);
+
+        // 2. Fetch Facility
+        Facility facility = facilityRepository.findById(request.getFacilityId())
+                .orElseThrow(() -> new RuntimeException("Facility not found"));
+
+        // 3. Determine Account vs Staff creator ownership
+        Account ownerAccount = null;
+        Staff staffEntity = null;
+
+        if (creatorAccount != null) {
+            Optional<Staff> staffOpt = staffRepository.findByAccountId(creatorAccount.getId());
+            if (staffOpt.isPresent()) {
+                staffEntity = staffOpt.get();
+            } else {
+                ownerAccount = creatorAccount;
             }
         }
+
+        boolean isCash = "CASH".equalsIgnoreCase(request.getPaymentMethod());
+        BookingStatus bStatus = isCash ? BookingStatus.CONFIRMED : BookingStatus.PENDING;
+
+        // 4. Save Booking
+        Booking booking = Booking.builder()
+                .facility(facility)
+                .guest(guest)
+                .account(ownerAccount)
+                .staff(staffEntity)
+                .bookingStatus(bStatus)
+                .note(request.getNote())
+                .build();
+        booking = bookingRepository.save(booking);
+
+        // 5. Save Booking Slots & CourtSlotBooking
+        BigDecimal totalCourtAmount = BigDecimal.ZERO;
+        LocalDate bookingDate = LocalDate.parse(request.getBookingDate());
+
+        if (request.getSlots() != null && !request.getSlots().isEmpty()) {
+            for (OnSiteBookingRequestDTO.SlotItemDTO slotDto : request.getSlots()) {
+                Court court = courtRepository.findById(slotDto.getCourtId()).orElse(null);
+                if (court == null) continue;
+
+                LocalTime startTime = LocalTime.parse(slotDto.getStartTime());
+                String endStr = slotDto.getEndTime();
+                LocalTime endTime = endStr.equals("23:59") ? LocalTime.MAX : LocalTime.parse(endStr);
+                BigDecimal price = slotDto.getPrice() != null ? slotDto.getPrice() : BigDecimal.ZERO;
+                totalCourtAmount = totalCourtAmount.add(price);
+
+                BookingSlot bookingSlot = BookingSlot.builder()
+                        .booking(booking)
+                        .court(court)
+                        .bookingDate(bookingDate)
+                        .startTime(startTime)
+                        .endTime(endTime)
+                        .priceSnapshot(price)
+                        .slotStatus(SlotStatus.PENDING)
+                        .build();
+                bookingSlot = bookingSlotRepository.save(bookingSlot);
+
+                CourtSlotBooking csb = CourtSlotBooking.builder()
+                        .court(court)
+                        .bookingDate(bookingDate)
+                        .startTime(startTime)
+                        .endTime(endTime)
+                        .bookingSlot(bookingSlot)
+                        .build();
+                courtSlotBookingRepository.save(csb);
+            }
+        }
+
+        // 6. Save Add-on Services (OrderItems)
+        BigDecimal totalProductAmount = BigDecimal.ZERO;
+        if (request.getServices() != null && !request.getServices().isEmpty()) {
+            for (OnSiteBookingRequestDTO.ServiceItemDTO svcDto : request.getServices()) {
+                Product product = productRepository.findById(svcDto.getProductId()).orElse(null);
+                if (product == null) continue;
+
+                int qty = svcDto.getQuantity() != null && svcDto.getQuantity() > 0 ? svcDto.getQuantity() : 1;
+                BigDecimal unitPrice = svcDto.getPrice() != null ? svcDto.getPrice() : product.getPrice();
+                BigDecimal lineTotal = unitPrice.multiply(new BigDecimal(qty));
+                totalProductAmount = totalProductAmount.add(lineTotal);
+
+                OrderItem item = OrderItem.builder()
+                        .booking(booking)
+                        .product(product)
+                        .quantity(qty)
+                        .unitPriceSnapshot(unitPrice)
+                        .totalAmount(lineTotal)
+                        .addedBy(staffEntity != null ? "STAFF" : "OWNER")
+                        .build();
+                orderItemRepository.save(item);
+            }
+        }
+
+        // 7. Save Invoice
+        BigDecimal subtotal = totalCourtAmount.add(totalProductAmount);
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        BigDecimal totalAmount = subtotal.subtract(discountAmount);
+        InvoiceStatus iStatus = isCash ? InvoiceStatus.PAID : InvoiceStatus.UNPAID;
+
+        Invoice invoice = Invoice.builder()
+                .booking(booking)
+                .courtAmount(totalCourtAmount)
+                .productAmount(totalProductAmount)
+                .subtotal(subtotal)
+                .discountAmount(discountAmount)
+                .totalAmount(totalAmount)
+                .paidAmount(isCash ? totalAmount : BigDecimal.ZERO)
+                .paymentStatus(iStatus)
+                .build();
+        return invoiceRepository.save(invoice);
     }
 }

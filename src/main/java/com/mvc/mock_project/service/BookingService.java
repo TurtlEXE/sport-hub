@@ -1,10 +1,12 @@
 package com.mvc.mock_project.service;
 
+import com.mvc.mock_project.dto.request.OnSiteBookingRequestDTO;
+import com.mvc.mock_project.entities.Account;
+import com.mvc.mock_project.entities.Invoice;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-import java.math.BigDecimal;
-import com.mvc.mock_project.entities.Invoice;
-import com.mvc.mock_project.entities.Account;
 
 public interface BookingService {
     List<Map<String, Object>> getFacilitySportsByVenue(Integer venueId);
@@ -23,4 +25,6 @@ public interface BookingService {
     void cancelExpiredBookings();
     
     void processPaymentSuccess(Integer invoiceId, String totalPrice, String transactionId, String paymentTime, String email);
+    
+    Invoice createOnSiteBooking(OnSiteBookingRequestDTO request, Account creatorAccount);
 }

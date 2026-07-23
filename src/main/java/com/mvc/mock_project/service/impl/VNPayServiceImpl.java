@@ -2,16 +2,24 @@ package com.mvc.mock_project.service.impl;
 
 import com.mvc.mock_project.config.VNPayConfig;
 import com.mvc.mock_project.service.VNPayService;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TimeZone;
 
 @Service
 @RequiredArgsConstructor
@@ -20,22 +28,18 @@ public class VNPayServiceImpl implements VNPayService {
     private final VNPayConfig vnPayConfig;
 
     @Override
-    public String createOrder(BigDecimal courtAmount, String orderInfo, String urlReturn, HttpServletRequest request) {
+    public String createOrder(String txnRef, BigDecimal courtAmount, String orderInfo, String urlReturn, HttpServletRequest request) {
         String vnp_Version = "2.1.0";
         String vnp_Command = "pay";
-        String vnp_TxnRef = VNPayConfig.getRandomNumber(8);
-        
-        // Cần truyền ID của invoice hoặc booking vào urlReturn để tiện update DB
-        // Tạm thời dùng vnp_TxnRef làm orderId
-        
+        String vnp_TxnRef = (txnRef != null && !txnRef.isEmpty()) ? txnRef : VNPayConfig.getRandomNumber(8);
+
         String vnp_IpAddr = "127.0.0.1";
         if (request != null) {
             vnp_IpAddr = request.getRemoteAddr();
         }
-        
+
         String vnp_TmnCode = vnPayConfig.getVnp_TmnCode();
 
-        // courtAmount (100.00) * 100
         BigDecimal amountInVND = courtAmount.multiply(new BigDecimal(100));
         long amount = amountInVND.longValue();
 
@@ -45,7 +49,7 @@ public class VNPayServiceImpl implements VNPayService {
         vnp_Params.put("vnp_TmnCode", vnp_TmnCode);
         vnp_Params.put("vnp_Amount", String.valueOf(amount));
         vnp_Params.put("vnp_CurrCode", "VND");
-        vnp_Params.put("vnp_TxnRef", vnp_TxnRef); // Có thể thay bằng Invoice ID
+        vnp_Params.put("vnp_TxnRef", vnp_TxnRef);
         vnp_Params.put("vnp_OrderInfo", orderInfo);
         vnp_Params.put("vnp_OrderType", "other");
 
@@ -77,12 +81,10 @@ public class VNPayServiceImpl implements VNPayService {
             String fieldName = itr.next();
             String fieldValue = vnp_Params.get(fieldName);
             if ((fieldValue != null) && (fieldValue.length() > 0)) {
-                //Build hash data
                 hashData.append(fieldName);
                 hashData.append('=');
                 try {
                     hashData.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
-                    //Build query
                     query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString()));
                     query.append('=');
                     query.append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString()));
@@ -98,9 +100,7 @@ public class VNPayServiceImpl implements VNPayService {
         String queryUrl = query.toString();
         String vnp_SecureHash = VNPayConfig.hmacSHA512(vnPayConfig.getVnp_HashSecret(), hashData.toString());
         queryUrl += "&vnp_SecureHash=" + vnp_SecureHash;
-        String paymentUrl = vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
-        
-        return paymentUrl;
+        return vnPayConfig.getVnp_PayUrl() + "?" + queryUrl;
     }
 
     @Override
@@ -121,8 +121,7 @@ public class VNPayServiceImpl implements VNPayService {
         if (fields.containsKey("vnp_SecureHash")) {
             fields.remove("vnp_SecureHash");
         }
-        
-        // Remove our custom query param before hashing to prevent hash mismatch
+
         if (fields.containsKey("custom_id")) {
             fields.remove("custom_id");
         }
