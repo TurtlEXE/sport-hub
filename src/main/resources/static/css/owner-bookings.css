@@ -76,6 +76,38 @@
     z-index: 5;
 }
 
+.slot-past {
+    background-color: #f1f5f9 !important;
+    color: #94a3b8 !important;
+    cursor: not-allowed !important;
+    user-select: none;
+}
+
+.slot-unpriced {
+    background: repeating-linear-gradient(
+        45deg,
+        #fef2f2,
+        #fef2f2 6px,
+        #fecaca 6px,
+        #fecaca 12px
+    ) !important;
+    border: 1px solid #fca5a5 !important;
+    color: #dc2626 !important;
+    cursor: not-allowed !important;
+    user-select: none;
+}
+
+.chip-unpriced {
+    background: repeating-linear-gradient(
+        45deg,
+        #fef2f2,
+        #fef2f2 4px,
+        #fecaca 4px,
+        #fecaca 8px
+    ) !important;
+    border: 1px solid #fca5a5 !important;
+}
+
 .timeline-container::-webkit-scrollbar { height: 8px; }
 .timeline-container::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
 .timeline-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }

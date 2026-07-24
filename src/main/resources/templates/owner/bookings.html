@@ -79,16 +79,22 @@
                         <!-- Legend -->
                         <div class="flex flex-wrap items-center gap-6 text-slate-600 px-6 py-4 border-b border-slate-100 bg-white">
                             <div class="chip">
-                                <div class="chip-box bg-white border border-slate-300"></div>Available
+                                <div class="chip-box bg-white border border-slate-300"></div>Trống (Available)
                             </div>
                             <div class="chip text-blue-700">
-                                <div class="chip-box bg-blue-100 border border-blue-500"></div>Selected
+                                <div class="chip-box bg-blue-100 border border-blue-500"></div>Đã chọn (Selected)
                             </div>
                             <div class="chip text-slate-800">
-                                <div class="chip-box bg-slate-800 border border-slate-900"></div>Booked (Confirmed)
+                                <div class="chip-box bg-slate-800 border border-slate-900"></div>Đã đặt (Confirmed)
                             </div>
                             <div class="chip text-orange-700">
-                                <div class="chip-box bg-orange-300 border border-orange-400"></div>Pending (Hold)
+                                <div class="chip-box bg-orange-300 border border-orange-400"></div>Chờ thanh toán (Hold)
+                            </div>
+                            <div class="chip text-slate-500">
+                                <div class="chip-box bg-slate-200 border border-slate-300"></div>Quá giờ (Past)
+                            </div>
+                            <div class="chip text-red-600">
+                                <div class="chip-box chip-unpriced"></div>Chưa đặt giá (Unpriced)
                             </div>
                         </div>
                         <!-- Loading Overlay -->
@@ -96,11 +102,30 @@
                             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                         </div>
 
-                        <!-- Grid Container -->
-                        <div class="timeline-container overflow-auto w-full relative" id="timelineContainer">
-                            <div class="timeline-grid bg-white" id="timelineGrid">
-                                <!-- Rendered by JS -->
-                                <div class="p-8 text-center text-slate-500 col-span-full">Please select a sport tab to view the schedule.</div>
+                        <!-- Grid & Detail Container -->
+                        <div class="flex w-full relative">
+                            <!-- Grid Container -->
+                            <div class="timeline-container overflow-auto flex-1 relative" id="timelineContainer">
+                                <div class="timeline-grid bg-white" id="timelineGrid">
+                                    <!-- Rendered by JS -->
+                                    <div class="p-8 text-center text-slate-500 col-span-full">Please select a sport tab to view the schedule.</div>
+                                </div>
+                            </div>
+
+                            <!-- Booking Detail Side Card Panel -->
+                            <div id="bookingDetailPanel" class="w-80 border-l border-slate-200 bg-slate-50/50 p-4 shrink-0 hidden relative transition-all">
+                                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-200">
+                                    <h3 class="font-bold text-sm text-slate-800 flex items-center gap-1.5">
+                                        <svg class="w-4 h-4 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Thông Tin Đơn Đặt Sân
+                                    </h3>
+                                    <button onclick="closeBookingDetailPanel()" class="text-slate-400 hover:text-slate-600 p-1">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                                <div id="bookingDetailContent" class="space-y-4 text-xs">
+                                    <!-- Rendered by JS -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -236,6 +261,61 @@
                                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Check-out & Settlement Modal -->
+        <div id="modalCheckOutSettlement" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 my-8">
+                <div class="bg-slate-900 px-6 py-4 text-white flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-base flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                            Check-out & Quyết Toán Đơn <span id="coBookingId">#</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Xác nhận hoàn tất ca và thu số tiền còn thiếu.</p>
+                    </div>
+                    <button onclick="closeCheckOutModal()" class="text-slate-400 hover:text-white transition-colors p-1">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div class="p-5 space-y-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+                        <div class="flex justify-between text-slate-600">
+                            <span>Tiền sân:</span>
+                            <span class="font-bold text-slate-800" id="coCourtAmount">0 VNĐ</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>Tiền dịch vụ:</span>
+                            <span class="font-bold text-slate-800" id="coProductAmount">0 VNĐ</span>
+                        </div>
+                        <div class="pt-2 border-t border-slate-200 flex justify-between text-slate-800 font-extrabold text-sm">
+                            <span>Tổng đơn hàng:</span>
+                            <span id="coTotalAmount">0 VNĐ</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-700 font-medium">
+                            <span>Đã thanh toán:</span>
+                            <span id="coPaidAmount">0 VNĐ</span>
+                        </div>
+                        <div class="pt-2 border-t border-slate-200 flex justify-between items-center font-extrabold text-base text-red-600 bg-red-50 p-2.5 rounded-lg border border-red-100">
+                            <span>CẦN THU NỐT:</span>
+                            <span id="coRemainingAmount">0 VNĐ</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1.5">Hình thức thanh toán tiền thiếu</label>
+                        <select id="coPaymentMethod" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                            <option value="CASH">💵 Tiền mặt tại quầy</option>
+                            <option value="VNPAY">💳 Chuyển khoản / QR Code</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-2 flex gap-3">
+                        <button onclick="closeCheckOutModal()" class="w-1/2 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors">Hủy Bỏ</button>
+                        <button onclick="confirmCheckOutSettlement()" id="btnConfirmCheckOut" class="w-1/2 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md">Xác Nhận Check-out</button>
                     </div>
                 </div>
             </div>

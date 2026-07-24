@@ -32,14 +32,12 @@ public class PaymentController {
 
     @PostMapping("/create-payment")
     public String createPayment(
-            @RequestParam(value = "courtAmount", defaultValue = "0") BigDecimal courtAmount,
-            @RequestParam(value = "originalCourtAmount", required = false) BigDecimal originalCourtAmount,
-            @RequestParam(value = "productAmount", defaultValue = "0") BigDecimal productAmount,
             @RequestParam(value = "email", required = false) String email,
             @RequestParam(value = "guestName", required = false) String guestName,
             @RequestParam(value = "guestPhone", required = false) String guestPhone,
             @RequestParam(value = "venueId", defaultValue = "1") Integer venueId,
             @RequestParam(value = "slotsJson", required = false) String slotsJson,
+            @RequestParam(value = "productsJson", required = false) String productsJson,
             @RequestParam(value = "bookingDate", required = false) String bookingDate,
             @RequestParam(value = "voucherId", required = false) Integer voucherId,
             @RequestParam(value = "voucherPlatformId", required = false) Integer voucherPlatformId,
@@ -60,16 +58,22 @@ public class PaymentController {
             email = account.getEmail();
         }
 
-        BigDecimal baseCourt = (originalCourtAmount != null) ? originalCourtAmount : courtAmount;
+        // All prices are now calculated server-side — no frontend price params accepted
         Invoice invoice = bookingService.createBookingTransaction(
-                guestName, guestPhone, email, baseCourt, productAmount, venueId, slotsJson, bookingDate, account, voucherId, voucherPlatformId);
+                guestName, guestPhone, email, venueId, slotsJson, productsJson, bookingDate, account, voucherId, voucherPlatformId);
 
         String orderInfo = "Thanh toan tien san - Invoice ID: " + invoice.getId();
         String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
 
         String returnUrl = baseUrl + "/api/payment/vnpay-return";
 
-        String paymentUrl = vnPayService.createOrder(invoice.getId().toString(), courtAmount, orderInfo, returnUrl, request);
+        // Court deposit payable online after discount
+        BigDecimal courtPayable = invoice.getCourtAmount().subtract(invoice.getDiscountAmount());
+        if (courtPayable.compareTo(BigDecimal.ZERO) < 0) {
+            courtPayable = BigDecimal.ZERO;
+        }
+
+        String paymentUrl = vnPayService.createOrder(invoice.getId().toString(), courtPayable, orderInfo, returnUrl, request);
         return "redirect:" + paymentUrl;
     }
 

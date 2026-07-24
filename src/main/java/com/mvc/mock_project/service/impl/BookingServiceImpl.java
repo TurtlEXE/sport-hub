@@ -43,6 +43,7 @@ public class BookingServiceImpl implements BookingService {
     private final StaffRepository staffRepository;
     private final OrderItemRepository orderItemRepository;
     private final PaymentRepository paymentRepository;
+    private final FacilityPriceRuleRepository facilityPriceRuleRepository;
     private final EmailService emailService;
 
     @Override
@@ -266,8 +267,8 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @org.springframework.transaction.annotation.Transactional
     public Invoice createBookingTransaction(String guestName, String guestPhone, String email, 
-                                            BigDecimal courtAmount, BigDecimal productAmount, Integer facilityId,
-                                            String slotsJson, String bookingDateStr, Account account, Integer voucherId, Integer voucherPlatformId) {
+                                            Integer facilityId,
+                                            String slotsJson, String productsJson, String bookingDateStr, Account account, Integer voucherId, Integer voucherPlatformId) {
         
         // 1. Save Guest ONLY if account is not present
         Guest guest = null;
@@ -294,7 +295,8 @@ public class BookingServiceImpl implements BookingService {
                 .build();
         booking = bookingRepository.save(booking);
         
-        // 4. Parse and Save Booking Slots
+        // 4. Parse and Save Booking Slots — CALCULATE PRICE FROM DB
+        BigDecimal serverCourtAmount = BigDecimal.ZERO;
         if (slotsJson != null && !slotsJson.isEmpty() && !slotsJson.equals("[]")) {
             try {
                 JsonParser springParser = JsonParserFactory.getJsonParser();
@@ -304,6 +306,11 @@ public class BookingServiceImpl implements BookingService {
                 if (bookingDateStr != null && !bookingDateStr.isEmpty()) {
                     bookingDate = LocalDate.parse(bookingDateStr);
                 }
+                
+                DayType dayType = getDayType(bookingDate);
+                
+                // Cache price rules per facilitySportId to avoid repeated DB queries
+                Map<Integer, List<FacilityPriceRule>> priceRulesCache = new HashMap<>();
                 
                 for (Object item : rawList) {
                     Map<String, Object> slotMap = (Map<String, Object>) item;
@@ -316,7 +323,16 @@ public class BookingServiceImpl implements BookingService {
                     LocalTime startTime = LocalTime.parse(slotMap.get("startTime").toString());
                     String endStr = slotMap.get("endTime").toString();
                     LocalTime endTime = endStr.equals("23:59") ? LocalTime.MAX : LocalTime.parse(endStr);
-                    BigDecimal price = new BigDecimal(slotMap.get("price").toString());
+                    
+                    // ★ SERVER-SIDE PRICE CALCULATION — do NOT trust frontend price ★
+                    Integer fSportId = court.getFacilitySport().getId();
+                    List<FacilityPriceRule> priceRules = priceRulesCache.computeIfAbsent(fSportId,
+                            id -> facilityPriceRuleRepository.findByFacilitySportIdAndIsActiveTrue(id));
+                    BigDecimal price = calculatePrice(startTime, endTime, priceRules, dayType);
+                    if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+                        throw new IllegalArgumentException("No valid price rule for slot: " + startTime + "-" + endTime + " on court " + courtId);
+                    }
+                    serverCourtAmount = serverCourtAmount.add(price);
                     
                     BookingSlot bookingSlot = BookingSlot.builder()
                             .booking(booking)
@@ -324,7 +340,7 @@ public class BookingServiceImpl implements BookingService {
                             .bookingDate(bookingDate)
                             .startTime(startTime)
                             .endTime(endTime)
-                            .priceSnapshot(price)
+                            .priceSnapshot(price) // Price from DB, NOT from frontend
                             .slotStatus(com.mvc.mock_project.entities.enums.SlotStatus.PENDING)
                             .build();
                     bookingSlot = bookingSlotRepository.save(bookingSlot);
@@ -338,22 +354,64 @@ public class BookingServiceImpl implements BookingService {
                             .build();
                     courtSlotBookingRepository.save(csb);
                 }
+            } catch (IllegalArgumentException e) {
+                throw e; // Re-throw validation errors
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        // 5. Fetch Vouchers and Calculate Discounts
+        // 4b. Parse and Save Products — CALCULATE PRICE FROM DB
+        BigDecimal serverProductAmount = BigDecimal.ZERO;
+        if (productsJson != null && !productsJson.isEmpty() && !productsJson.equals("[]")) {
+            try {
+                JsonParser springParser = JsonParserFactory.getJsonParser();
+                List<Object> productList = springParser.parseList(productsJson);
+                
+                for (Object item : productList) {
+                    Map<String, Object> prodMap = (Map<String, Object>) item;
+                    Integer productId = prodMap.get("productId") != null ? Integer.parseInt(prodMap.get("productId").toString()) : null;
+                    int quantity = prodMap.get("quantity") != null ? Integer.parseInt(prodMap.get("quantity").toString()) : 0;
+                    if (productId == null || quantity <= 0) continue;
+                    
+                    Product product = productRepository.findById(productId).orElse(null);
+                    if (product == null || !Boolean.TRUE.equals(product.getIsActive())) continue;
+                    
+                    // ★ Use price from DB, NOT from frontend ★
+                    BigDecimal unitPrice = product.getPrice();
+                    BigDecimal lineTotal = unitPrice.multiply(new BigDecimal(quantity));
+                    serverProductAmount = serverProductAmount.add(lineTotal);
+                    
+                    OrderItem orderItem = OrderItem.builder()
+                            .booking(booking)
+                            .product(product)
+                            .quantity(quantity)
+                            .unitPriceSnapshot(unitPrice)
+                            .totalAmount(lineTotal)
+                            .addedBy("CUSTOMER")
+                            .build();
+                    orderItemRepository.save(orderItem);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        // 5. Fetch Vouchers and Calculate Discounts — applied ONLY to court amount
         com.mvc.mock_project.entities.Voucher voucher = null;
         com.mvc.mock_project.entities.Voucher voucherPlatform = null;
         BigDecimal discountAmount = BigDecimal.ZERO;
-        BigDecimal subtotal = courtAmount.add(productAmount);
+        BigDecimal subtotal = serverCourtAmount.add(serverProductAmount);
+        LocalDateTime now = LocalDateTime.now();
 
         if (voucherId != null) {
             voucher = voucherRepository.findById(voucherId).orElse(null);
-            if (voucher != null) {
+            if (voucher != null && Boolean.TRUE.equals(voucher.getIsActive())
+                    && !now.isBefore(voucher.getValidFrom())
+                    && !now.isAfter(voucher.getValidTo())
+                    && (voucher.getMinOrderAmount() == null || serverCourtAmount.compareTo(voucher.getMinOrderAmount()) >= 0)) {
                 if (com.mvc.mock_project.entities.enums.DiscountType.PERCENTAGE.equals(voucher.getDiscountType())) {
-                    BigDecimal d = subtotal.multiply(voucher.getDiscountValue().divide(new BigDecimal("100")));
+                    BigDecimal d = serverCourtAmount.multiply(voucher.getDiscountValue().divide(new BigDecimal("100")));
                     if (voucher.getMaxDiscountAmount() != null && d.compareTo(voucher.getMaxDiscountAmount()) > 0) {
                         d = voucher.getMaxDiscountAmount();
                     }
@@ -361,14 +419,19 @@ public class BookingServiceImpl implements BookingService {
                 } else {
                     discountAmount = discountAmount.add(voucher.getDiscountValue());
                 }
+            } else {
+                voucher = null; // Voucher invalid → ignore
             }
         }
         
         if (voucherPlatformId != null) {
             voucherPlatform = voucherRepository.findById(voucherPlatformId).orElse(null);
-            if (voucherPlatform != null) {
+            if (voucherPlatform != null && Boolean.TRUE.equals(voucherPlatform.getIsActive())
+                    && !now.isBefore(voucherPlatform.getValidFrom())
+                    && !now.isAfter(voucherPlatform.getValidTo())
+                    && (voucherPlatform.getMinOrderAmount() == null || serverCourtAmount.compareTo(voucherPlatform.getMinOrderAmount()) >= 0)) {
                 if (com.mvc.mock_project.entities.enums.DiscountType.PERCENTAGE.equals(voucherPlatform.getDiscountType())) {
-                    BigDecimal d = subtotal.multiply(voucherPlatform.getDiscountValue().divide(new BigDecimal("100")));
+                    BigDecimal d = serverCourtAmount.multiply(voucherPlatform.getDiscountValue().divide(new BigDecimal("100")));
                     if (voucherPlatform.getMaxDiscountAmount() != null && d.compareTo(voucherPlatform.getMaxDiscountAmount()) > 0) {
                         d = voucherPlatform.getMaxDiscountAmount();
                     }
@@ -376,17 +439,23 @@ public class BookingServiceImpl implements BookingService {
                 } else {
                     discountAmount = discountAmount.add(voucherPlatform.getDiscountValue());
                 }
+            } else {
+                voucherPlatform = null; // Voucher invalid → ignore
             }
+        }
+
+        if (discountAmount.compareTo(serverCourtAmount) > 0) {
+            discountAmount = serverCourtAmount;
         }
 
         BigDecimal totalAmount = subtotal.subtract(discountAmount);
         if (totalAmount.compareTo(BigDecimal.ZERO) < 0) totalAmount = BigDecimal.ZERO;
 
-        // 6. Save Invoice
+        // 6. Save Invoice — all amounts calculated from DB
         Invoice invoice = Invoice.builder()
                 .booking(booking)
-                .courtAmount(courtAmount) // Original Court Amount passed from PaymentController
-                .productAmount(productAmount)
+                .courtAmount(serverCourtAmount)
+                .productAmount(serverProductAmount)
                 .subtotal(subtotal)
                 .discountAmount(discountAmount) 
                 .totalAmount(totalAmount) 
@@ -528,7 +597,7 @@ public class BookingServiceImpl implements BookingService {
         Facility facility = facilityRepository.findById(request.getFacilityId())
                 .orElseThrow(() -> new RuntimeException("Facility not found"));
 
-        // 3. Determine Account vs Staff creator ownership
+        // 3. Determine Account vs Staff creator ownership and validate access
         Account ownerAccount = null;
         Staff staffEntity = null;
 
@@ -536,8 +605,14 @@ public class BookingServiceImpl implements BookingService {
             Optional<Staff> staffOpt = staffRepository.findByAccountId(creatorAccount.getId());
             if (staffOpt.isPresent()) {
                 staffEntity = staffOpt.get();
+                if (staffEntity.getFacility() == null || !staffEntity.getFacility().getId().equals(facility.getId())) {
+                    throw new org.springframework.security.access.AccessDeniedException("Nhân viên không có quyền quản lý cơ sở này");
+                }
             } else {
                 ownerAccount = creatorAccount;
+                if (facility.getOwner() == null || !facility.getOwner().getId().equals(creatorAccount.getId())) {
+                    throw new org.springframework.security.access.AccessDeniedException("Bạn không phải là chủ sở hữu của cơ sở này");
+                }
             }
         }
 
@@ -555,9 +630,11 @@ public class BookingServiceImpl implements BookingService {
                 .build();
         booking = bookingRepository.save(booking);
 
-        // 5. Save Booking Slots & CourtSlotBooking
+        // 5. Save Booking Slots & CourtSlotBooking — Calculate prices from DB rules
         BigDecimal totalCourtAmount = BigDecimal.ZERO;
         LocalDate bookingDate = LocalDate.parse(request.getBookingDate());
+        DayType dayType = getDayType(bookingDate);
+        Map<Integer, List<FacilityPriceRule>> priceRulesCache = new HashMap<>();
 
         if (request.getSlots() != null && !request.getSlots().isEmpty()) {
             for (OnSiteBookingRequestDTO.SlotItemDTO slotDto : request.getSlots()) {
@@ -567,9 +644,18 @@ public class BookingServiceImpl implements BookingService {
                 LocalTime startTime = LocalTime.parse(slotDto.getStartTime());
                 String endStr = slotDto.getEndTime();
                 LocalTime endTime = endStr.equals("23:59") ? LocalTime.MAX : LocalTime.parse(endStr);
-                BigDecimal price = slotDto.getPrice() != null ? slotDto.getPrice() : BigDecimal.ZERO;
+                
+                // Server-side slot price lookup from DB rules
+                Integer fSportId = court.getFacilitySport().getId();
+                List<FacilityPriceRule> priceRules = priceRulesCache.computeIfAbsent(fSportId,
+                        id -> facilityPriceRuleRepository.findByFacilitySportIdAndIsActiveTrue(id));
+                BigDecimal price = calculatePrice(startTime, endTime, priceRules, dayType);
+                if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
+                    price = slotDto.getPrice() != null ? slotDto.getPrice() : BigDecimal.ZERO;
+                }
                 totalCourtAmount = totalCourtAmount.add(price);
 
+                SlotStatus slotSt = SlotStatus.PENDING;
                 BookingSlot bookingSlot = BookingSlot.builder()
                         .booking(booking)
                         .court(court)
@@ -577,7 +663,7 @@ public class BookingServiceImpl implements BookingService {
                         .startTime(startTime)
                         .endTime(endTime)
                         .priceSnapshot(price)
-                        .slotStatus(SlotStatus.PENDING)
+                        .slotStatus(slotSt)
                         .build();
                 bookingSlot = bookingSlotRepository.save(bookingSlot);
 
@@ -592,15 +678,15 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        // 6. Save Add-on Services (OrderItems)
+        // 6. Save Add-on Services (OrderItems) — Use product price from DB
         BigDecimal totalProductAmount = BigDecimal.ZERO;
         if (request.getServices() != null && !request.getServices().isEmpty()) {
             for (OnSiteBookingRequestDTO.ServiceItemDTO svcDto : request.getServices()) {
                 Product product = productRepository.findById(svcDto.getProductId()).orElse(null);
-                if (product == null) continue;
+                if (product == null || !Boolean.TRUE.equals(product.getIsActive())) continue;
 
                 int qty = svcDto.getQuantity() != null && svcDto.getQuantity() > 0 ? svcDto.getQuantity() : 1;
-                BigDecimal unitPrice = svcDto.getPrice() != null ? svcDto.getPrice() : product.getPrice();
+                BigDecimal unitPrice = product.getPrice(); // Always use DB unit price for security
                 BigDecimal lineTotal = unitPrice.multiply(new BigDecimal(qty));
                 totalProductAmount = totalProductAmount.add(lineTotal);
 
@@ -620,7 +706,18 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal subtotal = totalCourtAmount.add(totalProductAmount);
         BigDecimal discountAmount = BigDecimal.ZERO;
         BigDecimal totalAmount = subtotal.subtract(discountAmount);
-        InvoiceStatus iStatus = isCash ? InvoiceStatus.PAID : InvoiceStatus.UNPAID;
+
+        BigDecimal paidAmount = BigDecimal.ZERO;
+        InvoiceStatus iStatus = InvoiceStatus.UNPAID;
+
+        if (isCash) {
+            paidAmount = totalCourtAmount; // Tiền sân đã trả tại quầy, tiền dịch vụ tính sau!
+            if (totalProductAmount.compareTo(BigDecimal.ZERO) == 0) {
+                iStatus = InvoiceStatus.PAID;
+            } else {
+                iStatus = InvoiceStatus.PARTIAL;
+            }
+        }
 
         Invoice invoice = Invoice.builder()
                 .booking(booking)
@@ -629,9 +726,466 @@ public class BookingServiceImpl implements BookingService {
                 .subtotal(subtotal)
                 .discountAmount(discountAmount)
                 .totalAmount(totalAmount)
-                .paidAmount(isCash ? totalAmount : BigDecimal.ZERO)
+                .paidAmount(paidAmount)
+                .depositPercent(100)
                 .paymentStatus(iStatus)
+                .refundDue(BigDecimal.ZERO)
+                .refundStatus(com.mvc.mock_project.entities.enums.RefundStatus.NONE)
                 .build();
-        return invoiceRepository.save(invoice);
+        invoice = invoiceRepository.save(invoice);
+
+        booking.setInvoice(invoice);
+        bookingRepository.save(booking);
+
+        // Record Cash Payment for Court Fee
+        if (isCash && totalCourtAmount.compareTo(BigDecimal.ZERO) > 0) {
+            Payment payment = Payment.builder()
+                    .invoice(invoice)
+                    .paidAmount(totalCourtAmount)
+                    .paymentType(PaymentType.DEPOSIT)
+                    .method(PaymentMethod.CASH)
+                    .paymentStatus(PaymentStatus.PAID)
+                    .transactionCode("ONSITE-CASH-" + System.currentTimeMillis())
+                    .staffConfirm(staffEntity)
+                    .confirmTime(LocalDateTime.now())
+                    .build();
+            paymentRepository.save(payment);
+        }
+
+        return invoice;
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getBookingDetailForOwner(Integer bookingId) {
+        if (bookingId == null) return null;
+        Booking booking = bookingRepository.findById(bookingId).orElse(null);
+        if (booking == null) return null;
+
+        Map<String, Object> detail = new HashMap<>();
+        detail.put("bookingId", booking.getId());
+        detail.put("bookingStatus", booking.getBookingStatus() != null ? booking.getBookingStatus().name() : "PENDING");
+        detail.put("note", booking.getNote() != null ? booking.getNote() : "");
+        detail.put("createdAt", booking.getCreatedAt() != null ? booking.getCreatedAt().toString() : "");
+
+        String name = "N/A";
+        String phone = "N/A";
+        String email = "N/A";
+        if (booking.getGuest() != null) {
+            name = booking.getGuest().getGuestName();
+            phone = booking.getGuest().getPhone();
+            email = booking.getGuest().getEmail();
+        } else if (booking.getAccount() != null) {
+            name = booking.getAccount().getFullName();
+            phone = booking.getAccount().getPhone();
+            email = booking.getAccount().getEmail();
+        }
+        detail.put("bookerName", name != null ? name : "N/A");
+        detail.put("bookerPhone", phone != null ? phone : "N/A");
+        detail.put("bookerEmail", email != null ? email : "N/A");
+
+        Invoice invoice = booking.getInvoice();
+        BigDecimal courtAmt = BigDecimal.ZERO;
+        BigDecimal productAmt = BigDecimal.ZERO;
+        BigDecimal totalAmt = BigDecimal.ZERO;
+        BigDecimal paidAmt = BigDecimal.ZERO;
+
+        if (invoice != null) {
+            courtAmt = invoice.getCourtAmount() != null ? invoice.getCourtAmount() : BigDecimal.ZERO;
+            productAmt = invoice.getProductAmount() != null ? invoice.getProductAmount() : BigDecimal.ZERO;
+            totalAmt = invoice.getTotalAmount() != null ? invoice.getTotalAmount() : BigDecimal.ZERO;
+            paidAmt = invoice.getPaidAmount() != null ? invoice.getPaidAmount() : BigDecimal.ZERO;
+            detail.put("paymentStatus", invoice.getPaymentStatus() != null ? invoice.getPaymentStatus().name() : "UNPAID");
+        } else {
+            detail.put("paymentStatus", "UNPAID");
+        }
+
+        BigDecimal remainingAmt = totalAmt.subtract(paidAmt);
+        if (remainingAmt.compareTo(BigDecimal.ZERO) < 0) remainingAmt = BigDecimal.ZERO;
+
+        detail.put("courtAmount", courtAmt);
+        detail.put("productAmount", productAmt);
+        detail.put("totalAmount", totalAmt);
+        detail.put("paidAmount", paidAmt);
+        detail.put("remainingAmount", remainingAmt);
+
+        List<Map<String, Object>> slots = new ArrayList<>();
+        List<Map<String, Object>> groupedBlocks = new ArrayList<>();
+
+        if (booking.getBookingSlots() != null && !booking.getBookingSlots().isEmpty()) {
+            List<BookingSlot> sortedSlots = new ArrayList<>(booking.getBookingSlots());
+            sortedSlots.sort(Comparator.comparing(BookingSlot::getBookingDate)
+                    .thenComparing(s -> s.getCourt() != null ? s.getCourt().getId() : 0)
+                    .thenComparing(BookingSlot::getStartTime));
+
+            for (BookingSlot bs : sortedSlots) {
+                Map<String, Object> sMap = new HashMap<>();
+                sMap.put("slotId", bs.getId());
+                String cName = "Sân";
+                try {
+                    if (bs.getCourt() != null && bs.getCourt().getCourtName() != null) {
+                        cName = bs.getCourt().getCourtName();
+                    }
+                } catch (Exception ignored) {}
+                sMap.put("courtName", cName);
+                sMap.put("bookingDate", bs.getBookingDate() != null ? bs.getBookingDate().toString() : "");
+                sMap.put("startTime", bs.getStartTime() != null ? formatTime(bs.getStartTime()) : "");
+                sMap.put("endTime", bs.getEndTime() != null ? formatTime(bs.getEndTime()) : "");
+                sMap.put("price", bs.getPriceSnapshot() != null ? bs.getPriceSnapshot() : BigDecimal.ZERO);
+                sMap.put("slotStatus", bs.getSlotStatus() != null ? bs.getSlotStatus().name() : "PENDING");
+                sMap.put("checkinTime", bs.getCheckinTime() != null ? bs.getCheckinTime().toString() : "");
+                sMap.put("checkoutTime", bs.getCheckoutTime() != null ? bs.getCheckoutTime().toString() : "");
+                slots.add(sMap);
+            }
+
+            Map<Integer, List<BookingSlot>> courtSlotGroup = sortedSlots.stream()
+                    .collect(Collectors.groupingBy(s -> s.getCourt() != null ? s.getCourt().getId() : 0, LinkedHashMap::new, Collectors.toList()));
+
+            for (List<BookingSlot> cSlots : courtSlotGroup.values()) {
+                if (cSlots.isEmpty()) continue;
+                List<BookingSlot> currentBlock = new ArrayList<>();
+                currentBlock.add(cSlots.get(0));
+
+                for (int i = 1; i < cSlots.size(); i++) {
+                    BookingSlot prev = cSlots.get(i - 1);
+                    BookingSlot curr = cSlots.get(i);
+                    boolean isContinuous = prev.getEndTime().equals(curr.getStartTime())
+                            && prev.getSlotStatus() == curr.getSlotStatus()
+                            && Objects.equals(prev.getBookingDate(), curr.getBookingDate());
+                    if (isContinuous) {
+                        currentBlock.add(curr);
+                    } else {
+                        groupedBlocks.add(buildSlotBlockMap(currentBlock));
+                        currentBlock = new ArrayList<>();
+                        currentBlock.add(curr);
+                    }
+                }
+                if (!currentBlock.isEmpty()) {
+                    groupedBlocks.add(buildSlotBlockMap(currentBlock));
+                }
+            }
+        }
+        detail.put("slots", slots);
+        detail.put("groupedSlotBlocks", groupedBlocks);
+
+        List<Map<String, Object>> services = new ArrayList<>();
+        if (booking.getOrderItems() != null) {
+            for (OrderItem item : booking.getOrderItems()) {
+                Map<String, Object> iMap = new HashMap<>();
+                String pName = "Dịch vụ";
+                String unitStr = "";
+                try {
+                    if (item.getProduct() != null) {
+                        if (item.getProduct().getProductName() != null) pName = item.getProduct().getProductName();
+                        if (item.getProduct().getRentalUnit() != null) unitStr = item.getProduct().getRentalUnit();
+                    }
+                } catch (Exception ignored) {}
+                iMap.put("productName", pName);
+                iMap.put("unit", unitStr);
+                iMap.put("quantity", item.getQuantity() != null ? item.getQuantity() : 1);
+                iMap.put("unitPrice", item.getUnitPriceSnapshot() != null ? item.getUnitPriceSnapshot() : BigDecimal.ZERO);
+                iMap.put("totalAmount", item.getTotalAmount() != null ? item.getTotalAmount() : BigDecimal.ZERO);
+                services.add(iMap);
+            }
+        }
+        detail.put("services", services);
+
+        return detail;
+    }
+
+    private Map<String, Object> buildSlotBlockMap(List<BookingSlot> block) {
+        Map<String, Object> map = new HashMap<>();
+        BookingSlot first = block.get(0);
+        BookingSlot last = block.get(block.size() - 1);
+
+        List<Integer> slotIds = block.stream().map(BookingSlot::getId).collect(Collectors.toList());
+        String cName = first.getCourt() != null ? first.getCourt().getCourtName() : "Sân";
+        BigDecimal totalPrice = block.stream()
+                .map(s -> s.getPriceSnapshot() != null ? s.getPriceSnapshot() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        map.put("slotIds", slotIds);
+        map.put("courtName", cName);
+        map.put("bookingDate", first.getBookingDate() != null ? first.getBookingDate().toString() : "");
+        map.put("startTime", formatTime(first.getStartTime()));
+        map.put("endTime", formatTime(last.getEndTime()));
+        map.put("slotStatus", first.getSlotStatus() != null ? first.getSlotStatus().name() : "PENDING");
+        map.put("totalPrice", totalPrice);
+        return map;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> checkInSlots(List<Integer> slotIds, Account ownerAccount) {
+        if (slotIds == null || slotIds.isEmpty()) {
+            throw new IllegalArgumentException("Vui lòng chọn ít nhất một ca đặt để check-in");
+        }
+
+        List<BookingSlot> slots = bookingSlotRepository.findAllById(slotIds);
+        if (slots.isEmpty()) {
+            throw new IllegalArgumentException("Không tìm thấy thông tin ca đặt");
+        }
+
+        Booking booking = slots.get(0).getBooking();
+        if (ownerAccount != null && booking.getFacility() != null) {
+            Facility facility = booking.getFacility();
+            boolean isOwner = facility.getOwner() != null && facility.getOwner().getId().equals(ownerAccount.getId());
+            boolean isStaff = staffRepository.findByAccountId(ownerAccount.getId())
+                    .map(s -> s.getFacility() != null && s.getFacility().getId().equals(facility.getId()))
+                    .orElse(false);
+            if (!isOwner && !isStaff) {
+                throw new org.springframework.security.access.AccessDeniedException("Bạn không có quyền quản lý đơn hàng này");
+            }
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        for (BookingSlot bs : slots) {
+            bs.setSlotStatus(SlotStatus.CHECKED_IN);
+            if (bs.getCheckinTime() == null) {
+                bs.setCheckinTime(now);
+            }
+        }
+        bookingSlotRepository.saveAll(slots);
+
+        if (booking.getCheckinTime() == null) {
+            booking.setCheckinTime(now);
+        }
+        if (booking.getBookingStatus() == BookingStatus.PENDING) {
+            booking.setBookingStatus(BookingStatus.CONFIRMED);
+        }
+        bookingRepository.save(booking);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("message", "Check-in ca đặt thành công!");
+        resp.put("bookingId", booking.getId());
+        return resp;
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> checkOutAndSettle(Integer bookingId, List<Integer> slotIds, String paymentMethod, Account ownerAccount) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đặt sân #" + bookingId));
+
+        if (ownerAccount != null && booking.getFacility() != null) {
+            Facility facility = booking.getFacility();
+            boolean isOwner = facility.getOwner() != null && facility.getOwner().getId().equals(ownerAccount.getId());
+            boolean isStaff = staffRepository.findByAccountId(ownerAccount.getId())
+                    .map(s -> s.getFacility() != null && s.getFacility().getId().equals(facility.getId()))
+                    .orElse(false);
+            if (!isOwner && !isStaff) {
+                throw new org.springframework.security.access.AccessDeniedException("Bạn không có quyền quản lý đơn hàng này");
+            }
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        List<BookingSlot> targetSlots;
+        if (slotIds != null && !slotIds.isEmpty()) {
+            targetSlots = bookingSlotRepository.findAllById(slotIds);
+        } else {
+            targetSlots = booking.getBookingSlots() != null ? booking.getBookingSlots() : Collections.emptyList();
+        }
+
+        for (BookingSlot bs : targetSlots) {
+            bs.setSlotStatus(SlotStatus.CHECKED_OUT);
+            if (bs.getCheckoutTime() == null) {
+                bs.setCheckoutTime(now);
+            }
+        }
+        if (!targetSlots.isEmpty()) {
+            bookingSlotRepository.saveAll(targetSlots);
+        }
+
+        List<BookingSlot> allSlots = booking.getBookingSlots();
+        boolean allCheckedOut = allSlots != null && !allSlots.isEmpty() && allSlots.stream()
+                .allMatch(bs -> bs.getSlotStatus() == SlotStatus.CHECKED_OUT);
+
+        if (allCheckedOut) {
+            booking.setBookingStatus(BookingStatus.COMPLETED);
+            if (booking.getCheckoutTime() == null) {
+                booking.setCheckoutTime(now);
+            }
+            bookingRepository.save(booking);
+        }
+
+        Invoice invoice = booking.getInvoice();
+        if (invoice != null) {
+            BigDecimal totalAmount = invoice.getTotalAmount() != null ? invoice.getTotalAmount() : BigDecimal.ZERO;
+            BigDecimal paidAmount = invoice.getPaidAmount() != null ? invoice.getPaidAmount() : BigDecimal.ZERO;
+            BigDecimal remaining = totalAmount.subtract(paidAmount);
+            if (remaining.compareTo(BigDecimal.ZERO) < 0) remaining = BigDecimal.ZERO;
+
+            if (remaining.compareTo(BigDecimal.ZERO) > 0) {
+                Staff staffEntity = null;
+                if (ownerAccount != null) {
+                    staffEntity = staffRepository.findByAccountId(ownerAccount.getId()).orElse(null);
+                }
+
+                PaymentMethod method = "VNPAY".equalsIgnoreCase(paymentMethod) ? PaymentMethod.VNPAY : PaymentMethod.CASH;
+                Payment settlement = Payment.builder()
+                        .invoice(invoice)
+                        .paidAmount(remaining)
+                        .paymentTime(now)
+                        .paymentType(PaymentType.REMAINING)
+                        .method(method)
+                        .paymentStatus(PaymentStatus.PAID)
+                        .transactionCode("SETTLE-" + System.currentTimeMillis())
+                        .staffConfirm(staffEntity)
+                        .confirmTime(now)
+                        .build();
+                paymentRepository.save(settlement);
+
+                invoice.setPaidAmount(totalAmount);
+                invoice.setPaymentStatus(InvoiceStatus.PAID);
+                invoiceRepository.save(invoice);
+            } else if (allCheckedOut && invoice.getPaymentStatus() != InvoiceStatus.PAID) {
+                invoice.setPaymentStatus(InvoiceStatus.PAID);
+                invoiceRepository.save(invoice);
+            }
+        }
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("message", allCheckedOut ? "Đã check-out toàn bộ đơn và quyết toán thành công!" : "Check-out ca đặt thành công!");
+        resp.put("bookingId", booking.getId());
+        return resp;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Map<String, Object> getOwnerBookingTimeline(Integer facilitySportId, String date, Integer ownerId) {
+        LocalDate bookingDate = LocalDate.parse(date);
+
+        FacilitySport fs = facilitySportRepository.findByIdAndFacility_Owner_Id(facilitySportId, ownerId)
+                .orElseThrow(() -> new RuntimeException("FacilitySport not found or access denied"));
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("date", date);
+        response.put("slotDurationMinutes", fs.getSlotStepMinutes());
+        response.put("minDurationMinutes", fs.getMinDurationMinutes());
+
+        List<Court> courts = courtRepository.findByFacilitySportIdAndIsActiveTrue(facilitySportId);
+        List<Integer> courtIds = courts.stream().map(Court::getId).collect(Collectors.toList());
+
+        List<CourtSlotBooking> bookedSlots = new ArrayList<>();
+        if (!courtIds.isEmpty()) {
+            bookedSlots = courtSlotBookingRepository.findActiveHoldsByCourtIdsAndDate(courtIds, bookingDate);
+        }
+
+        List<FacilityPriceRule> priceRules = fs.getPriceRules() != null ? fs.getPriceRules() : new ArrayList<>();
+        DayType dayType = getDayType(bookingDate);
+
+        List<Map<String, Object>> courtsData = new ArrayList<>();
+        for (Court court : courts) {
+            Map<String, Object> cMap = new HashMap<>();
+            cMap.put("courtId", court.getId());
+            cMap.put("courtName", court.getCourtName());
+
+            List<Map<String, Object>> slots = generateSlots(
+                    fs.getFacility().getOpenTime(),
+                    fs.getFacility().getCloseTime(),
+                    fs.getSlotStepMinutes(),
+                    court.getId(),
+                    bookedSlots,
+                    priceRules,
+                    dayType,
+                    bookingDate
+            );
+            cMap.put("slots", slots);
+            courtsData.add(cMap);
+        }
+
+        response.put("courts", courtsData);
+        return response;
+    }
+
+    private List<Map<String, Object>> generateSlots(
+            LocalTime openTime, LocalTime closeTime, int stepMins,
+            Integer courtId, List<CourtSlotBooking> bookedSlots,
+            List<FacilityPriceRule> priceRules,
+            DayType dayType,
+            LocalDate bookingDate) {
+
+        List<Map<String, Object>> slots = new ArrayList<>();
+        int slotIndex = 0;
+        LocalDate today = LocalDate.now();
+        LocalTime nowTime = LocalTime.now();
+
+        LocalTime curr = openTime;
+        while (curr.isBefore(closeTime)) {
+            LocalTime next = curr.plusMinutes(stepMins);
+            if (next.isAfter(closeTime) || (next.isBefore(curr) && next.equals(LocalTime.MIDNIGHT))) {
+                if (next.equals(LocalTime.MIDNIGHT)) {
+                    next = LocalTime.MAX;
+                } else {
+                    next = closeTime;
+                }
+            }
+
+            Map<String, Object> slot = new HashMap<>();
+            slot.put("slotIndex", slotIndex);
+            slot.put("startTime", formatTime(curr));
+            slot.put("endTime", formatTime(next));
+
+            String status = "AVAILABLE";
+            String bookerName = "";
+            String bookerPhone = "";
+            Integer bookingId = null;
+
+            for (CourtSlotBooking bs : bookedSlots) {
+                if (bs.getCourt().getId().equals(courtId)) {
+                    if (curr.isBefore(bs.getEndTime()) && next.isAfter(bs.getStartTime())) {
+                        if (bs.getBookingSlot() != null && bs.getBookingSlot().getBooking() != null) {
+                            Booking booking = bs.getBookingSlot().getBooking();
+                            bookingId = booking.getId();
+                            if (booking.getBookingStatus() == BookingStatus.PENDING) {
+                                status = "HOLD";
+                            } else {
+                                status = "BOOKED";
+                            }
+                            if (booking.getGuest() != null) {
+                                bookerName = booking.getGuest().getGuestName();
+                                bookerPhone = booking.getGuest().getPhone();
+                            } else if (booking.getAccount() != null) {
+                                bookerName = booking.getAccount().getFullName();
+                                bookerPhone = booking.getAccount().getPhone();
+                            }
+                        } else {
+                            status = "HOLD";
+                        }
+                        break;
+                    }
+                }
+            }
+
+            BigDecimal price = calculatePrice(curr, next, priceRules, dayType);
+            boolean isPast = bookingDate.isBefore(today) || (bookingDate.isEqual(today) && next.isBefore(nowTime));
+
+            if ("AVAILABLE".equals(status)) {
+                if (price == null || price.compareTo(BigDecimal.ZERO) <= 0) {
+                    status = "UNPRICED";
+                } else if (isPast) {
+                    status = "PAST";
+                }
+            }
+
+            slot.put("status", status);
+            slot.put("bookerName", bookerName);
+            slot.put("bookerPhone", bookerPhone);
+            slot.put("bookingId", bookingId);
+            slot.put("price", price != null ? price : BigDecimal.ZERO);
+            slot.put("isPast", isPast);
+
+            slots.add(slot);
+            slotIndex++;
+            curr = next;
+            if (curr.equals(LocalTime.MAX) || curr.equals(closeTime)) {
+                break;
+            }
+        }
+
+        return slots;
+    }
+
 }

@@ -226,8 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         courts[0].slots.forEach(slot => {
             const timeCell = document.createElement('div');
-            timeCell.className = 'timeline-header timeline-cell font-medium text-xs';
-            timeCell.textContent = slot.startTime;
+            timeCell.className = 'timeline-header timeline-cell px-1 font-mono text-[10px] select-none';
+            timeCell.innerHTML = `<div class="flex justify-between items-center w-full"><span class="font-bold text-slate-700">${slot.startTime}</span><span class="text-slate-400 font-normal">${slot.endTime}</span></div>`;
             headerFrag.appendChild(timeCell);
         });
         timelineGrid.appendChild(headerFrag);
@@ -650,7 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
         form.method = 'POST';
         form.action = '/api/payment/create-payment';
 
-        // Serialize slots
+        // Serialize slots (server will calculate prices from DB, frontend prices are ignored)
         const slotsArray = Array.from(selectedSlots.values());
         const inputSlots = document.createElement('input');
         inputSlots.type = 'hidden';
@@ -658,30 +658,27 @@ document.addEventListener('DOMContentLoaded', () => {
         inputSlots.value = JSON.stringify(slotsArray);
         form.appendChild(inputSlots);
 
+        // Serialize products — only send productId + quantity, server calculates price from DB
+        const productsArray = [];
+        if (typeof selectedServicesObj !== 'undefined') {
+            for (const [pId, qty] of Object.entries(selectedServicesObj)) {
+                if (qty > 0) {
+                    productsArray.push({ productId: parseInt(pId), quantity: qty });
+                }
+            }
+        }
+        const inputProducts = document.createElement('input');
+        inputProducts.type = 'hidden';
+        inputProducts.name = 'productsJson';
+        inputProducts.value = JSON.stringify(productsArray);
+        form.appendChild(inputProducts);
+
         // Also pass the booking date
         const inputDate = document.createElement('input');
         inputDate.type = 'hidden';
         inputDate.name = 'bookingDate';
         inputDate.value = window.currentDate || currentDate || new Date().toISOString().split('T')[0];
         form.appendChild(inputDate);
-
-        const inputCourt = document.createElement('input');
-        inputCourt.type = 'hidden';
-        inputCourt.name = 'courtAmount';
-        inputCourt.value = window.currentCourtAmount || 0;
-        form.appendChild(inputCourt);
-
-        const inputOriginalCourt = document.createElement('input');
-        inputOriginalCourt.type = 'hidden';
-        inputOriginalCourt.name = 'originalCourtAmount';
-        inputOriginalCourt.value = baseTotal || 0;
-        form.appendChild(inputOriginalCourt);
-
-        const inputProduct = document.createElement('input');
-        inputProduct.type = 'hidden';
-        inputProduct.name = 'productAmount';
-        inputProduct.value = window.currentProductAmount || 0;
-        form.appendChild(inputProduct);
 
         const inputEmail = document.createElement('input');
         inputEmail.type = 'hidden';

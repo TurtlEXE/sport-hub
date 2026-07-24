@@ -11,6 +11,7 @@ import java.util.Map;
 public interface BookingService {
     List<Map<String, Object>> getFacilitySportsByVenue(Integer venueId);
     Map<String, Object> getBookingTimeline(Integer facilitySportId, String date);
+    Map<String, Object> getOwnerBookingTimeline(Integer facilitySportId, String date, Integer ownerId);
     
     List<Map<String, Object>> getFacilityProducts(Integer facilityId);
     
@@ -18,8 +19,8 @@ public interface BookingService {
     
     Invoice createBookingTransaction(
         String guestName, String guestPhone, String email, 
-        BigDecimal courtAmount, BigDecimal productAmount, Integer facilityId,
-        String slotsJson, String bookingDate, Account account, Integer voucherId, Integer voucherPlatformId
+        Integer facilityId, String slotsJson, String productsJson, String bookingDate, 
+        Account account, Integer voucherId, Integer voucherPlatformId
     );
     
     void cancelExpiredBookings();
@@ -27,4 +28,10 @@ public interface BookingService {
     void processPaymentSuccess(Integer invoiceId, String totalPrice, String transactionId, String paymentTime, String email);
     
     Invoice createOnSiteBooking(OnSiteBookingRequestDTO request, Account creatorAccount);
+
+    Map<String, Object> getBookingDetailForOwner(Integer bookingId);
+
+    Map<String, Object> checkInSlots(List<Integer> slotIds, Account ownerAccount);
+
+    Map<String, Object> checkOutAndSettle(Integer bookingId, List<Integer> slotIds, String paymentMethod, Account ownerAccount);
 }
