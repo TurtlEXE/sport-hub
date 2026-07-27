@@ -57,6 +57,25 @@ INSERT INTO sport (sport_id, sport_code, sport_name, icon_path, default_min_dura
 (4, 'SW', 'Bơi lội (Swimming)', '/icons/swimming.png', 60, 60, 1);
 
 -- ==============================================================================
+-- 5.1. BẢNG SPORT_ATTRIBUTE (Đặc tả kĩ thuật cho từng môn)
+-- ==============================================================================
+INSERT INTO sport_attribute (attribute_id, sport_id, attribute_code, attribute_name, data_type, is_required, options_json, is_active) VALUES
+-- Bóng đá (Sport ID 1)
+(1, 1, 'pitch_type', 'Loại mặt sân', 'SELECT', 1, '["Cỏ tự nhiên", "Cỏ nhân tạo"]', 1),
+(2, 1, 'max_players', 'Số người tối đa', 'NUMBER', 1, NULL, 1),
+(3, 1, 'has_roof', 'Có mái che', 'BOOLEAN', 0, NULL, 1),
+-- Cầu lông (Sport ID 2)
+(4, 2, 'court_mat_type', 'Loại thảm (PVC/Gỗ)', 'TEXT', 1, NULL, 1),
+(5, 2, 'ceiling_height', 'Chiều cao trần (m)', 'NUMBER', 1, NULL, 1),
+-- Tennis (Sport ID 3)
+(6, 3, 'surface_type', 'Mặt sân', 'SELECT', 1, '["Cứng", "Đất nện", "Cỏ"]', 1),
+(7, 3, 'has_referee_chair', 'Có ghế trọng tài', 'BOOLEAN', 0, NULL, 1),
+-- Bơi lội (Sport ID 4)
+(8, 4, 'pool_length', 'Chiều dài hồ (m)', 'NUMBER', 1, NULL, 1),
+(9, 4, 'max_depth', 'Độ sâu tối đa (m)', 'NUMBER', 1, NULL, 1),
+(10, 4, 'water_temp_control', 'Có hệ thống gia nhiệt', 'BOOLEAN', 0, NULL, 1);
+
+-- ==============================================================================
 -- 6. BẢNG FACILITY_SPORT (Map Môn thể thao vào Cơ sở)
 -- ==============================================================================
 INSERT INTO facility_sport (facility_sport_id, facility_id, sport_id, min_duration_minutes, slot_step_minutes, is_active) VALUES
