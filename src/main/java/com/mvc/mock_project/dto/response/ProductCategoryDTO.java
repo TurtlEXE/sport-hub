@@ -9,12 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class SportDTO {
-    private Integer sportId;
-    private String sportCode;
-    private String sportName;
-    private String iconPath;
-    private Integer defaultMinDurationMinutes;
-    private Integer defaultSlotStepMinutes;
+public class ProductCategoryDTO {
+    private Integer categoryId;
+    private String categoryCode;
+    private String categoryName;
     private Boolean isActive;
 }

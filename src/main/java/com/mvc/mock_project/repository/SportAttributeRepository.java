@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface SportAttributeRepository extends JpaRepository<SportAttribute, Integer> {
     List<SportAttribute> findBySport_Id(Integer sportId);
+    boolean existsByAttributeCodeAndSport_Id(String attributeCode, Integer sportId);
 }

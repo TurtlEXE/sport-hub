@@ -71,4 +71,20 @@ public class GlobalApiExceptionHandler {
         response.put("data", ex.getErrors()); // The array of errors with row indices
         return ResponseEntity.badRequest().body(response);
     }
+    @ExceptionHandler({
+            DuplicateCodeException.class, 
+            ResourceInUseException.class, 
+            CommissionTierOverlapException.class, 
+            InvalidTierStatusTransitionException.class
+    })
+    public ResponseEntity<ApiResponse<Void>> handleBusinessExceptions(RuntimeException ex) {
+        String errorMessage = ex.getMessage();
+        try {
+            Locale locale = LocaleContextHolder.getLocale();
+            errorMessage = messageSource.getMessage(errorMessage, null, locale);
+        } catch (NoSuchMessageException e) {
+            // keep original message if no translation is found
+        }
+        return ResponseEntity.badRequest().body(ApiResponse.error(errorMessage));
+    }
 }
