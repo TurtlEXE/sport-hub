@@ -52,9 +52,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/bookings/**", "/api/reviews/**")
                         .hasAnyAuthority("ROLE_CUSTOMER", "ROLE_ADMIN")
 
-                        // Court Owner
+                        // Court Owner & Staff
                         .requestMatchers("/api/owner/**", "/api/facilities/manage/**", "/owner/**")
-                        .hasAnyAuthority("ROLE_OWNER", "ROLE_ADMIN")
+                        .hasAnyAuthority("ROLE_OWNER", "ROLE_ADMIN", "ROLE_STAFF")
 
                         // Staff
                         .requestMatchers("/api/staff/**", "/api/ops/**", "/staff/**")

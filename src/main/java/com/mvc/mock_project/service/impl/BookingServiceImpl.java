@@ -616,8 +616,15 @@ public class BookingServiceImpl implements BookingService {
             }
         }
 
-        boolean isCash = "CASH".equalsIgnoreCase(request.getPaymentMethod());
-        BookingStatus bStatus = isCash ? BookingStatus.CONFIRMED : BookingStatus.PENDING;
+        String reqPm = request.getPaymentMethod() != null ? request.getPaymentMethod().toUpperCase() : "CASH";
+        PaymentMethod pMethod;
+        try {
+            pMethod = PaymentMethod.valueOf(reqPm);
+        } catch (Exception e) {
+            pMethod = PaymentMethod.CASH;
+        }
+
+        BookingStatus bStatus = BookingStatus.CONFIRMED;
 
         // 4. Save Booking
         Booking booking = Booking.builder()
@@ -707,17 +714,8 @@ public class BookingServiceImpl implements BookingService {
         BigDecimal discountAmount = BigDecimal.ZERO;
         BigDecimal totalAmount = subtotal.subtract(discountAmount);
 
-        BigDecimal paidAmount = BigDecimal.ZERO;
-        InvoiceStatus iStatus = InvoiceStatus.UNPAID;
-
-        if (isCash) {
-            paidAmount = totalCourtAmount; // Tiền sân đã trả tại quầy, tiền dịch vụ tính sau!
-            if (totalProductAmount.compareTo(BigDecimal.ZERO) == 0) {
-                iStatus = InvoiceStatus.PAID;
-            } else {
-                iStatus = InvoiceStatus.PARTIAL;
-            }
-        }
+        BigDecimal paidAmount = totalCourtAmount; // Tiền sân đã trả tại quầy (tiền mặt / QR chuyển khoản)
+        InvoiceStatus iStatus = (totalProductAmount.compareTo(BigDecimal.ZERO) == 0) ? InvoiceStatus.PAID : InvoiceStatus.PARTIAL;
 
         Invoice invoice = Invoice.builder()
                 .booking(booking)
@@ -737,15 +735,16 @@ public class BookingServiceImpl implements BookingService {
         booking.setInvoice(invoice);
         bookingRepository.save(booking);
 
-        // Record Cash Payment for Court Fee
-        if (isCash && totalCourtAmount.compareTo(BigDecimal.ZERO) > 0) {
+        // Record Payment for Court Fee (CASH / BANK_TRANSFER)
+        if (totalCourtAmount.compareTo(BigDecimal.ZERO) > 0) {
             Payment payment = Payment.builder()
                     .invoice(invoice)
                     .paidAmount(totalCourtAmount)
+                    .paymentTime(LocalDateTime.now())
                     .paymentType(PaymentType.DEPOSIT)
-                    .method(PaymentMethod.CASH)
+                    .method(pMethod)
                     .paymentStatus(PaymentStatus.PAID)
-                    .transactionCode("ONSITE-CASH-" + System.currentTimeMillis())
+                    .transactionCode("ONSITE-" + pMethod.name() + "-" + System.currentTimeMillis())
                     .staffConfirm(staffEntity)
                     .confirmTime(LocalDateTime.now())
                     .build();
@@ -1022,7 +1021,12 @@ public class BookingServiceImpl implements BookingService {
                     staffEntity = staffRepository.findByAccountId(ownerAccount.getId()).orElse(null);
                 }
 
-                PaymentMethod method = "VNPAY".equalsIgnoreCase(paymentMethod) ? PaymentMethod.VNPAY : PaymentMethod.CASH;
+                PaymentMethod method = PaymentMethod.CASH;
+                if ("BANK_TRANSFER".equalsIgnoreCase(paymentMethod) || "QR".equalsIgnoreCase(paymentMethod)) {
+                    method = PaymentMethod.BANK_TRANSFER;
+                } else if ("VNPAY".equalsIgnoreCase(paymentMethod)) {
+                    method = PaymentMethod.VNPAY;
+                }
                 Payment settlement = Payment.builder()
                         .invoice(invoice)
                         .paidAmount(remaining)
@@ -1054,11 +1058,26 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     @Transactional(readOnly = true)
-    public Map<String, Object> getOwnerBookingTimeline(Integer facilitySportId, String date, Integer ownerId) {
+    public Map<String, Object> getOwnerBookingTimeline(Integer facilitySportId, String date, Integer userAccountId) {
         LocalDate bookingDate = LocalDate.parse(date);
 
-        FacilitySport fs = facilitySportRepository.findByIdAndFacility_Owner_Id(facilitySportId, ownerId)
-                .orElseThrow(() -> new RuntimeException("FacilitySport not found or access denied"));
+        FacilitySport fs = facilitySportRepository.findById(facilitySportId)
+                .orElseThrow(() -> new RuntimeException("FacilitySport not found"));
+
+        Facility facility = fs.getFacility();
+        if (userAccountId != null) {
+            Optional<Staff> staffOpt = staffRepository.findByAccountId(userAccountId);
+            if (staffOpt.isPresent()) {
+                Staff staff = staffOpt.get();
+                if (staff.getFacility() == null || !staff.getFacility().getId().equals(facility.getId())) {
+                    throw new org.springframework.security.access.AccessDeniedException("Nhân viên không có quyền quản lý cơ sở này");
+                }
+            } else {
+                if (facility.getOwner() == null || !facility.getOwner().getId().equals(userAccountId)) {
+                    throw new org.springframework.security.access.AccessDeniedException("Bạn không phải là chủ sở hữu của cơ sở này");
+                }
+            }
+        }
 
         Map<String, Object> response = new HashMap<>();
         response.put("date", date);

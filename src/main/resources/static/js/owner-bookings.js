@@ -221,7 +221,7 @@ function renderGrid(data) {
     timelineGrid.appendChild(headerFrag);
 
     // Render Courts and Slots
-    courts.forEach(court => {
+    courts.forEach((court, courtIdx) => {
         const courtFrag = document.createDocumentFragment();
 
         const nameCell = document.createElement('div');
@@ -236,17 +236,23 @@ function renderGrid(data) {
             if (slot.status === 'BOOKED' || slot.status === 'HOLD') {
                 const isBooked = slot.status === 'BOOKED';
                 slotCell.classList.add(isBooked ? 'slot-booked' : 'slot-hold', 'cursor-pointer');
+                if (courtIdx === 0) {
+                    slotCell.classList.add('tooltip-down');
+                }
                 const bName = slot.bookerName || 'Guest';
                 const bPhone = slot.bookerPhone || 'N/A';
                 slotCell.innerHTML = `
-                    <span class="font-bold text-xs uppercase tracking-wider">${isBooked ? 'Booked' : 'Pending'}</span>
+                    <div class="px-1 text-center w-full overflow-hidden select-none pointer-events-none">
+                        <div class="font-bold text-[11px] leading-tight truncate ${isBooked ? 'text-slate-100' : 'text-amber-950'}">${bName}</div>
+                        <div class="text-[9px] ${isBooked ? 'text-slate-300' : 'text-amber-800'} font-mono tracking-tight truncate">${bPhone}</div>
+                    </div>
                     <div class="booking-tooltip">
                         <div class="font-bold text-slate-800 mb-1 text-sm">${bName}</div>
                         <div class="text-slate-500 flex items-center gap-1.5 font-medium">
                             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                             ${bPhone}
                         </div>
-                        <div class="text-blue-600 font-bold mt-1 text-[10px]">👉 Click để xem chi tiết</div>
+                        <div class="text-blue-600 font-bold mt-1 text-[10px]">👉 Click for details</div>
                     </div>
                 `;
                 if (slot.bookingId) {
@@ -257,16 +263,16 @@ function renderGrid(data) {
                 }
             } else if (slot.status === 'PAST') {
                 slotCell.classList.add('slot-past');
-                slotCell.innerHTML = `<span class="text-[10px] text-slate-400 font-medium">Quá giờ</span>`;
+                slotCell.innerHTML = `<span class="text-[10px] text-slate-400 font-medium">Past</span>`;
             } else if (slot.status === 'UNPRICED') {
                 slotCell.classList.add('slot-unpriced');
-                slotCell.innerHTML = `<span class="text-[10px] text-red-600 font-bold">Chưa giá</span>`;
+                slotCell.innerHTML = `<span class="text-[10px] text-rose-600 font-bold">Unpriced</span>`;
             } else {
                 slotCell.classList.add('slot-available', 'cursor-pointer');
                 const isSel = selectedSlots.some(s => s.courtId === court.courtId && s.startTime === slot.startTime);
                 if (isSel) {
                     slotCell.classList.add('slot-selected');
-                    slotCell.innerHTML = `<span class="font-bold text-xs text-blue-700">Selected</span>`;
+                    slotCell.innerHTML = `<span class="font-bold text-xs text-white">Selected</span>`;
                 }
                 slotCell.onclick = () => toggleSlotSelect(court.courtId, court.courtName, slot, slotCell);
             }
@@ -293,7 +299,7 @@ function toggleSlotSelect(courtId, courtName, slot, cellElement) {
             price: slot.price || 0
         });
         cellElement.classList.add('slot-selected');
-        cellElement.innerHTML = `<span class="font-bold text-xs text-blue-700">Selected</span>`;
+        cellElement.innerHTML = `<span class="font-bold text-xs text-white drop-shadow-xs">Selected</span>`;
     }
     updateSelectionSummaryBar();
 }
@@ -314,24 +320,52 @@ function parseTimeToMinutes(timeStr) {
     return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
 }
 
+function getContinuousBlocksPerCourt() {
+    const courtMap = {};
+    selectedSlots.forEach(s => {
+        if (!courtMap[s.courtId]) courtMap[s.courtId] = [];
+        courtMap[s.courtId].push(s);
+    });
+
+    const allBlocks = [];
+    for (const courtId in courtMap) {
+        const slots = courtMap[courtId];
+        slots.sort((a, b) => parseTimeToMinutes(a.startTime) - parseTimeToMinutes(b.startTime));
+        if (slots.length === 0) continue;
+
+        let currentBlock = [slots[0]];
+        for (let i = 1; i < slots.length; i++) {
+            const prevEnd = parseTimeToMinutes(slots[i - 1].endTime);
+            const currStart = parseTimeToMinutes(slots[i].startTime);
+            if (currStart === prevEnd) {
+                currentBlock.push(slots[i]);
+            } else {
+                allBlocks.push({ courtId: courtId, courtName: slots[0].courtName, slots: currentBlock });
+                currentBlock = [slots[i]];
+            }
+        }
+        allBlocks.push({ courtId: courtId, courtName: slots[0].courtName, slots: currentBlock });
+    }
+    return allBlocks;
+}
+
+function getBlockDurationMinutes(block) {
+    if (!block || !block.slots || block.slots.length === 0) return 0;
+    const firstStart = parseTimeToMinutes(block.slots[0].startTime);
+    const lastEnd = parseTimeToMinutes(block.slots[block.slots.length - 1].endTime);
+    return lastEnd > firstStart ? (lastEnd - firstStart) : (1440 - firstStart);
+}
+
 function validateMinDuration() {
     if (selectedSlots.length === 0) return false;
 
-    const courtMap = {};
-    selectedSlots.forEach(s => {
-        if (!courtMap[s.courtId]) {
-            courtMap[s.courtId] = { courtName: s.courtName, totalMins: 0 };
-        }
-        const start = parseTimeToMinutes(s.startTime);
-        const end = parseTimeToMinutes(s.endTime);
-        const duration = end > start ? (end - start) : (1440 - start);
-        courtMap[s.courtId].totalMins += duration;
-    });
-
-    for (const courtId in courtMap) {
-        const c = courtMap[courtId];
-        if (currentMinDurationMinutes > 0 && c.totalMins < currentMinDurationMinutes) {
-            alert(`⚠️ Thời lượng đặt sân tối thiểu cho ${c.courtName} là ${currentMinDurationMinutes} phút.\nBạn hiện mới chọn ${c.totalMins} phút. Vui lòng chọn thêm ca!`);
+    const blocks = getContinuousBlocksPerCourt();
+    for (const b of blocks) {
+        const duration = getBlockDurationMinutes(b);
+        if (currentMinDurationMinutes > 0 && duration < currentMinDurationMinutes) {
+            const firstStart = b.slots[0].startTime;
+            const lastEnd = b.slots[b.slots.length - 1].endTime;
+            alert(`⚠️ Khung giờ liền nhau (${firstStart} - ${lastEnd}) trên ${b.courtName} mới chỉ có ${duration} phút.\nThời lượng đặt tối thiểu cho mỗi khung giờ liên tục là ${currentMinDurationMinutes} phút! Vui lòng chọn thêm ca liền kề.`);
             return false;
         }
     }
@@ -353,17 +387,11 @@ function updateSelectionSummaryBar() {
     const totalCourtFee = selectedSlots.reduce((sum, s) => sum + Number(s.price), 0);
     document.getElementById('selectedSlotsCourtText').textContent = `Đã chọn ${selectedSlots.length} ca`;
 
-    const courtMap = {};
-    selectedSlots.forEach(s => {
-        if (!courtMap[s.courtId]) courtMap[s.courtId] = 0;
-        const start = parseTimeToMinutes(s.startTime);
-        const end = parseTimeToMinutes(s.endTime);
-        courtMap[s.courtId] += (end > start ? (end - start) : (1440 - start));
-    });
-
+    const blocks = getContinuousBlocksPerCourt();
     let hasUnmetMin = false;
-    for (const cId in courtMap) {
-        if (currentMinDurationMinutes > 0 && courtMap[cId] < currentMinDurationMinutes) {
+    for (const b of blocks) {
+        const duration = getBlockDurationMinutes(b);
+        if (currentMinDurationMinutes > 0 && duration < currentMinDurationMinutes) {
             hasUnmetMin = true;
             break;
         }
@@ -372,7 +400,7 @@ function updateSelectionSummaryBar() {
     const priceTextEl = document.getElementById('selectedSlotsPriceText');
     if (priceTextEl) {
         if (hasUnmetMin) {
-            priceTextEl.innerHTML = `<span class="text-amber-300 font-bold">⚠️ Chưa đủ tối thiểu ${currentMinDurationMinutes} phút</span> | Tổng tiền: ${formatVND(totalCourtFee)}`;
+            priceTextEl.innerHTML = `<span class="text-amber-300 font-bold">⚠️ Chưa đủ tối thiểu ${currentMinDurationMinutes} phút / khung giờ kề nhau</span> | Tổng tiền: ${formatVND(totalCourtFee)}`;
         } else {
             priceTextEl.textContent = `Tổng tiền: ${formatVND(totalCourtFee)}`;
         }

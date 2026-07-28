@@ -46,20 +46,9 @@ public class OwnerBookingApiController {
         resp.put("success", true);
         resp.put("invoiceId", invoice.getId());
 
-        String paymentMethodStr = request.getPaymentMethod();
-        if ("VNPAY".equalsIgnoreCase(paymentMethodStr) || "BANK_TRANSFER".equalsIgnoreCase(paymentMethodStr) || "QR".equalsIgnoreCase(paymentMethodStr)) {
-            resp.put("paymentMethod", "VNPAY");
-            String orderInfo = "Thanh toan tien san tai cho - Invoice ID: " + invoice.getId();
-            String baseUrl = httpRequest.getScheme() + "://" + httpRequest.getServerName() + ":" + httpRequest.getServerPort();
-            String returnUrl = baseUrl + "/api/payment/vnpay-return";
-            String paymentUrl = vnPayService.createOrder(invoice.getId().toString(), invoice.getCourtAmount(), orderInfo, returnUrl, httpRequest);
-            
-            resp.put("paymentUrl", paymentUrl);
-            resp.put("message", "Đã khởi tạo đơn hàng. Vui lòng chuyển hướng tới VNPay để thanh toán tiền sân!");
-        } else {
-            resp.put("paymentMethod", "CASH");
-            resp.put("message", "Đặt sân tại chỗ thành công! Đã ghi nhận thanh toán tiền sân bằng tiền mặt.");
-        }
+        String pm = request.getPaymentMethod() != null ? request.getPaymentMethod().toUpperCase() : "CASH";
+        resp.put("paymentMethod", pm);
+        resp.put("message", "🎉 Đặt sân tại chỗ thành công! Đã ghi nhận thanh toán tiền sân.");
 
         return ResponseEntity.ok(resp);
     }
