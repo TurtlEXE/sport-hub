@@ -528,17 +528,17 @@ window.submitOnSiteBooking = async function () {
     const paymentMethod = document.querySelector('input[name="modalPaymentMethod"]:checked').value;
 
     if (!customerName) {
-        alert("Vui lòng nhập Họ và tên khách hàng!");
+        alert("Please enter customer full name!");
         document.getElementById('modalCustomerName').focus();
         return;
     }
     if (!customerPhone) {
-        alert("Vui lòng nhập Số điện thoại khách hàng!");
+        alert("Please enter customer phone number!");
         document.getElementById('modalCustomerPhone').focus();
         return;
     }
     if (selectedSlots.length === 0) {
-        alert("Vui lòng chọn ca đặt!");
+        alert("Please select at least one court time slot!");
         return;
     }
 
@@ -554,6 +554,34 @@ window.submitOnSiteBooking = async function () {
         }
     });
 
+    // Check if phone matches an existing Account in system
+    let targetAccountId = null;
+    if (customerPhone) {
+        try {
+            const phoneCheckRes = await fetch('/api/owner/booking/check-phone?phone=' + encodeURIComponent(customerPhone));
+            if (phoneCheckRes.ok) {
+                const phoneCheckData = await phoneCheckRes.json();
+                if (phoneCheckData.exists && phoneCheckData.account) {
+                    const acc = phoneCheckData.account;
+                    const confirmUseAccount = confirm(
+                        `The phone number [${customerPhone}] matches an existing registered account:\n` +
+                        `• Account Name: ${acc.fullName || 'Customer'}\n` +
+                        `• Email: ${acc.email || 'N/A'}\n\n` +
+                        `Would you like to associate this reservation directly with this user's account?`
+                    );
+                    if (confirmUseAccount) {
+                        targetAccountId = acc.id;
+                        if (!customerName || customerName === "Khách vãng lai" || customerName === "Walk-in Guest") {
+                            customerName = acc.fullName;
+                        }
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Could not check phone account:", e);
+        }
+    }
+
     const payload = {
         facilityId: currentFacilityId,
         facilitySportId: currentFacilitySportId,
@@ -561,6 +589,7 @@ window.submitOnSiteBooking = async function () {
         customerName: customerName,
         customerPhone: customerPhone,
         customerEmail: customerEmail,
+        targetAccountId: targetAccountId,
         note: note,
         paymentMethod: paymentMethod,
         slots: selectedSlots,
@@ -570,7 +599,7 @@ window.submitOnSiteBooking = async function () {
     const btnSubmit = document.getElementById('btnSubmitOnSiteBooking');
     if (btnSubmit) {
         btnSubmit.disabled = true;
-        btnSubmit.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-950"></div> <span>Đang xử lý...</span>`;
+        btnSubmit.innerHTML = `<div class="animate-spin rounded-full h-4 w-4 border-b-2 border-slate-950"></div> <span>Processing...</span>`;
     }
 
     try {
@@ -590,10 +619,10 @@ window.submitOnSiteBooking = async function () {
 
         if (res.ok && result.success) {
             if (result.paymentMethod === 'VNPAY' && result.paymentUrl) {
-                alert("🎉 Đơn đặt sân đã được tạo!\nBạn sẽ được chuyển hướng tới trang thanh toán VNPay / QR để thanh toán tiền sân.");
+                alert("🎉 On-site reservation created successfully!\nRedirecting to VNPay payment gateway...");
                 window.location.href = result.paymentUrl;
             } else {
-                alert(result.message || "🎉 Đặt sân tại chỗ thành công!");
+                alert("🎉 On-site reservation completed successfully!");
                 window.closeOnSiteBookingModal();
                 window.clearSlotSelection();
                 selectedProductsMap = {};
@@ -604,15 +633,15 @@ window.submitOnSiteBooking = async function () {
                 loadTimelineData();
             }
         } else {
-            alert("Lỗi khi đặt sân: " + (result.message || "Không thể hoàn tất giao dịch."));
+            alert("Reservation Error: " + (result.message || "Failed to complete transaction."));
         }
     } catch (e) {
         console.error("On-site booking error:", e);
-        alert("Đã xảy ra lỗi kết nối hoặc xử lý dữ liệu: " + (e.message || "Vui lòng thử lại."));
+        alert("Connection or data processing error: " + (e.message || "Please try again."));
     } finally {
         if (btnSubmit) {
             btnSubmit.disabled = false;
-            btnSubmit.innerHTML = `<span>Xác Nhận Đặt Sân</span><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
+            btnSubmit.innerHTML = `<span>Confirm Reservation</span><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>`;
         }
     }
 };

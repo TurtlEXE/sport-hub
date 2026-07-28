@@ -20,6 +20,7 @@ public class OnSiteBookingRequestDTO {
     private String customerName;
     private String customerPhone;
     private String customerEmail;
+    private Integer targetAccountId;
     private String note;
     private String paymentMethod; // CASH, VNPAY
 

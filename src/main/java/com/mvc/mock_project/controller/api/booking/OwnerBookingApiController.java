@@ -22,6 +22,30 @@ public class OwnerBookingApiController {
 
     private final BookingService bookingService;
     private final VNPayService vnPayService;
+    private final com.mvc.mock_project.repository.AccountRepository accountRepository;
+
+    @GetMapping("/check-phone")
+    public ResponseEntity<Map<String, Object>> checkPhoneAccount(@RequestParam String phone) {
+        Map<String, Object> resp = new HashMap<>();
+        if (phone == null || phone.trim().isEmpty()) {
+            resp.put("exists", false);
+            return ResponseEntity.ok(resp);
+        }
+        java.util.Optional<com.mvc.mock_project.entities.Account> accOpt = accountRepository.findByPhone(phone.trim());
+        if (accOpt.isPresent()) {
+            com.mvc.mock_project.entities.Account acc = accOpt.get();
+            resp.put("exists", true);
+            Map<String, Object> accMap = new HashMap<>();
+            accMap.put("id", acc.getId());
+            accMap.put("fullName", acc.getFullName());
+            accMap.put("email", acc.getEmail());
+            accMap.put("phone", acc.getPhone());
+            resp.put("account", accMap);
+        } else {
+            resp.put("exists", false);
+        }
+        return ResponseEntity.ok(resp);
+    }
 
     @GetMapping("/timeline")
     public ResponseEntity<Map<String, Object>> getOwnerBookingTimeline(

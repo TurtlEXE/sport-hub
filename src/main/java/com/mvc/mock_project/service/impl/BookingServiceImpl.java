@@ -44,6 +44,7 @@ public class BookingServiceImpl implements BookingService {
     private final OrderItemRepository orderItemRepository;
     private final PaymentRepository paymentRepository;
     private final FacilityPriceRuleRepository facilityPriceRuleRepository;
+    private final AccountRepository accountRepository;
     private final EmailService emailService;
 
     @Override
@@ -583,21 +584,11 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public Invoice createOnSiteBooking(OnSiteBookingRequestDTO request, Account creatorAccount) {
-        // 1. Save Guest entity for walk-in customer
-        Guest guest = Guest.builder()
-                .guestName(request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty() 
-                        ? request.getCustomerName().trim() : "Khách vãng lai")
-                .phone(request.getCustomerPhone() != null && !request.getCustomerPhone().trim().isEmpty() 
-                        ? request.getCustomerPhone().trim() : "N/A")
-                .email(request.getCustomerEmail())
-                .build();
-        guest = guestRepository.save(guest);
-
-        // 2. Fetch Facility
+        // 1. Fetch Facility
         Facility facility = facilityRepository.findById(request.getFacilityId())
                 .orElseThrow(() -> new RuntimeException("Facility not found"));
 
-        // 3. Determine Account vs Staff creator ownership and validate access
+        // 2. Determine Account vs Staff creator ownership and validate access
         Account ownerAccount = null;
         Staff staffEntity = null;
 
@@ -608,12 +599,31 @@ public class BookingServiceImpl implements BookingService {
                 if (staffEntity.getFacility() == null || !staffEntity.getFacility().getId().equals(facility.getId())) {
                     throw new org.springframework.security.access.AccessDeniedException("Nhân viên không có quyền quản lý cơ sở này");
                 }
+                ownerAccount = null; // Do not attach owner_id when Staff creates booking
             } else {
                 ownerAccount = creatorAccount;
                 if (facility.getOwner() == null || !facility.getOwner().getId().equals(creatorAccount.getId())) {
                     throw new org.springframework.security.access.AccessDeniedException("Bạn không phải là chủ sở hữu của cơ sở này");
                 }
             }
+        }
+
+        // 3. Determine Customer link (Account vs Walk-in Guest)
+        Account targetCustomerAccount = null;
+        if (request.getTargetAccountId() != null) {
+            targetCustomerAccount = accountRepository.findById(request.getTargetAccountId()).orElse(null);
+        }
+
+        Guest guest = null;
+        if (targetCustomerAccount == null) {
+            guest = Guest.builder()
+                    .guestName(request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty() 
+                            ? request.getCustomerName().trim() : "Khách vãng lai")
+                    .phone(request.getCustomerPhone() != null && !request.getCustomerPhone().trim().isEmpty() 
+                            ? request.getCustomerPhone().trim() : "N/A")
+                    .email(request.getCustomerEmail())
+                    .build();
+            guest = guestRepository.save(guest);
         }
 
         String reqPm = request.getPaymentMethod() != null ? request.getPaymentMethod().toUpperCase() : "CASH";
@@ -626,11 +636,12 @@ public class BookingServiceImpl implements BookingService {
 
         BookingStatus bStatus = BookingStatus.CONFIRMED;
 
-        // 4. Save Booking
+        // 4. Save Booking with both target customer account and owner_id
         Booking booking = Booking.builder()
                 .facility(facility)
                 .guest(guest)
-                .account(ownerAccount)
+                .account(targetCustomerAccount)
+                .owner(ownerAccount)
                 .staff(staffEntity)
                 .bookingStatus(bStatus)
                 .note(request.getNote())
