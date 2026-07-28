@@ -31,6 +31,8 @@ public class OwnerFacilityService {
     private final FacilityMapper facilityMapper;
     private final FacilityImageRepository facilityImageRepository;
     private final CloudinaryService cloudinaryService;
+    private final StaffRepository staffRepository;
+    private final BookingSlotRepository bookingSlotRepository;
 
     private void validateTimeAlignment(LocalTime openTime, LocalTime closeTime) {
         if (openTime.getMinute() % 30 != 0 || closeTime.getMinute() % 30 != 0) {
@@ -47,7 +49,8 @@ public class OwnerFacilityService {
     }
 
     private void validateOwnerProfile(Account account) {
-        if (account.getOwnerProfile() == null || account.getOwnerProfile().getApprovalStatus() != ApprovalStatus.APPROVED) {
+        if (account.getOwnerProfile() == null
+                || account.getOwnerProfile().getApprovalStatus() != ApprovalStatus.APPROVED) {
             throw new OwnerProfileNotApprovedException("Tài khoản chủ sân chưa được duyệt");
         }
     }
@@ -56,7 +59,7 @@ public class OwnerFacilityService {
     public void createFacility(Integer accountId, CreateFacilityRequest request) {
         Account owner = accountRepository.findById(accountId)
                 .orElseThrow(() -> new RuntimeException("Account not found"));
-        
+
         validateOwnerProfile(owner);
         validateTimeAlignment(request.getOpenTime(), request.getCloseTime());
 
@@ -85,18 +88,20 @@ public class OwnerFacilityService {
 
         LocalTime newOpenTime = request.getOpenTime() != null ? request.getOpenTime() : facility.getOpenTime();
         LocalTime newCloseTime = request.getCloseTime() != null ? request.getCloseTime() : facility.getCloseTime();
-        
+
         if (request.getOpenTime() != null || request.getCloseTime() != null) {
             validateTimeAlignment(newOpenTime, newCloseTime);
-            
+
             // Check shrink guard
             if (!newOpenTime.equals(facility.getOpenTime()) || !newCloseTime.equals(facility.getCloseTime())) {
                 if (facility.getFacilitySports() != null) {
                     for (FacilitySport fs : facility.getFacilitySports()) {
-                        List<FacilityPriceRule> rules = priceRuleRepository.findByFacilitySportIdAndIsActiveTrue(fs.getId());
+                        List<FacilityPriceRule> rules = priceRuleRepository
+                                .findByFacilitySportIdAndIsActiveTrue(fs.getId());
                         for (FacilityPriceRule rule : rules) {
                             if (rule.getStartTime().isBefore(newOpenTime) || rule.getEndTime().isAfter(newCloseTime)) {
-                                throw new InvalidTimeFormatException("Không thể thu hẹp giờ hoạt động vì có bảng giá nằm ngoài khung giờ mới");
+                                throw new InvalidTimeFormatException(
+                                        "Không thể thu hẹp giờ hoạt động vì có bảng giá nằm ngoài khung giờ mới");
                             }
                         }
                     }
@@ -104,16 +109,26 @@ public class OwnerFacilityService {
             }
         }
 
-        if (request.getName() != null) facility.setName(request.getName());
-        if (request.getAddress() != null) facility.setAddress(request.getAddress());
-        if (request.getProvince() != null) facility.setProvince(request.getProvince());
-        if (request.getDistrict() != null) facility.setDistrict(request.getDistrict());
-        if (request.getWard() != null) facility.setWard(request.getWard());
-        if (request.getLatitude() != null) facility.setLatitude(request.getLatitude());
-        if (request.getLongitude() != null) facility.setLongitude(request.getLongitude());
-        if (request.getDescription() != null) facility.setDescription(request.getDescription());
-        if (request.getOpenTime() != null) facility.setOpenTime(newOpenTime);
-        if (request.getCloseTime() != null) facility.setCloseTime(newCloseTime);
+        if (request.getName() != null)
+            facility.setName(request.getName());
+        if (request.getAddress() != null)
+            facility.setAddress(request.getAddress());
+        if (request.getProvince() != null)
+            facility.setProvince(request.getProvince());
+        if (request.getDistrict() != null)
+            facility.setDistrict(request.getDistrict());
+        if (request.getWard() != null)
+            facility.setWard(request.getWard());
+        if (request.getLatitude() != null)
+            facility.setLatitude(request.getLatitude());
+        if (request.getLongitude() != null)
+            facility.setLongitude(request.getLongitude());
+        if (request.getDescription() != null)
+            facility.setDescription(request.getDescription());
+        if (request.getOpenTime() != null)
+            facility.setOpenTime(newOpenTime);
+        if (request.getCloseTime() != null)
+            facility.setCloseTime(newCloseTime);
 
         facilityRepository.save(facility);
     }
@@ -152,10 +167,32 @@ public class OwnerFacilityService {
     }
 
     @Transactional
+    public void assignStaffToFacility(Integer accountId, Integer facilityId, AssignFacilityStaffRequest request) {
+        Facility facility = facilityRepository.findByIdAndOwner_Id(facilityId, accountId)
+                .orElseThrow(() -> new FacilityNotFoundException("Facility not found"));
+
+        // Get all staff of this owner
+        List<Staff> ownerStaffs = staffRepository.findByOwner_IdAndIsActiveTrue(accountId);
+
+        for (Staff staff : ownerStaffs) {
+            boolean shouldBeAssigned = request.getStaffIds() != null && request.getStaffIds().contains(staff.getId());
+            boolean isCurrentlyAssigned = staff.getFacility() != null && staff.getFacility().getId().equals(facilityId);
+
+            if (shouldBeAssigned && !isCurrentlyAssigned) {
+                staff.setFacility(facility);
+                staffRepository.save(staff);
+            } else if (!shouldBeAssigned && isCurrentlyAssigned) {
+                staff.setFacility(null);
+                staffRepository.save(staff);
+            }
+        }
+    }
+
+    @Transactional
     public void addSportToFacility(Integer accountId, Integer facilityId, AddFacilitySportRequest request) {
         Facility facility = facilityRepository.findByIdAndOwner_Id(facilityId, accountId)
                 .orElseThrow(() -> new FacilityNotFoundException("Facility not found"));
-        
+
         if (facilitySportRepository.existsByFacility_IdAndSport_Id(facilityId, request.getSportId())) {
             throw new DuplicateFacilitySportException("Môn thể thao này đã được thêm");
         }
@@ -163,8 +200,10 @@ public class OwnerFacilityService {
         if (request.getSlotStepMinutes() % 30 != 0 || request.getSlotStepMinutes() < 30) {
             throw new InvalidSlotConfigException("Bước nhảy slot phải là bội số của 30 phút");
         }
-        if (request.getMinDurationMinutes() < request.getSlotStepMinutes() || request.getMinDurationMinutes() % request.getSlotStepMinutes() != 0) {
-            throw new InvalidSlotConfigException("Thời lượng tối thiểu phải >= bước nhảy slot và là bội số của bước nhảy");
+        if (request.getMinDurationMinutes() < request.getSlotStepMinutes()
+                || request.getMinDurationMinutes() % request.getSlotStepMinutes() != 0) {
+            throw new InvalidSlotConfigException(
+                    "Thời lượng tối thiểu phải >= bước nhảy slot và là bội số của bước nhảy");
         }
 
         Sport sport = sportRepository.findById(request.getSportId())
@@ -188,14 +227,16 @@ public class OwnerFacilityService {
         if (!fs.getSlotStepMinutes().equals(request.getSlotStepMinutes())) {
             long activeRules = priceRuleRepository.countByFacilitySportIdAndIsActiveTrue(facilitySportId);
             if (activeRules > 0) {
-                throw new InvalidSlotConfigException("Cannot change slot step when pricing rules exist. Please delete them first.");
+                throw new InvalidSlotConfigException(
+                        "Cannot change slot step when pricing rules exist. Please delete them first.");
             }
         }
 
         if (request.getSlotStepMinutes() % 30 != 0 || request.getSlotStepMinutes() < 30) {
             throw new InvalidSlotConfigException("Slot step must be a multiple of 30 minutes.");
         }
-        if (request.getMinDurationMinutes() < request.getSlotStepMinutes() || request.getMinDurationMinutes() % request.getSlotStepMinutes() != 0) {
+        if (request.getMinDurationMinutes() < request.getSlotStepMinutes()
+                || request.getMinDurationMinutes() % request.getSlotStepMinutes() != 0) {
             throw new InvalidSlotConfigException("Min duration must be >= slot step and a multiple of slot step.");
         }
 
@@ -242,9 +283,11 @@ public class OwnerFacilityService {
     public void updateCourt(Integer accountId, Integer courtId, UpdateCourtRequest request) {
         Court court = courtRepository.findByIdAndFacilitySport_Facility_Owner_Id(courtId, accountId)
                 .orElseThrow(() -> new RuntimeException("Court not found"));
-        
-        if (request.getCourtName() != null) court.setCourtName(request.getCourtName());
-        if (request.getDescription() != null) court.setDescription(request.getDescription());
+
+        if (request.getCourtName() != null)
+            court.setCourtName(request.getCourtName());
+        if (request.getDescription() != null)
+            court.setDescription(request.getDescription());
         courtRepository.save(court);
 
         if (request.getAttributes() != null) {
@@ -262,12 +305,22 @@ public class OwnerFacilityService {
     }
 
     @Transactional
-    public void deleteCourt(Integer accountId, Integer courtId) {
+    public void deleteCourt(Integer accountId, Integer courtId, boolean forceDeactivate) {
         Court court = courtRepository.findByIdAndFacilitySport_Facility_Owner_Id(courtId, accountId)
                 .orElseThrow(() -> new RuntimeException("Court not found"));
-        // TODO: check active bookings
-        court.setIsActive(false);
-        courtRepository.save(court);
+
+        boolean hasConstraints = bookingSlotRepository.existsByCourt_Id(courtId);
+
+        if (hasConstraints) {
+            if (forceDeactivate) {
+                court.setIsActive(false);
+                courtRepository.save(court);
+            } else {
+                throw new org.springframework.dao.DataIntegrityViolationException("COURT_HAS_BOOKINGS");
+            }
+        } else {
+            courtRepository.delete(court);
+        }
     }
 
     @Transactional
@@ -275,7 +328,8 @@ public class OwnerFacilityService {
         Court court = courtRepository.findByIdAndFacilitySport_Facility_Owner_Id(courtId, accountId)
                 .orElseThrow(() -> new RuntimeException("Court not found"));
         // If toggling off, might need to check active bookings
-        court.setIsActive(!court.getIsActive());
+        boolean currentStatus = court.getIsActive() != null ? court.getIsActive() : true;
+        court.setIsActive(!currentStatus);
         courtRepository.save(court);
     }
 
@@ -302,9 +356,11 @@ public class OwnerFacilityService {
             throw new InvalidPriceRuleException("Khung giờ phải nằm trong giờ hoạt động");
         }
 
-        List<FacilityPriceRule> existingRules = priceRuleRepository.findByFacilitySportIdAndDayTypeAndIsActiveTrue(fs.getId(), request.getDayType());
+        List<FacilityPriceRule> existingRules = priceRuleRepository
+                .findByFacilitySportIdAndDayTypeAndIsActiveTrue(fs.getId(), request.getDayType());
         for (FacilityPriceRule existing : existingRules) {
-            if (isOverlap(existing.getStartTime(), existing.getEndTime(), request.getStartTime(), request.getEndTime())) {
+            if (isOverlap(existing.getStartTime(), existing.getEndTime(), request.getStartTime(),
+                    request.getEndTime())) {
                 throw new PriceRuleOverlapException("Khung giờ trùng với bảng giá đã tồn tại");
             }
         }
@@ -325,13 +381,14 @@ public class OwnerFacilityService {
     public void updatePriceRule(Integer accountId, Integer ruleId, UpdatePriceRuleRequest request) {
         FacilityPriceRule rule = priceRuleRepository.findById(ruleId)
                 .orElseThrow(() -> new RuntimeException("Rule not found"));
-        
-        FacilitySport fs = facilitySportRepository.findByIdAndFacility_Owner_Id(rule.getFacilitySport().getId(), accountId)
+
+        FacilitySport fs = facilitySportRepository
+                .findByIdAndFacility_Owner_Id(rule.getFacilitySport().getId(), accountId)
                 .orElseThrow(() -> new RuntimeException("Access denied"));
 
         LocalTime newStart = request.getStartTime() != null ? request.getStartTime() : rule.getStartTime();
         LocalTime newEnd = request.getEndTime() != null ? request.getEndTime() : rule.getEndTime();
-        
+
         LocalTime openTime = fs.getFacility().getOpenTime();
         LocalTime closeTime = fs.getFacility().getCloseTime();
         int step = fs.getSlotStepMinutes();
@@ -344,21 +401,30 @@ public class OwnerFacilityService {
         }
 
         if (request.getDayType() != null || request.getStartTime() != null || request.getEndTime() != null) {
-            com.mvc.mock_project.entities.enums.DayType dayType = request.getDayType() != null ? request.getDayType() : rule.getDayType();
-            List<FacilityPriceRule> existingRules = priceRuleRepository.findByFacilitySportIdAndDayTypeAndIsActiveTrue(fs.getId(), dayType);
+            com.mvc.mock_project.entities.enums.DayType dayType = request.getDayType() != null ? request.getDayType()
+                    : rule.getDayType();
+            List<FacilityPriceRule> existingRules = priceRuleRepository
+                    .findByFacilitySportIdAndDayTypeAndIsActiveTrue(fs.getId(), dayType);
             for (FacilityPriceRule existing : existingRules) {
-                if (!existing.getId().equals(ruleId) && isOverlap(existing.getStartTime(), existing.getEndTime(), newStart, newEnd)) {
+                if (!existing.getId().equals(ruleId)
+                        && isOverlap(existing.getStartTime(), existing.getEndTime(), newStart, newEnd)) {
                     throw new PriceRuleOverlapException("Khung giờ trùng với bảng giá đã tồn tại");
                 }
             }
         }
 
-        if (request.getDayType() != null) rule.setDayType(request.getDayType());
-        if (request.getStartTime() != null) rule.setStartTime(request.getStartTime());
-        if (request.getEndTime() != null) rule.setEndTime(request.getEndTime());
-        if (request.getPricePerSlot() != null) rule.setPricePerSlot(request.getPricePerSlot());
-        if (request.getEffectiveFrom() != null) rule.setEffectiveFrom(request.getEffectiveFrom());
-        if (request.getEffectiveTo() != null) rule.setEffectiveTo(request.getEffectiveTo());
+        if (request.getDayType() != null)
+            rule.setDayType(request.getDayType());
+        if (request.getStartTime() != null)
+            rule.setStartTime(request.getStartTime());
+        if (request.getEndTime() != null)
+            rule.setEndTime(request.getEndTime());
+        if (request.getPricePerSlot() != null)
+            rule.setPricePerSlot(request.getPricePerSlot());
+        if (request.getEffectiveFrom() != null)
+            rule.setEffectiveFrom(request.getEffectiveFrom());
+        if (request.getEffectiveTo() != null)
+            rule.setEffectiveTo(request.getEffectiveTo());
 
         priceRuleRepository.save(rule);
     }
@@ -369,13 +435,123 @@ public class OwnerFacilityService {
                 .orElseThrow(() -> new RuntimeException("Rule not found"));
         facilitySportRepository.findByIdAndFacility_Owner_Id(rule.getFacilitySport().getId(), accountId)
                 .orElseThrow(() -> new RuntimeException("Access denied"));
-        
-        rule.setIsActive(false);
-        priceRuleRepository.save(rule);
+
+        priceRuleRepository.delete(rule);
     }
 
     @Transactional
-    public com.mvc.mock_project.dto.response.facility.FacilityImageDTO addImageToFacility(Integer accountId, Integer facilityId, MultipartFile file, String url) {
+    public void batchSavePriceRules(Integer accountId, BatchSavePriceRulesRequest request) {
+        FacilitySport fs = facilitySportRepository.findByIdAndFacility_Owner_Id(request.getFacilitySportId(), accountId)
+                .orElseThrow(() -> new RuntimeException("Facility Sport not found or access denied"));
+
+        LocalTime openTime = fs.getFacility().getOpenTime();
+        LocalTime closeTime = fs.getFacility().getCloseTime();
+        int step = fs.getSlotStepMinutes();
+
+        java.util.List<java.util.Map<String, Object>> errors = new java.util.ArrayList<>();
+        java.util.List<BatchSavePriceRulesRequest.PriceRuleRow> rows = request.getRows();
+
+        if (rows == null || rows.isEmpty()) {
+            java.util.Map<String, Object> err = new java.util.HashMap<>();
+            err.put("message", "Price list cannot be empty");
+            errors.add(err);
+            throw new BatchValidationException("Validation failed", errors);
+        }
+
+        // Validate individual rows
+        for (int i = 0; i < rows.size(); i++) {
+            BatchSavePriceRulesRequest.PriceRuleRow row = rows.get(i);
+            LocalTime startTime = LocalTime.parse(row.getStartTime());
+            LocalTime endTime = LocalTime.parse(row.getEndTime());
+
+            if (!startTime.isBefore(endTime)) {
+                java.util.Map<String, Object> err = new java.util.HashMap<>();
+                err.put("row", i);
+                err.put("message", "Start time must be before end time");
+                errors.add(err);
+            }
+            if (row.getWeekdayPrice() == null || row.getWeekdayPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                java.util.Map<String, Object> err = new java.util.HashMap<>();
+                err.put("row", i);
+                err.put("message", "Weekday price must be greater than 0");
+                errors.add(err);
+            }
+            if (row.getWeekendPrice() == null || row.getWeekendPrice().compareTo(java.math.BigDecimal.ZERO) <= 0) {
+                java.util.Map<String, Object> err = new java.util.HashMap<>();
+                err.put("row", i);
+                err.put("message", "Weekend price must be greater than 0");
+                errors.add(err);
+            }
+            if (!isOnSlotBoundary(startTime, openTime, step) || !isOnSlotBoundary(endTime, openTime, step)) {
+                java.util.Map<String, Object> err = new java.util.HashMap<>();
+                err.put("row", i);
+                err.put("message", "Time frame must align with slot intervals (" + step + " minutes)");
+                errors.add(err);
+            }
+            if (startTime.isBefore(openTime) || endTime.isAfter(closeTime)) {
+                java.util.Map<String, Object> err = new java.util.HashMap<>();
+                err.put("row", i);
+                err.put("message", "Time frame must be within facility operating hours (" + openTime + " - " + closeTime + ")");
+                errors.add(err);
+            }
+        }
+
+        // Check for overlaps among rows
+        for (int i = 0; i < rows.size(); i++) {
+            LocalTime startI = LocalTime.parse(rows.get(i).getStartTime());
+            LocalTime endI = LocalTime.parse(rows.get(i).getEndTime());
+            for (int j = i + 1; j < rows.size(); j++) {
+                LocalTime startJ = LocalTime.parse(rows.get(j).getStartTime());
+                LocalTime endJ = LocalTime.parse(rows.get(j).getEndTime());
+                if (isOverlap(startI, endI, startJ, endJ)) {
+                    java.util.Map<String, Object> errI = new java.util.HashMap<>();
+                    errI.put("row", i);
+                    errI.put("message", "Time frame overlaps with row " + (j + 1));
+                    errors.add(errI);
+                    
+                    java.util.Map<String, Object> errJ = new java.util.HashMap<>();
+                    errJ.put("row", j);
+                    errJ.put("message", "Time frame overlaps with row " + (i + 1));
+                    errors.add(errJ);
+                }
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new BatchValidationException("Validation failed", errors);
+        }
+
+        // Delete existing rules for this sport
+        priceRuleRepository.deleteByFacilitySport_Id(fs.getId());
+
+        // Save new rules
+        for (BatchSavePriceRulesRequest.PriceRuleRow row : rows) {
+            LocalTime startTime = LocalTime.parse(row.getStartTime());
+            LocalTime endTime = LocalTime.parse(row.getEndTime());
+
+            FacilityPriceRule weekdayRule = new FacilityPriceRule();
+            weekdayRule.setFacilitySport(fs);
+            weekdayRule.setDayType(com.mvc.mock_project.entities.enums.DayType.WEEKDAY);
+            weekdayRule.setStartTime(startTime);
+            weekdayRule.setEndTime(endTime);
+            weekdayRule.setPricePerSlot(row.getWeekdayPrice());
+            weekdayRule.setIsActive(true);
+            priceRuleRepository.save(weekdayRule);
+
+            FacilityPriceRule weekendRule = new FacilityPriceRule();
+            weekendRule.setFacilitySport(fs);
+            weekendRule.setDayType(com.mvc.mock_project.entities.enums.DayType.WEEKEND);
+            weekendRule.setStartTime(startTime);
+            weekendRule.setEndTime(endTime);
+            weekendRule.setPricePerSlot(row.getWeekendPrice());
+            weekendRule.setIsActive(true);
+            priceRuleRepository.save(weekendRule);
+        }
+    }
+
+    @Transactional
+    public com.mvc.mock_project.dto.response.facility.FacilityImageDTO addImageToFacility(Integer accountId,
+            Integer facilityId, MultipartFile file, String url) {
         Facility facility = facilityRepository.findByIdAndOwner_Id(facilityId, accountId)
                 .orElseThrow(() -> new FacilityNotFoundException("Facility not found"));
 
@@ -391,11 +567,11 @@ public class OwnerFacilityService {
         FacilityImage image = new FacilityImage();
         image.setFacility(facility);
         image.setImagePath(imageUrl);
-        
+
         // If it's the first image, make it thumbnail
         boolean hasImages = facilityImageRepository.existsByFacilityId(facilityId);
         image.setIsThumbnail(!hasImages);
-        
+
         image = facilityImageRepository.save(image);
         return facilityMapper.toFacilityImageDTO(image);
     }
@@ -448,7 +624,8 @@ public class OwnerFacilityService {
         // If it was thumbnail, we might want to set another one as thumbnail
         if (Boolean.TRUE.equals(imageToDelete.getIsThumbnail())) {
             List<FacilityImage> remaining = facilityImageRepository.findByFacilityId(facilityId);
-            // wait, findByFacility_Id might not exist or we can just get from facility.getImages() which is lazy loaded.
+            // wait, findByFacility_Id might not exist or we can just get from
+            // facility.getImages() which is lazy loaded.
             // Let's rely on facility.getImages()
             if (facility.getImages() != null) {
                 facility.getImages().stream()

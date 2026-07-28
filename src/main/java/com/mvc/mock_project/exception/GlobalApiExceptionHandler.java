@@ -31,17 +31,23 @@ public class GlobalApiExceptionHandler {
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
         });
-        
+
         ApiResponse<Void> response = ApiResponse.error("Validation failed");
         response.setErrors(errors);
-        
+
         return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Void>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        // Prevent SQL leakage by returning a generic or sanitized message
-        String message = "A database error occurred (e.g., duplicate entry or constraint violation).";
+        String msg = ex.getMessage();
+        if (ex.getCause() != null) {
+            msg += " | Cause: " + ex.getCause().getMessage();
+            if (ex.getCause().getCause() != null) {
+                msg += " | Root: " + ex.getCause().getCause().getMessage();
+            }
+        }
+        String message = "A database error occurred: " + msg;
         return ResponseEntity.badRequest().body(ApiResponse.error(message));
     }
 
@@ -55,5 +61,14 @@ public class GlobalApiExceptionHandler {
             // keep original message if no translation is found
         }
         return ResponseEntity.internalServerError().body(ApiResponse.error(errorMessage));
+    }
+
+    @ExceptionHandler(BatchValidationException.class)
+    public ResponseEntity<Map<String, Object>> handleBatchValidationException(BatchValidationException ex) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", false);
+        response.put("message", ex.getMessage());
+        response.put("data", ex.getErrors()); // The array of errors with row indices
+        return ResponseEntity.badRequest().body(response);
     }
 }

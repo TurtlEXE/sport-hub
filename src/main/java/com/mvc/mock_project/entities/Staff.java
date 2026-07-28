@@ -18,8 +18,12 @@ public class Staff {
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "facility_id", nullable = false)
+    @JoinColumn(name = "facility_id")
     private Facility facility;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_account_id", nullable = false)
+    private Account owner;
 
     @Column(name = "is_active")
     private Boolean isActive = true;

@@ -67,6 +67,15 @@ public class OwnerFacilityApiController {
         return ResponseEntity.ok(ownerFacilityService.getMyFacilityDetail(userDetails.getAccount().getId(), id));
     }
 
+    @PutMapping("/facilities/{id}/staff")
+    public ResponseEntity<?> assignStaffToFacility(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @PathVariable Integer id,
+            @RequestBody AssignFacilityStaffRequest request) {
+        ownerFacilityService.assignStaffToFacility(userDetails.getAccount().getId(), id, request);
+        return ResponseEntity.ok().body("Staff assigned successfully");
+    }
+
     // --- Images ---
     @PostMapping("/facilities/{id}/images")
     public ResponseEntity<com.mvc.mock_project.dto.response.facility.FacilityImageDTO> addFacilityImage(
@@ -74,7 +83,8 @@ public class OwnerFacilityApiController {
             @PathVariable Integer id,
             @RequestParam(value = "file", required = false) MultipartFile file,
             @RequestParam(value = "url", required = false) String url) {
-        com.mvc.mock_project.dto.response.facility.FacilityImageDTO dto = ownerFacilityService.addImageToFacility(userDetails.getAccount().getId(), id, file, url);
+        com.mvc.mock_project.dto.response.facility.FacilityImageDTO dto = ownerFacilityService
+                .addImageToFacility(userDetails.getAccount().getId(), id, file, url);
         return ResponseEntity.ok(dto);
     }
 
@@ -144,9 +154,15 @@ public class OwnerFacilityApiController {
     @DeleteMapping("/courts/{courtId}")
     public ResponseEntity<?> deleteCourt(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @PathVariable Integer courtId) {
-        ownerFacilityService.deleteCourt(userDetails.getAccount().getId(), courtId);
-        return ResponseEntity.ok().body("Court deactivated successfully");
+            @PathVariable Integer courtId,
+            @RequestParam(defaultValue = "false") boolean forceDeactivate) {
+        try {
+            ownerFacilityService.deleteCourt(userDetails.getAccount().getId(), courtId, forceDeactivate);
+            return ResponseEntity.ok().body("Xóa/Vô hiệu hóa sân thành công");
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+                    .body(com.mvc.mock_project.dto.response.ApiResponse.error("COURT_HAS_BOOKINGS"));
+        }
     }
 
     @PutMapping("/courts/{courtId}/toggle")
@@ -166,6 +182,14 @@ public class OwnerFacilityApiController {
         return ResponseEntity.ok().body("Price rule created successfully");
     }
 
+    @PostMapping("/price-rules/batch")
+    public ResponseEntity<?> batchSavePriceRules(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @Valid @RequestBody com.mvc.mock_project.dto.request.facility.BatchSavePriceRulesRequest request) {
+        ownerFacilityService.batchSavePriceRules(userDetails.getAccount().getId(), request);
+        return ResponseEntity.ok().body(java.util.Map.of("message", "Pricing configuration saved successfully"));
+    }
+
     @PutMapping("/price-rules/{ruleId}")
     public ResponseEntity<?> updatePriceRule(
             @AuthenticationPrincipal CustomUserDetails userDetails,
@@ -180,7 +204,7 @@ public class OwnerFacilityApiController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Integer ruleId) {
         ownerFacilityService.deletePriceRule(userDetails.getAccount().getId(), ruleId);
-        return ResponseEntity.ok().body("Price rule deactivated successfully");
+        return ResponseEntity.ok().body("Price rule deleted successfully");
     }
 
 }

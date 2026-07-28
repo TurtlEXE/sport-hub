@@ -6,12 +6,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
+
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.MessagingException;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Value;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Async
 public class EmailServiceImpl implements EmailService {
 
     private final JavaMailSender mailSender;
@@ -29,7 +35,7 @@ public class EmailServiceImpl implements EmailService {
                 + "Mã OTP 6 số để kích hoạt tài khoản của bạn là: " + otp + "\n\n"
                 + "Mã này sẽ hết hạn sau 24 giờ.\n\n"
                 + "Trân trọng,\nĐội ngũ SportHub");
-        
+
         try {
             mailSender.send(message);
             log.info("Verification email sent to {}", to);
@@ -113,7 +119,47 @@ public class EmailServiceImpl implements EmailService {
             System.out.println("=========================================================");
             System.out.println("DEVELOPMENT MODE - MOCK EMAIL (PAYMENT SUCCESS)");
             System.out.println("To: " + to);
-            System.out.println("Details:\n" + bookingDetails);
+            System.out.println("Booking details: " + bookingDetails);
+            System.out.println("=========================================================");
+        }
+    }
+
+    @Override
+    public void sendFeedbackConfirmationEmail(String name, String email, String messageContent) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(email);
+            helper.setSubject("We've Received Your Feedback, " + name + "!");
+
+            String htmlContent = "<div style=\"font-family: sans-serif; padding: 20px; line-height: 1.6; color: #333; max-width: 600px; border: 1px solid #eee; border-radius: 8px;\">"
+                    + "<h2 style=\"color: #0066cc;\">Hello " + name + ",</h2>"
+                    + "<p>Thank you for reaching out to us. We have received your feedback form submission and wanted to send a copy for your personal records.</p>"
+                    + "<div style=\"background-color: #f9f9f9; padding: 15px; border-left: 4px solid #0066cc; margin: 20px 0;\">"
+                    + "<h4 style=\"margin-top: 0;\">Your Submitted Details:</h4>"
+                    + "<p><strong>Name:</strong> " + name + "</p>"
+                    + "<p><strong>Email:</strong> " + email + "</p>"
+                    + "<p style=\"margin-bottom: 0;\"><strong>Message:</strong><br>"
+                    + messageContent.replace("\n", "<br>") + "</p>"
+                    + "</div>"
+                    + "<p>Our support team will review your message and reach back out to you if any follow-up actions are required.</p>"
+                    + "<hr style=\"border: 0; border-top: 1px solid #eee; margin: 20px 0;\">"
+                    + "<p style=\"font-size: 12px; color: #777;\">This is an automated operational notification message. Please do not reply directly to this mail box.</p>"
+                    + "</div>";
+
+            helper.setText(htmlContent, true);
+
+            mailSender.send(message);
+            log.info("Feedback confirmation email sent to {}", email);
+        } catch (MessagingException e) {
+            log.error("Failed to construct MimeMessage for feedback confirmation to {}", email, e);
+        } catch (MailException e) {
+            log.error("Failed to send feedback confirmation email to {}. SMTP might not be configured.", email, e);
+            System.out.println("=========================================================");
+            System.out.println("DEVELOPMENT MODE - MOCK HTML EMAIL");
+            System.out.println("To: " + email);
+            System.out.println("Subject: We've Received Your Feedback, " + name + "!");
             System.out.println("=========================================================");
         }
     }

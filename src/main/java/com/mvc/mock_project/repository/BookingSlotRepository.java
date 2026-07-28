@@ -14,4 +14,6 @@ public interface BookingSlotRepository extends JpaRepository<BookingSlot, Intege
     
     @Query("SELECT bs FROM BookingSlot bs WHERE bs.court.id IN :courtIds AND bs.bookingDate = :date AND bs.slotStatus != 'CANCELLED'")
     List<BookingSlot> findActiveSlotsByCourtIdsAndDate(@Param("courtIds") List<Integer> courtIds, @Param("date") LocalDate date);
+
+    boolean existsByCourt_Id(Integer courtId);
 }

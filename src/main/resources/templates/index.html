@@ -589,8 +589,8 @@
         </section>
 
         <!-- About Connecting Owners & Athletes Section -->
-        <section class="py-24 bg-white" data-aos="fade-up">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="about" class="py-24 bg-white">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-aos="fade-up">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
                     <div data-aos="fade-right">
                         <div class="text-orange-500 text-[11px] font-bold uppercase tracking-widest mb-3"><span th:text="#{home.about.badge}">About SportHub</span>
@@ -653,8 +653,8 @@
         </section>
 
         <!-- Get In Touch Section -->
-        <section class="py-24 bg-slate-50 border-t border-slate-100" data-aos="fade-up">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <section id="contact" class="py-24 bg-slate-50 border-t border-slate-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" data-aos="fade-up">
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
                     <!-- Contact Info -->
                     <div data-aos="fade-right">
@@ -767,7 +767,7 @@
     </main>
 
     <th:block layout:fragment="pageScripts">
-        <script>
+        <script th:inline="javascript">
             document.addEventListener('DOMContentLoaded', () => {
                 const form = document.getElementById('contactForm');
                 const alertBox = document.querySelector('.contact-alert');
@@ -808,15 +808,17 @@
                                 throw new Error("Network response was not JSON.");
                             }
 
-                            if (!response.ok || result.status !== 'success') {
+                            if (!response.ok || !result.success) {
                                 throw new Error(result.message || 'Failed to send message');
                             }
 
                             // Success
+                            const successMsg = /*[[#{msg.success.contact_sent}]]*/ 'Message sent successfully!';
+                            
                             alertBox.classList.remove('hidden', 'bg-rose-50', 'border-rose-200', 'text-rose-700');
                             alertBox.classList.add('bg-teal-50', 'border-teal-200', 'text-teal-700');
                             alertIcon.innerHTML = `<svg class="w-5 h-5 text-teal-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
-                            alertMsg.textContent = result.message || 'Message sent successfully!';
+                            alertMsg.textContent = successMsg;
                             form.reset();
                         })
                         .catch(error => {

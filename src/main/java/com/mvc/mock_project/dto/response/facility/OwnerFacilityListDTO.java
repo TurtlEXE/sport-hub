@@ -16,5 +16,6 @@ public class OwnerFacilityListDTO {
     private Boolean isActive;
     private Integer totalCourts;
     private Integer totalSports;
+    private java.util.List<String> sportNames;
     private LocalDateTime createdAt;
 }
