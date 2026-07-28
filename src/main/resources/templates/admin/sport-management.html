@@ -351,14 +351,13 @@
                     const json = await response.json();
                     
                     if (json.success) {
-                        // Refresh data smoothly in background
                         fetchSports();
                     } else {
-                        alert('Failed to toggle status: ' + json.message);
+                        showCustomAlert('Failed to toggle status: ' + json.message, 'error');
                     }
-                } catch (error) {
-                    console.error('Error toggling status:', error);
-                    alert('An error occurred while toggling status.');
+                } catch (e) {
+                    console.error(e);
+                    showCustomAlert('An error occurred while toggling status.', 'error');
                 }
             }
             
@@ -436,14 +435,14 @@
                     });
                     
                     const json = await response.json();
-                    if(json.success) {
+                    if (json.success) {
                         closeSportModal();
                         fetchSports();
                     } else {
-                        alert('Error: ' + json.message);
+                        showCustomAlert('Error: ' + json.message, 'error');
                     }
                 } catch(error) {
-                    alert('An error occurred');
+                    showCustomAlert('An error occurred', 'error');
                 }
             }
             
@@ -528,9 +527,10 @@
                     dataType: document.getElementById('attrType').value,
                     isRequired: document.getElementById('attrRequired').checked
                 };
-                
-                if(!payload.attributeCode || !payload.attributeName) {
-                    alert('Code and Display Name are required');
+                const code = document.getElementById('attrCode').value;
+                const name = document.getElementById('attrName').value;
+                if (!code || !name) {
+                    showCustomAlert('Code and Display Name are required', 'warning');
                     return;
                 }
 
@@ -541,16 +541,15 @@
                         body: JSON.stringify(payload)
                     });
                     const json = await response.json();
-                    if(json.success) {
+                    if (json.success) {
                         document.getElementById('attrCode').value = '';
                         document.getElementById('attrName').value = '';
-                        document.getElementById('attrRequired').checked = false;
                         loadAttributes(sportId);
                     } else {
-                        alert(json.message);
+                        showCustomAlert(json.message, 'error');
                     }
                 } catch(e) {
-                    alert('Error adding attribute');
+                    showCustomAlert('Error adding attribute', 'error');
                 }
             }
 
@@ -561,13 +560,13 @@
                         method: 'DELETE'
                     });
                     const json = await response.json();
-                    if(json.success) {
+                    if (json.success) {
                         loadAttributes(sportId);
                     } else {
-                        alert(json.message);
+                        showCustomAlert(json.message, 'error');
                     }
                 } catch(e) {
-                    alert('Error deleting attribute');
+                    showCustomAlert('Error deleting attribute', 'error');
                 }
             }
             

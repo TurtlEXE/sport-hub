@@ -74,6 +74,7 @@ public class CommissionMapper {
                 .policyId(policy.getId())
                 .minNoticeDays(policy.getMinNoticeDays())
                 .description(policy.getDescription())
+                .updatedAt(policy.getUpdatedAt())
                 .build();
     }
 }

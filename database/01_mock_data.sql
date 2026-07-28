@@ -137,4 +137,29 @@ INSERT INTO facility_image (image_id, facility_id, image_path, is_thumbnail, cre
 (4, 3, 'https://images.unsplash.com/photo-1576610616656-d3aa5d1f4534?q=80&w=1200&auto=format&fit=crop', 1, NOW()),
 (5, 4, 'https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?q=80&w=1200&auto=format&fit=crop', 1, NOW());
 
+-- ==============================================================================
+-- 10. BẢNG COMMISSION_POLICY (Chính sách hoa hồng chung)
+-- ==============================================================================
+INSERT INTO commission_policy (policy_id, min_notice_days, description, updated_by, updated_at) VALUES
+(1, 14, 'Chính sách thông báo thay đổi mức hoa hồng chung. Yêu cầu báo trước tối thiểu 14 ngày trước khi áp dụng biểu phí mới cho các đối tác chủ sân.', 1, NOW());
+
+-- ==============================================================================
+-- 11. BẢNG COMMISSION_TIER (Các bậc hoa hồng thu theo khung giá)
+-- ==============================================================================
+INSERT INTO commission_tier (tier_id, min_price_per_minute, max_price_per_minute, commission_rate, effective_from, effective_to, is_current, status, announced_at, notice_days, description, created_by, created_at, updated_at) VALUES
+(1, 0, 1000, 0.05, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 0, 'EXPIRED', '2023-12-01 10:00:00', 30, 'Mức cũ cho khung giá thấp (< 1000 VNĐ/phút)', 1, '2023-11-01 10:00:00', NOW()),
+(2, 0, 1000, 0.08, '2025-01-01 00:00:00', '2026-12-31 23:59:59', 1, 'ACTIVE', '2024-12-01 10:00:00', 31, 'Khung giá thấp áp dụng đến hết 2026', 1, '2024-11-01 10:00:00', NOW()),
+(3, 1000.01, 3000, 0.10, '2025-01-01 00:00:00', '2026-12-31 23:59:59', 1, 'ACTIVE', '2024-12-01 10:00:00', 31, 'Khung giá trung bình áp dụng đến hết 2026', 1, '2024-11-01 10:00:00', NOW()),
+(4, 3000.01, NULL, 0.15, '2025-01-01 00:00:00', NULL, 1, 'ACTIVE', '2024-12-01 10:00:00', 31, 'Khung giá cao (VIP)', 1, '2024-11-01 10:00:00', NOW()),
+(5, 0, 1500, 0.09, '2027-01-01 00:00:00', NULL, 0, 'DRAFT', NULL, NULL, 'Bản nháp: Đề xuất mức giá mới thay thế cho khung thấp và trung bình từ 2027', 1, NOW(), NOW());
+-- ==============================================================================
+-- 12. BẢNG PRODUCT_CATEGORY (Danh mục hàng hóa)
+-- ==============================================================================
+INSERT INTO product_category (category_id, category_code, category_name, is_active) VALUES
+(1, 'DRINK', 'Đồ uống & Giải khát', 1),
+(2, 'EQUIPMENT', 'Dụng cụ & Phụ kiện Thể thao', 1),
+(3, 'FOOD', 'Thức ăn nhẹ & Năng lượng', 1),
+(4, 'RENTAL', 'Dịch vụ Cho thuê Giày / Vợt', 1),
+(5, 'MEDICAL', 'Vật tư Y tế & Sơ cứu', 1);
+
 SET FOREIGN_KEY_CHECKS = 1;

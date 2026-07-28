@@ -13,4 +13,5 @@ public class CommissionPolicyDTO {
     private Integer policyId;
     private Integer minNoticeDays;
     private String description;
+    private java.time.LocalDateTime updatedAt;
 }
