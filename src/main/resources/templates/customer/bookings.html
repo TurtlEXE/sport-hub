@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <title>My Booking History - SportHub</title>
+    <style>
+        .booking-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .booking-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -6px rgba(37, 99, 235, 0.12);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div layout:fragment="content" class="min-h-screen py-10">
+        <div class="max-w-5xl mx-auto px-4">
+            
+            <!-- Page Header Banner (Website Theme Matching) -->
+            <div class="bg-gradient-to-r from-[#0B1120] via-slate-900 to-slate-800 text-white p-6 rounded-3xl shadow-xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 mb-8">
+                <div class="space-y-1">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-[11px] font-bold tracking-wider uppercase">
+                        <span class="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+                        Customer Dashboard
+                    </div>
+                    <h1 class="text-2xl font-black tracking-tight text-white">My Booking History</h1>
+                    <p class="text-xs text-slate-400">View your active reservations, hold time countdown, and completed deposit payments.</p>
+                </div>
+                <a th:href="@{/venues}" class="text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-5 py-3 rounded-xl transition-all shadow-md shadow-blue-500/20 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span>+ Book More Courts</span>
+                </a>
+            </div>
+
+            <!-- Loading State -->
+            <div id="bookingListLoading" class="p-16 text-center text-slate-500">
+                <div class="inline-block animate-spin rounded-full h-9 w-9 border-b-2 border-blue-600 mb-3"></div>
+                <p class="text-xs font-semibold tracking-wide text-slate-600">Loading your booking history...</p>
+            </div>
+
+            <!-- Empty State -->
+            <div id="bookingListEmpty" class="hidden bg-white rounded-3xl shadow-sm border border-slate-200/80 p-12 text-center space-y-4">
+                <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto border border-blue-100">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">No Active Bookings Found</h3>
+                <p class="text-xs text-slate-500 max-w-sm mx-auto">You currently have no confirmed or active hold court reservations.</p>
+                <a th:href="@{/venues}" class="inline-block px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/20 hover:from-blue-500 hover:to-indigo-500 transition-all">Explore Sports Venues</a>
+            </div>
+
+            <!-- Booking Cards List Container -->
+            <div id="bookingListContainer" class="space-y-4 hidden">
+                <!-- Rendered dynamically via JS -->
+            </div>
+        </div>
+
+        <!-- Booking Detail Modal (Matching SportHub Dark Slate Theme) -->
+        <div id="customerBookingDetailModal" class="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+            <div class="bg-[#0F172A] text-white rounded-3xl shadow-2xl max-w-4xl w-full overflow-hidden border border-slate-800 my-8">
+                
+                <!-- Modal Top Header -->
+                <div class="bg-slate-900/90 px-6 py-4 flex items-center justify-between border-b border-slate-800">
+                    <button onclick="closeCustomerBookingModal()" class="text-slate-400 hover:text-white p-1 transition-colors">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                    </button>
+                    <h2 class="text-base font-bold tracking-wide text-white">Reservation Details</h2>
+                    <div class="w-6"></div>
+                </div>
+
+                <!-- Modal Body Grid -->
+                <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[75vh] overflow-y-auto">
+                    
+                    <!-- Left Info Panel -->
+                    <div class="space-y-4">
+                        <!-- Customer Info Box -->
+                        <div class="bg-slate-800/50 border border-slate-700/60 rounded-2xl p-4 flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center font-black text-lg text-blue-400" id="detailCustomerAvatar">C</div>
+                            <div>
+                                <div class="text-xs font-bold text-slate-200" id="detailCustomerName">Customer: John Doe</div>
+                                <div class="text-[11px] text-slate-400 mt-0.5" id="detailCustomerPhone">Phone: 090...</div>
+                            </div>
+                        </div>
+
+                        <!-- Booking Detail Card -->
+                        <div class="bg-slate-800/40 border border-slate-700/60 rounded-2xl p-5 space-y-3.5 text-xs leading-relaxed">
+                            <div class="flex items-center gap-2 text-blue-400 font-bold uppercase tracking-wider text-[11px] border-b border-slate-700/60 pb-2">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                BOOKING INFORMATION
+                            </div>
+
+                            <div>
+                                <span class="text-slate-400">Booking ID: </span>
+                                <span class="font-bold text-white" id="detailBookingCode">#15001</span>
+                            </div>
+
+                            <div>
+                                <span class="text-slate-400">Status: </span>
+                                <span class="font-bold text-amber-400" id="detailBookingStatus">Awaiting Deposit Payment</span>
+                            </div>
+
+                            <div>
+                                <span class="text-slate-400">Venue Name: </span>
+                                <span class="font-bold text-white" id="detailFacilityName">VStar Sports Arena</span>
+                            </div>
+
+                            <div>
+                                <span class="text-slate-400">Address: </span>
+                                <span class="text-slate-300" id="detailFacilityAddress">45 VStar Estate, District 7, HCMC</span>
+                            </div>
+
+                            <!-- Merged Time Slots Section -->
+                            <div class="pt-2 border-t border-slate-700/60">
+                                <span class="text-slate-400 font-semibold block mb-1">Booked Court Time Slots:</span>
+                                <div id="detailSlotsList" class="space-y-1 text-slate-200 pl-2">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Read-only Add-on Products & Services Section -->
+                            <div class="pt-2 border-t border-slate-700/60">
+                                <span class="text-slate-400 font-semibold block mb-1">Pre-ordered Add-on Services & Products:</span>
+                                <div id="detailProductsList" class="space-y-1 text-slate-200 pl-2">
+                                    <!-- Rendered dynamically -->
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-700/60 space-y-1 text-xs">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Total Amount:</span>
+                                    <span class="font-extrabold text-blue-400 text-sm" id="detailTotalFee">780,000 đ</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-slate-400">Payment Status:</span>
+                                    <span class="font-bold text-white" id="detailPaymentStatus">Unpaid</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column Action & Instructions -->
+                    <div class="flex flex-col justify-between space-y-6">
+                        <div class="bg-slate-800/30 border border-slate-700/60 rounded-2xl p-5 space-y-3">
+                            <h4 class="text-xs font-bold uppercase tracking-wider text-blue-400">PAYMENT INSTRUCTIONS</h4>
+                            <p class="text-xs text-slate-300 leading-relaxed">
+                                Your court reservation is held for up to <strong class="text-amber-300">10 minutes</strong>. Click <strong>"Pay Deposit / Pay Now"</strong> below to securely complete payment via VNPay gateway.
+                            </p>
+                        </div>
+
+                        <!-- Modal Bottom Actions -->
+                        <div class="space-y-3 pt-4">
+                            <button id="btnModalContinuePayment" onclick="submitContinuePayment()" class="w-full py-3.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-extrabold text-sm rounded-xl transition-all shadow-lg shadow-blue-600/30 flex items-center justify-center gap-2">
+                                <span>Pay Deposit / Pay Now</span>
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                            </button>
+
+                            <button id="btnModalCancelBooking" onclick="submitCancelBooking()" class="w-full py-3 bg-transparent hover:bg-rose-500/10 text-rose-400 hover:text-rose-300 font-bold text-xs rounded-xl border border-rose-500/40 transition-colors">
+                                CANCEL RESERVATION
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <th:block layout:fragment="pageScripts">
+        <script>
+            let currentSelectedBookingId = null;
+            let currentBookingsMap = {};
+
+            document.addEventListener('DOMContentLoaded', function() {
+                loadCustomerBookings();
+            });
+
+            function loadCustomerBookings() {
+                const loading = document.getElementById('bookingListLoading');
+                const empty = document.getElementById('bookingListEmpty');
+                const container = document.getElementById('bookingListContainer');
+
+                loading.classList.remove('hidden');
+                empty.classList.add('hidden');
+                container.classList.add('hidden');
+
+                fetch('/api/customer/bookings')
+                    .then(res => {
+                        if (res.status === 401) {
+                            window.location.href = '/auth/login';
+                            return [];
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        loading.classList.add('hidden');
+                        if (!data || data.length === 0) {
+                            empty.classList.remove('hidden');
+                            return;
+                        }
+
+                        currentBookingsMap = {};
+                        container.innerHTML = '';
+
+                        data.forEach(b => {
+                            currentBookingsMap[b.bookingId] = b;
+                            const card = renderBookingCard(b);
+                            container.appendChild(card);
+                        });
+
+                        container.classList.remove('hidden');
+                    })
+                    .catch(err => {
+                        console.error("Error loading customer bookings:", err);
+                        loading.classList.add('hidden');
+                        empty.classList.remove('hidden');
+                    });
+            }
+
+            function renderBookingCard(b) {
+                const div = document.createElement('div');
+                div.className = 'booking-card bg-white rounded-2xl border border-slate-200/80 p-5 cursor-pointer shadow-xs';
+                div.onclick = () => openCustomerBookingModal(b.bookingId);
+
+                const isHold = b.isHold;
+                const statusBadgeClass = isHold ? 'bg-amber-50 border border-amber-200 text-amber-700' : 'bg-emerald-50 border border-emerald-200 text-emerald-700';
+                const statusText = isHold ? 'Unpaid (Holding 10m)' : (b.paymentStatusText || 'Deposit Paid');
+
+                // Clean concise merged slots summary string e.g. "Court 3A: 07:00 - 09:30, Court 3B: 07:00 - 09:00 | Date: 01/08/2026"
+                let slotDetailsStr = "";
+                let bookingDateStr = "";
+                if (b.slots && b.slots.length > 0) {
+                    slotDetailsStr = b.slots.map(s => `${s.courtName}: ${formatTime(s.startTime)} - ${formatTime(s.endTime)}`).join(', ');
+                    bookingDateStr = formatDate(b.slots[0].bookingDate);
+                }
+
+                div.innerHTML = `
+                    <div class="flex justify-between items-start flex-wrap gap-2 mb-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 bg-blue-600 text-white text-[10px] font-bold rounded-lg uppercase tracking-wide">Daily Booking</span>
+                            <h3 class="font-bold text-base text-slate-900">${b.facilityName || 'Sports Venue'}</h3>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="px-3 py-1 text-xs font-bold rounded-full ${statusBadgeClass}">${statusText}</span>
+                        </div>
+                    </div>
+                    <div class="text-xs text-slate-600 space-y-1">
+                        <div><strong class="text-slate-700">Details:</strong> ${slotDetailsStr} ${bookingDateStr ? '| Date: ' + bookingDateStr : ''}</div>
+                        <div><strong class="text-slate-700">Address:</strong> ${b.facilityAddress || 'N/A'}</div>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-500 font-medium">Total Amount: <strong class="text-blue-600 font-extrabold text-sm">${formatVND(b.totalAmount)}</strong></span>
+                        <span class="text-blue-600 hover:text-blue-700 font-bold flex items-center gap-1">
+                            <span>View details & pay</span>
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        </span>
+                    </div>
+                `;
+                return div;
+            }
+
+            function openCustomerBookingModal(bookingId) {
+                const b = currentBookingsMap[bookingId];
+                if (!b) return;
+                currentSelectedBookingId = bookingId;
+
+                document.getElementById('detailCustomerAvatar').textContent = (b.customerName || 'C').substring(0, 1).toUpperCase();
+                document.getElementById('detailCustomerName').textContent = 'Customer: ' + b.customerName;
+                document.getElementById('detailCustomerPhone').textContent = 'Phone: ' + b.customerPhone;
+                document.getElementById('detailBookingCode').textContent = '#' + b.bookingId;
+                document.getElementById('detailFacilityName').textContent = b.facilityName || 'Sports Venue';
+                document.getElementById('detailFacilityAddress').textContent = b.facilityAddress || 'N/A';
+                document.getElementById('detailTotalFee').textContent = formatVND(b.totalAmount);
+                document.getElementById('detailPaymentStatus').textContent = b.paymentStatusText || 'Unpaid';
+
+                // Status message
+                const statusEl = document.getElementById('detailBookingStatus');
+                if (b.isHold) {
+                    statusEl.textContent = 'Awaiting Deposit Payment (Holding 10 minutes)';
+                    statusEl.className = 'font-bold text-amber-400';
+                    document.getElementById('btnModalContinuePayment').classList.remove('hidden');
+                    document.getElementById('btnModalCancelBooking').classList.remove('hidden');
+                } else {
+                    statusEl.textContent = 'Deposit Paid / Confirmed';
+                    statusEl.className = 'font-bold text-emerald-400';
+                    document.getElementById('btnModalContinuePayment').classList.add('hidden');
+                    document.getElementById('btnModalCancelBooking').classList.add('hidden');
+                }
+
+                // Render merged slots list
+                const slotsContainer = document.getElementById('detailSlotsList');
+                slotsContainer.innerHTML = '';
+                if (b.slots && b.slots.length > 0) {
+                    b.slots.forEach(s => {
+                        const div = document.createElement('div');
+                        div.textContent = `- ${s.courtName}: ${formatTime(s.startTime)} - ${formatTime(s.endTime)} (Date: ${formatDate(s.bookingDate)})`;
+                        slotsContainer.appendChild(div);
+                    });
+                } else {
+                    slotsContainer.innerHTML = '<div class="text-slate-400 italic">No slots specified</div>';
+                }
+
+                // Render read-only add-on products/services list
+                const productsContainer = document.getElementById('detailProductsList');
+                productsContainer.innerHTML = '';
+                if (b.products && b.products.length > 0) {
+                    b.products.forEach(p => {
+                        const div = document.createElement('div');
+                        div.className = 'flex justify-between items-center text-slate-300 text-xs py-0.5 border-b border-slate-800/40 last:border-0';
+                        div.innerHTML = `
+                            <span>📦 ${p.productName} (x${p.quantity})</span>
+                            <span class="font-semibold text-blue-400">${formatVND(p.totalAmount)}</span>
+                        `;
+                        productsContainer.appendChild(div);
+                    });
+                } else {
+                    productsContainer.innerHTML = '<div class="text-slate-500 italic text-[11px]">No pre-ordered services or products</div>';
+                }
+
+                document.getElementById('customerBookingDetailModal').classList.remove('hidden');
+            }
+
+            function closeCustomerBookingModal() {
+                document.getElementById('customerBookingDetailModal').classList.add('hidden');
+                currentSelectedBookingId = null;
+            }
+
+            function submitContinuePayment() {
+                if (!currentSelectedBookingId) return;
+                const btn = document.getElementById('btnModalContinuePayment');
+                btn.disabled = true;
+                btn.innerText = 'Creating VNPay payment link...';
+
+                fetch(`/api/customer/bookings/${currentSelectedBookingId}/continue-payment`, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        btn.disabled = false;
+                        btn.innerText = 'Pay Deposit / Pay Now';
+                        if (data.paymentUrl) {
+                            window.location.href = data.paymentUrl;
+                        } else {
+                            alert(data.error || 'Failed to generate VNPay payment URL.');
+                        }
+                    })
+                    .catch(err => {
+                        console.error("Error continuing payment:", err);
+                        btn.disabled = false;
+                        btn.innerText = 'Pay Deposit / Pay Now';
+                        alert('An error occurred while creating payment.');
+                    });
+            }
+
+            function submitCancelBooking() {
+                if (!currentSelectedBookingId) return;
+                if (!confirm('Are you sure you want to cancel this reservation?')) return;
+
+                fetch(`/api/customer/bookings/${currentSelectedBookingId}/cancel`, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        closeCustomerBookingModal();
+                        loadCustomerBookings();
+                    })
+                    .catch(err => console.error("Error canceling booking:", err));
+            }
+
+            function formatVND(amount) {
+                if (!amount) return '0 đ';
+                return new Intl.NumberFormat('en-US').format(amount) + ' đ';
+            }
+
+            function formatTime(timeStr) {
+                if (!timeStr) return '';
+                const parts = timeStr.split(':');
+                if (parts.length >= 2) return `${parts[0]}:${parts[1]}`;
+                return timeStr;
+            }
+
+            function formatDate(dateStr) {
+                if (!dateStr) return '';
+                const parts = dateStr.split('-');
+                if (parts.length === 3) return `${parts[2]}/${parts[1]}/${parts[0]}`;
+                return dateStr;
+            }
+        </script>
+    </th:block>
+</body>
+</html>
