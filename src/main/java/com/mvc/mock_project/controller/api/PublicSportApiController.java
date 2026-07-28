@@ -3,6 +3,7 @@ package com.mvc.mock_project.controller.api;
 import com.mvc.mock_project.dto.response.ApiResponse;
 import com.mvc.mock_project.dto.response.SportAttributeDTO;
 import com.mvc.mock_project.dto.response.SportDTO;
+import com.mvc.mock_project.service.SportAttributeService;
 import com.mvc.mock_project.service.SportService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,7 @@ import java.util.List;
 public class PublicSportApiController {
 
     private final SportService sportService;
+    private final SportAttributeService sportAttributeService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<SportDTO>>> getAllActiveSports() {
@@ -28,7 +30,7 @@ public class PublicSportApiController {
 
     @GetMapping("/{id}/attributes")
     public ResponseEntity<ApiResponse<List<SportAttributeDTO>>> getSportAttributes(@PathVariable Integer id) {
-        List<SportAttributeDTO> attributes = sportService.getSportAttributes(id);
+        List<SportAttributeDTO> attributes = sportAttributeService.getAttributesBySportId(id);
         return ResponseEntity.ok(ApiResponse.success("Success", attributes));
     }
 }

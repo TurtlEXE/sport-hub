@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{dashboard-layout}"
+      th:with="LAYOUT_TITLE='Admin', CONTENT_TITLE='Commission Policy'">
+<head>
+    <title>Commission Policy Management - SportHub</title>
+</head>
+<body>
+    
+    <!-- Inject Sidebar Menu -->
+    <div layout:fragment="sidebar-menu" th:replace="~{admin/fragments/sidebar :: sidebar('commission')}"></div>
+
+    <!-- Inject Custom Header Title -->
+    <div layout:fragment="header-title">
+        <h1 class="text-xl md:text-2xl font-bold text-slate-900">Commission Policy (Admin)</h1>
+        <p class="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider hidden sm:block">SYSTEM CONFIGURATION &bull; COMMISSION RULES</p>
+    </div>
+
+    <!-- Main Content -->
+    <th:block layout:fragment="content">
+        <main class="flex-1 min-w-0 bg-slate-50 relative">
+            <!-- Header Section -->
+            <div class="px-8 py-6 max-w-7xl mx-auto space-y-6">
+                <!-- Page Title Header -->
+                <div class="bg-slate-900 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-slate-900/20">
+                    <div class="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                        <svg class="w-64 h-64 text-white transform rotate-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z"/></svg>
+                    </div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="space-y-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/20">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2zM10 8.5a.5.5 0 11-1 0 .5.5 0 011 0zm5 5a.5.5 0 11-1 0 .5.5 0 011 0z" /></svg>
+                                COMMISSION POLICY ENGINE
+                            </span>
+                            <h1 class="text-3xl font-bold text-white tracking-tight">Commission Policy & Tiers</h1>
+                            <p class="text-slate-400 max-w-2xl text-sm leading-relaxed">Configure the minimum advance notice period, notification policies for facility owners, and tiered commission rates based on rental prices.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <button onclick="openTierModal()" class="flex items-center gap-2 px-5 py-3 rounded-xl text-sm font-bold text-white bg-emerald-500 hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/30">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
+                                Create New Tier (DRAFT)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 1: Policy Configuration -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-500">
+                                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                            </div>
+                            <div>
+                                <h2 class="text-lg font-bold text-slate-800">1. Global Policy Configuration</h2>
+                                <p class="text-sm text-slate-500">Set the minimum notice period parameter required before applying new commission rates.</p>
+                            </div>
+                        </div>
+                        <div class="text-xs font-semibold text-slate-400 font-mono" id="policyLastUpdated">
+                            Last updated: --
+                        </div>
+                    </div>
+
+                    <form id="policyForm" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <div class="md:col-span-1">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Minimum Notice Days <span class="text-rose-500">*</span></label>
+                                <div class="relative">
+                                    <input type="number" id="minNoticeDays" min="1" max="90" required class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm font-bold text-slate-700" />
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">days</span>
+                                </div>
+                                <p class="text-xs text-slate-400 mt-2">Must be between 1 and 90 days according to platform rules.</p>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Policy Description</label>
+                                <textarea id="policyDescription" rows="3" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm text-slate-600 resize-none"></textarea>
+                                <div class="flex justify-end mt-1">
+                                    <span class="text-[10px] font-semibold text-slate-400" id="descCharCount">0/500 chars</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end pt-4 border-t border-slate-100">
+                            <button type="button" onclick="updatePolicy()" class="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-500 shadow-lg shadow-emerald-500/20 hover:bg-emerald-600 transition-all hover:-translate-y-0.5">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg>
+                                Update Policy
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Section 2: Commission Tiers -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800">2. Commission Tiers by Price Range</h2>
+                            <p class="text-sm text-slate-500">Commission rates collected by Sporthub from partner facility bookings.</p>
+                        </div>
+                        <div class="px-4 py-2 bg-emerald-50 rounded-lg border border-emerald-100 text-emerald-700 text-xs font-bold" id="totalTiersCount">
+                            Total: 0 Tiers
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-2xl border border-slate-100">
+                        <table class="w-full text-left border-collapse min-w-[900px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100">
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-48">Price Range<br/>(VND/min)</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Commission Rate</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Effective Period</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Tier Status</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Is Current</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Notice Details</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tiersTableBody" class="divide-y divide-slate-100 bg-white">
+                                <!-- Tiers will be rendered here -->
+                                <tr><td colspan="7" class="py-12 text-center text-slate-400 text-sm">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Tier Modal (Add/Edit) -->
+        <div id="tierModal" class="fixed inset-0 z-[100] hidden items-center justify-center">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity" onclick="closeTierModal()"></div>
+            <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xl mx-4 relative z-10 overflow-hidden transform scale-95 opacity-0 transition-all duration-300" id="tierModalContent">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+                    <h3 class="text-lg font-bold text-slate-900" id="tierModalTitle">Create New Tier (DRAFT)</h3>
+                    <button onclick="closeTierModal()" class="text-slate-400 hover:text-rose-500 transition-colors p-2 rounded-full hover:bg-rose-50">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div class="p-6">
+                    <form id="tierForm" class="space-y-4">
+                        <input type="hidden" id="tierId" />
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Min Price (VND/Min)</label>
+                                <input type="number" id="minPrice" required min="0" step="100" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm font-semibold" />
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Max Price (VND/Min)</label>
+                                <input type="number" id="maxPrice" min="0" step="100" placeholder="Leave blank for Infinity" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm font-semibold" />
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Commission Rate (%)</label>
+                                <div class="relative">
+                                    <input type="number" id="commissionRate" required min="0" max="100" step="0.1" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm font-semibold" />
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Effective From</label>
+                                <input type="datetime-local" id="effectiveFrom" required class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm font-semibold" />
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Effective To (Optional)</label>
+                                <input type="datetime-local" id="effectiveTo" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm font-semibold" />
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Notes (Optional)</label>
+                            <textarea id="tierDesc" rows="3" class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors text-sm text-slate-600 resize-none"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-slate-50">
+                    <button onclick="closeTierModal()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors shadow-sm">Cancel</button>
+                    <button onclick="saveTier()" class="px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-emerald-500 shadow-lg shadow-emerald-500/30 hover:bg-emerald-600 transition-all hover:-translate-y-0.5">Save Tier (DRAFT)</button>
+                </div>
+            </div>
+        </div>
+
+    </th:block>
+
+    <th:block layout:fragment="pageScripts">
+        <script>
+            /*<![CDATA[*/
+            let policyData = null;
+            let tiersData = [];
+
+            // Utils
+            function formatCurrency(amount) {
+                if (amount === null || amount === undefined) return '∞';
+                return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(amount);
+            }
+
+            function formatDateTime(isoString) {
+                if (!isoString) return '--';
+                const date = new Date(isoString);
+                return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            }
+
+            // Document Ready
+            document.addEventListener('DOMContentLoaded', () => {
+                fetchPolicy();
+                fetchTiers();
+
+                // Description counter
+                const descInput = document.getElementById('policyDescription');
+                descInput.addEventListener('input', function() {
+                    document.getElementById('descCharCount').textContent = `${this.value.length}/500 chars`;
+                });
+            });
+
+            // Policy Logic
+            async function fetchPolicy() {
+                try {
+                    const response = await fetch('/api/admin/commission/policy');
+                    const json = await response.json();
+                    if (json.success) {
+                        policyData = json.data;
+                        document.getElementById('minNoticeDays').value = policyData.minNoticeDays;
+                        document.getElementById('policyDescription').value = policyData.description || '';
+                        document.getElementById('descCharCount').textContent = `${(policyData.description || '').length}/500 chars`;
+                        document.getElementById('policyLastUpdated').textContent = `Last updated: ${formatDateTime(policyData.updatedAt)}`;
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch policy", e);
+                }
+            }
+
+            async function updatePolicy() {
+                const payload = {
+                    minNoticeDays: parseInt(document.getElementById('minNoticeDays').value),
+                    description: document.getElementById('policyDescription').value
+                };
+                
+                try {
+                    const response = await fetch('/api/admin/commission/policy', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const json = await response.json();
+                    if (json.success) {
+                        showCustomAlert('Policy updated successfully!', 'success');
+                        fetchPolicy();
+                    } else {
+                        showCustomAlert(json.message, 'error');
+                    }
+                } catch (e) {
+                    showCustomAlert('Update failed', 'error');
+                }
+            }
+
+            // Tiers Logic
+            async function fetchTiers() {
+                try {
+                    const response = await fetch('/api/admin/commission/tiers?size=100');
+                    const json = await response.json();
+                    if (json.success) {
+                        tiersData = json.data.content || [];
+                        renderTiers(tiersData);
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch tiers", e);
+                }
+            }
+
+            function renderTiers(tiers) {
+                const tbody = document.getElementById('tiersTableBody');
+                document.getElementById('totalTiersCount').textContent = `Total: ${tiers.length} Tiers`;
+
+                if (tiers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="py-12 text-center text-slate-400 text-sm">No commission tiers have been configured.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = tiers.map(t => {
+                    const minStr = formatCurrency(t.minPricePerMinute);
+                    const maxStr = formatCurrency(t.maxPricePerMinute);
+                    
+                    // Badges
+                    let statusBadge = '';
+                    if (t.status === 'ACTIVE') {
+                        statusBadge = `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md">ACTIVE</span>`;
+                    } else if (t.status === 'DRAFT') {
+                        statusBadge = `<span class="px-2.5 py-1 bg-slate-100 text-slate-700 text-[10px] font-bold rounded-md">DRAFT</span>`;
+                    } else if (t.status === 'EXPIRED') {
+                        statusBadge = `<span class="px-2.5 py-1 bg-orange-100 text-orange-700 text-[10px] font-bold rounded-md">EXPIRED</span>`;
+                    }
+
+                    const isCurrentBadge = t.isCurrent 
+                        ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full border border-emerald-200">
+                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                             Current
+                           </span>`
+                        : `<span class="text-slate-300">-</span>`;
+
+                    let actions = '';
+                    if (t.status === 'DRAFT') {
+                        actions = `
+                            <button onclick="editTier(${t.tierId})" class="p-1.5 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded transition-colors" title="Edit">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                            </button>
+                            <button onclick="deleteTier(${t.tierId})" class="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-rose-50 rounded transition-colors" title="Delete">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                            </button>
+                            <button onclick="announceTier(${t.tierId})" class="mt-1 px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 rounded text-xs font-bold hover:bg-amber-100 flex items-center justify-center gap-1 w-full transition-colors" title="Announce to facility owners">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
+                                Announce
+                            </button>
+                        `;
+                    } else {
+                        actions = `<span class="text-[10px] text-slate-400 italic">Locked (Read-only)</span>`;
+                    }
+
+                    const announcedInfo = t.announcedAt 
+                        ? `<div class="text-xs text-slate-500">Notice: <span class="font-bold text-slate-700">${t.noticeDays} days</span></div>
+                           <div class="text-[10px] text-amber-600 font-semibold mt-0.5">Announced on:<br/>${formatDateTime(t.announcedAt)}</div>`
+                        : `<span class="text-slate-300">-</span>`;
+
+                    return `
+                        <tr class="hover:bg-slate-50/50 transition-colors group">
+                            <td class="py-5 px-6">
+                                <div class="font-bold text-slate-800 text-sm">${minStr} → ${maxStr}</div>
+                                <div class="font-bold text-slate-900 text-[11px] mt-0.5">VND/min</div>
+                                <div class="text-[10px] text-slate-500 mt-1 italic max-w-[150px] whitespace-normal line-clamp-3" title="${t.description || ''}">
+                                    "${t.description || 'No description'}"
+                                </div>
+                            </td>
+                            <td class="py-5 px-6">
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-bold border border-emerald-100">
+                                    ${(t.commissionRate * 100).toFixed(1)}%
+                                </span>
+                            </td>
+                            <td class="py-5 px-6 text-sm text-slate-600 font-medium">
+                                <div class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    ${formatDateTime(t.effectiveFrom)} 
+                                    <span class="text-slate-300 mx-1">→</span> 
+                                    ${formatDateTime(t.effectiveTo)}
+                                </div>
+                            </td>
+                            <td class="py-5 px-6 text-center">${statusBadge}</td>
+                            <td class="py-5 px-6 text-center">${isCurrentBadge}</td>
+                            <td class="py-5 px-6">${announcedInfo}</td>
+                            <td class="py-5 px-6 text-right">
+                                <div class="flex flex-col items-end gap-1">
+                                    ${actions}
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+
+            // Modal Logic
+            function openTierModal() {
+                document.getElementById('tierId').value = '';
+                document.getElementById('minPrice').value = '';
+                document.getElementById('maxPrice').value = '';
+                document.getElementById('commissionRate').value = '';
+                document.getElementById('effectiveFrom').value = '';
+                document.getElementById('effectiveTo').value = '';
+                document.getElementById('tierDesc').value = '';
+                document.getElementById('tierModalTitle').textContent = 'Create New Tier (DRAFT)';
+
+                const modal = document.getElementById('tierModal');
+                const content = document.getElementById('tierModalContent');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function editTier(id) {
+                const tier = tiersData.find(t => t.tierId === id);
+                if (!tier) return;
+                
+                document.getElementById('tierId').value = tier.tierId;
+                document.getElementById('minPrice').value = tier.minPricePerMinute;
+                document.getElementById('maxPrice').value = tier.maxPricePerMinute || '';
+                document.getElementById('commissionRate').value = (tier.commissionRate * 100).toFixed(1);
+                
+                // format datetime-local expects YYYY-MM-DDThh:mm
+                if (tier.effectiveFrom) {
+                    const dt = new Date(tier.effectiveFrom);
+                    dt.setMinutes(dt.getMinutes() - dt.getTimezoneOffset());
+                    document.getElementById('effectiveFrom').value = dt.toISOString().slice(0,16);
+                } else {
+                    document.getElementById('effectiveFrom').value = '';
+                }
+                
+                if (tier.effectiveTo) {
+                    const dtTo = new Date(tier.effectiveTo);
+                    dtTo.setMinutes(dtTo.getMinutes() - dtTo.getTimezoneOffset());
+                    document.getElementById('effectiveTo').value = dtTo.toISOString().slice(0,16);
+                } else {
+                    document.getElementById('effectiveTo').value = '';
+                }
+
+                document.getElementById('tierDesc').value = tier.description || '';
+                document.getElementById('tierModalTitle').textContent = 'Edit Commission Tier (DRAFT)';
+
+                const modal = document.getElementById('tierModal');
+                const content = document.getElementById('tierModalContent');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                setTimeout(() => {
+                    content.classList.remove('scale-95', 'opacity-0');
+                    content.classList.add('scale-100', 'opacity-100');
+                }, 10);
+            }
+
+            function closeTierModal() {
+                const modal = document.getElementById('tierModal');
+                const content = document.getElementById('tierModalContent');
+                content.classList.remove('scale-100', 'opacity-100');
+                content.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.classList.remove('flex');
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+
+            async function saveTier() {
+                const id = document.getElementById('tierId').value;
+                const payload = {
+                    minPricePerMinute: parseFloat(document.getElementById('minPrice').value),
+                    maxPricePerMinute: document.getElementById('maxPrice').value ? parseFloat(document.getElementById('maxPrice').value) : null,
+                    commissionRate: parseFloat(document.getElementById('commissionRate').value) / 100.0,
+                    effectiveFrom: new Date(document.getElementById('effectiveFrom').value).toISOString(),
+                    effectiveTo: document.getElementById('effectiveTo').value ? new Date(document.getElementById('effectiveTo').value).toISOString() : null,
+                    description: document.getElementById('tierDesc').value
+                };
+
+                try {
+                    const url = id ? `/api/admin/commission/tiers/${id}` : '/api/admin/commission/tiers';
+                    const method = id ? 'PUT' : 'POST';
+                    
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    const json = await response.json();
+                    if (json.success) {
+                        closeTierModal();
+                        fetchTiers();
+                    } else {
+                        showCustomAlert('Error: ' + json.message, 'error');
+                    }
+                } catch (error) {
+                    showCustomAlert('A system error occurred', 'error');
+                }
+            }
+
+            function announceTier(id) {
+                showCustomConfirm('Are you sure you want to Announce this tier to facility owners? Once announced, it cannot be edited.', async () => {
+                    try {
+                        const response = await fetch(`/api/admin/commission/tiers/${id}/announce`, { method: 'PATCH' });
+                        const json = await response.json();
+                        if (json.success) {
+                            fetchTiers();
+                        } else {
+                            showCustomAlert('Error: ' + json.message, 'error');
+                        }
+                    } catch (e) {
+                        showCustomAlert('Connection error', 'error');
+                    }
+                });
+            }
+
+            function deleteTier(id) {
+                showCustomConfirm('Are you sure you want to delete this draft tier?', async () => {
+                    try {
+                        const response = await fetch(`/api/admin/commission/tiers/${id}`, { method: 'DELETE' });
+                        const json = await response.json();
+                        if (json.success) {
+                            fetchTiers();
+                        } else {
+                            showCustomAlert('Error: ' + json.message, 'error');
+                        }
+                    } catch (e) {
+                        showCustomAlert('Connection error', 'error');
+                    }
+                }, 'danger');
+            }
+            /*]]>*/
+        </script>
+    </th:block>
+</body>
+</html>

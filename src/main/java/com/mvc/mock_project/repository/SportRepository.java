@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface SportRepository extends JpaRepository<Sport, Integer> {
     List<Sport> findByIsActiveTrue();
+    boolean existsBySportCode(String sportCode);
+    org.springframework.data.domain.Page<Sport> findByIsActive(Boolean isActive, org.springframework.data.domain.Pageable pageable);
 }
