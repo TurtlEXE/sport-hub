@@ -1,0 +1,242 @@
+.timeline-grid {
+    display: grid;
+    grid-template-columns: 120px repeat(var(--total-slots, 14), minmax(60px, 1fr));
+    border-left: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+    width: max-content;
+    min-width: 100%;
+}
+
+.timeline-cell {
+    border-right: 1px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.875rem;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.timeline-header {
+    background-color: #f8fafc;
+    font-weight: 600;
+    color: #64748b;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.court-name {
+    position: sticky;
+    left: 0;
+    background-color: #f8fafc;
+    z-index: 20;
+    font-weight: 600;
+    color: #0f172a;
+    padding: 0 12px;
+    border-right: 2px solid #cbd5e1;
+    justify-content: flex-start;
+}
+
+.slot-available {
+    background-color: #ffffff;
+    cursor: pointer;
+    transition: all 0.15s ease-in-out;
+}
+
+.slot-available:hover {
+    background-color: #e0e7ff;
+    box-shadow: inset 0 0 0 1px #818cf8;
+}
+
+.slot-hold {
+    background-color: #fef3c7;
+    color: #92400e;
+    border: 1px solid #fcd34d !important;
+    position: relative;
+    font-weight: 700;
+}
+
+.slot-hold:hover {
+    background-color: #fde68a;
+}
+
+.slot-booked {
+    background-color: #0f172a;
+    color: #f8fafc;
+    position: relative;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    box-shadow: inset 0 0 0 1px #334155;
+}
+
+.slot-booked:hover {
+    background-color: #1e293b;
+}
+
+.slot-selected {
+    background-color: #2563eb !important;
+    border: 2px solid #1d4ed8 !important;
+    color: #ffffff !important;
+    position: relative;
+    z-index: 5;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4) !important;
+}
+
+.slot-past {
+    background-color: #f8fafc !important;
+    color: #cbd5e1 !important;
+    cursor: not-allowed !important;
+    user-select: none;
+}
+
+.slot-unpriced {
+    background: repeating-linear-gradient(
+        45deg,
+        #fff1f2,
+        #fff1f2 8px,
+        #ffe4e6 8px,
+        #ffe4e6 16px
+    ) !important;
+    border: 1px solid #fecdd3 !important;
+    color: #e11d48 !important;
+    cursor: not-allowed !important;
+    user-select: none;
+}
+
+.chip-unpriced {
+    background: repeating-linear-gradient(
+        45deg,
+        #fff1f2,
+        #fff1f2 4px,
+        #ffe4e6 4px,
+        #ffe4e6 8px
+    ) !important;
+    border: 1px solid #fecdd3 !important;
+}
+
+.timeline-container::-webkit-scrollbar { height: 8px; }
+.timeline-container::-webkit-scrollbar-track { background: #f8fafc; border-radius: 4px; }
+.timeline-container::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 4px; }
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+.chip-box { width: 14px; height: 14px; border-radius: 3px; }
+
+/* Tooltip Styles */
+.booking-tooltip {
+    visibility: hidden;
+    background-color: #fff;
+    color: #1e293b;
+    text-align: left;
+    border-radius: 8px;
+    padding: 8px 12px;
+    position: absolute;
+    z-index: 50;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    width: max-content;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+    font-size: 0.75rem;
+    line-height: 1.4;
+    pointer-events: none;
+    border: 1px solid #e2e8f0;
+}
+
+.booking-tooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+}
+
+.slot-hold:hover .booking-tooltip,
+.slot-booked:hover .booking-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Tooltip Direction for Top Row Cells */
+.tooltip-down .booking-tooltip {
+    bottom: auto !important;
+    top: 110% !important;
+}
+
+.tooltip-down .booking-tooltip::after {
+    top: auto !important;
+    bottom: 100% !important;
+    border-color: transparent transparent #fff transparent !important;
+}
+
+/* Folder Tabs Styling */
+.folder-tabs-wrapper {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    margin-bottom: -1px;
+    position: relative;
+    z-index: 10;
+    overflow-x: auto;
+}
+
+.folder-tabs-wrapper::-webkit-scrollbar { display: none; }
+
+.folder-tab {
+    padding: 12px 24px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border: 1px solid #e2e8f0;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+    position: relative;
+}
+
+.folder-tab-active {
+    background-color: #ffffff;
+    color: #2563eb;
+    padding-bottom: 13px;
+    margin-bottom: -1px;
+    border-bottom: 2px solid #ffffff; 
+    z-index: 20;
+}
+
+.folder-tab-inactive {
+    background-color: #f8fafc;
+    color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    z-index: 10;
+}
+
+.folder-tab-inactive:hover {
+    background-color: #f1f5f9;
+    color: #334155;
+}
+
+.folder-content {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    border-top-left-radius: 0;
+    position: relative;
+    z-index: 0;
+}
+
+.fs-tab, .fac-tab, .sport-tab { outline: none; }
