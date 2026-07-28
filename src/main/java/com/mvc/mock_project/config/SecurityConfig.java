@@ -49,8 +49,8 @@ public class SecurityConfig {
 
                         // Role-based URL mappings according to SRS
                         // Customer
-                        .requestMatchers("/api/bookings/**", "/api/reviews/**")
-                        .hasAnyAuthority("ROLE_CUSTOMER", "ROLE_ADMIN")
+                        .requestMatchers("/api/bookings/**", "/api/reviews/**", "/customer/**", "/api/customer/**")
+                        .hasAnyAuthority("ROLE_CUSTOMER", "ROLE_ADMIN", "ROLE_OWNER", "ROLE_STAFF")
 
                         // Court Owner & Staff
                         .requestMatchers("/api/owner/**", "/api/facilities/manage/**", "/owner/**")

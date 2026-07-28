@@ -291,7 +291,7 @@ public class BookingServiceImpl implements BookingService {
                 .guest(guest)
                 .account(account)
                 .bookingStatus(BookingStatus.PENDING)
-                .holdExpiredAt(LocalDateTime.now().plusSeconds(150))
+                .holdExpiredAt(LocalDateTime.now().plusMinutes(10))
                 .build();
         booking = bookingRepository.save(booking);
         

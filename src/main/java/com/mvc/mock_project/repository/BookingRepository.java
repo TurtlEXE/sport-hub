@@ -20,4 +20,16 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
            "    AND (p.paymentStatus = 'PAID' OR p.paymentStatus = 'PARTIAL')" +
            ")")
     List<Booking> findExpiredPendingBookings(@Param("now") LocalDateTime now);
+
+    @Query("SELECT DISTINCT b FROM Booking b " +
+           "LEFT JOIN FETCH b.facility f " +
+           "LEFT JOIN FETCH b.invoice inv " +
+           "WHERE b.account.id = :accountId " +
+           "AND (" +
+           "    b.bookingStatus IN (com.mvc.mock_project.entities.enums.BookingStatus.CONFIRMED, com.mvc.mock_project.entities.enums.BookingStatus.COMPLETED) " +
+           "    OR (inv IS NOT NULL AND inv.paymentStatus IN (com.mvc.mock_project.entities.enums.InvoiceStatus.PAID, com.mvc.mock_project.entities.enums.InvoiceStatus.PARTIAL)) " +
+           "    OR (b.bookingStatus = com.mvc.mock_project.entities.enums.BookingStatus.PENDING AND b.holdExpiredAt > :now) " +
+           ") " +
+           "ORDER BY b.createdAt DESC")
+    List<Booking> findCustomerActiveBookings(@Param("accountId") Integer accountId, @Param("now") LocalDateTime now);
 }
