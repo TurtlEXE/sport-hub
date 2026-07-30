@@ -57,8 +57,8 @@ public class ChatbotServiceImpl implements ChatbotService {
     }
 
     @Override
-    public String askQuestion(String userMessage) {
-        String systemPrompt = buildSystemContext();
+    public String askQuestion(String userMessage, String language) {
+        String systemPrompt = buildSystemContext(language);
 
         if ("gemini".equalsIgnoreCase(aiProvider) || (!geminiApiKey.isEmpty() && !"openai".equalsIgnoreCase(aiProvider))) {
             return askGemini(systemPrompt, userMessage);
@@ -149,14 +149,20 @@ public class ChatbotServiceImpl implements ChatbotService {
         }
     }
 
-    private String buildSystemContext() {
+    private String buildSystemContext(String language) {
         StringBuilder context = new StringBuilder();
         context.append("Bạn là trợ lý ảo AI thông minh của hệ thống đặt sân thể thao Sport Hub.\n");
         context.append("Nhiệm vụ của bạn là tư vấn, giải đáp thắc mắc cho khách hàng dựa trên dữ liệu thực tế dưới đây.\n");
         context.append("CHỈ THỊ BẮT BUỘC (MANDATORY DIRECTIVES):\n");
         context.append("1. Khi khách hàng hỏi về các chủ đề chung (ví dụ: sân bóng, giá thuê, địa chỉ), câu trả lời của bạn phải thật NGẮN GỌN, TRỰC TIẾP và RÕ RÀNG.\n");
         context.append("2. LUÔN LUÔN gợi ý thêm các tùy chọn liên quan (như chương trình khuyến mãi, mã giảm giá đang hoạt động, hoặc các tiện ích của sân) ở cuối câu trả lời một cách tự nhiên để thu hút khách hàng.\n");
-        context.append("3. Trả lời bằng ngôn ngữ mà khách hàng sử dụng.\n");
+        String langName = "Vietnamese";
+        if ("en".equalsIgnoreCase(language)) langName = "English";
+        else if ("mm".equalsIgnoreCase(language) || "my".equalsIgnoreCase(language)) langName = "Myanmar (Burmese)";
+        
+        context.append("3. Ngôn ngữ hiện tại của trang web là: ").append(langName).append(".\n");
+        context.append("4. RẤT QUAN TRỌNG: Nếu khách hàng chỉ nói những câu ngắn ngọn (như 'hi', 'hello', 'chào'), hãy chào lại bằng ngôn ngữ hiện tại của trang web. TUY NHIÊN, nếu khách hàng hỏi bằng ngôn ngữ nào, BẠN BẮT BUỘC PHẢI TRẢ LỜI BẰNG NGÔN NGỮ ĐÓ (ví dụ khách hỏi Tiếng Anh thì trả lời Tiếng Anh).\n");
+        context.append("5. KHÔNG SỬ DỤNG markdown in đậm (như **chữ**) trong câu trả lời vì trình duyệt không hiển thị được. Hãy viết text bình thường.\n");
         context.append("Thời gian hệ thống hiện tại là: ").append(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
         // 1. Facilities and Courts
         List<Facility> facilities = facilityRepository.findByIsActiveTrue();

@@ -1,5 +1,17 @@
 document.addEventListener('DOMContentLoaded', function () {
     // 1. Inject Widget HTML
+    const currentLang = document.documentElement.lang || 'vi';
+    let welcomeMsg = "Xin chào! 👋 Tôi là trợ lý ảo AI của Sport Hub. Tôi có thể giúp bạn kiểm tra sân trống, thông tin giá cả, mã giảm giá và quy trình đặt sân. Bạn cần hỗ trợ gì hôm nay?";
+    let placeholderMsg = "Hỏi AI về giờ trống, sân bãi...";
+
+    if (currentLang === 'en') {
+        welcomeMsg = "Hello! 👋 I am Sport Hub's AI virtual assistant. I can help you check court availability, pricing information, discount codes, and the booking process. How can I help you today?";
+        placeholderMsg = "Ask AI about availability, courts...";
+    } else if (currentLang === 'mm' || currentLang === 'my') {
+        welcomeMsg = "မင်္ဂလာပါ! 👋 ကျွန်ုပ်သည် Sport Hub ၏ AI virtual လက်ထောက်ဖြစ်သည်။ ကွင်းရရှိနိုင်မှု၊ စျေးနှုန်းအချက်အလက်၊ လျှော့စျေးကုဒ်များနှင့် ဘွတ်ကင်လုပ်ငန်းစဉ်များကို စစ်ဆေးရန် သင့်အား ကျွန်ုပ်ကူညီနိုင်ပါသည်။ ဒီနေ့ သင့်ကို ဘယ်လိုကူညီနိုင်မလဲ။";
+        placeholderMsg = "ရရှိနိုင်မှုအကြောင်း AI ကို မေးပါ...";
+    }
+        
     const chatbotContainer = document.createElement('div');
     chatbotContainer.id = 'ai-chatbot-widget';
     chatbotContainer.innerHTML = `
@@ -61,7 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         </svg>
                     </div>
                     <div class="bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-slate-700 max-w-[80%] leading-relaxed">
-                        Xin chào! 👋 Tôi là trợ lý ảo AI của Sport Hub. Tôi có thể giúp bạn kiểm tra sân trống, thông tin giá cả, mã giảm giá và quy trình đặt sân. Bạn cần hỗ trợ gì hôm nay?
+                        ${welcomeMsg}
                     </div>
                 </div>
             </div>
@@ -86,7 +98,7 @@ document.addEventListener('DOMContentLoaded', function () {
             <!-- Input Area -->
             <div class="p-3 bg-white border-t border-slate-100">
                 <form id="chatbot-form" class="flex items-center gap-2">
-                    <input type="text" id="chatbot-input" placeholder="Hỏi AI về giờ trống, sân bãi..." 
+                    <input type="text" id="chatbot-input" placeholder="${placeholderMsg}" 
                            class="flex-1 bg-slate-100/80 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue focus:bg-white transition-all placeholder:text-slate-400">
                     <button type="submit" id="chatbot-send-btn" class="w-10 h-10 rounded-xl bg-primary-blue hover:bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -139,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (sender === 'user') {
             msgDiv.innerHTML = `
                 <div class="bg-gradient-to-r from-primary-blue to-blue-600 text-white p-3.5 rounded-2xl rounded-tr-none shadow-sm max-w-[80%] leading-relaxed break-words">
-                    ${escapeHtml(text)}
+                    ${formatMessage(text)}
                 </div>
             `;
         } else {
@@ -153,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     </svg>
                 </div>
                 <div class="bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-slate-700 max-w-[80%] leading-relaxed break-words whitespace-pre-line">
-                    ${escapeHtml(text)}
+                    ${formatMessage(text)}
                 </div>
             `;
         }
@@ -170,6 +182,13 @@ document.addEventListener('DOMContentLoaded', function () {
             .replace(/'/g, "&#039;");
     }
 
+    function formatMessage(text) {
+        let safeText = escapeHtml(text);
+        // Replace **text** with <b>text</b>
+        safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        return safeText;
+    }
+
     form.addEventListener('submit', async function (e) {
         e.preventDefault();
         const text = input.value.trim();
@@ -182,10 +201,11 @@ document.addEventListener('DOMContentLoaded', function () {
         messagesBox.scrollTop = messagesBox.scrollHeight;
 
         try {
+            const reqLang = document.documentElement.lang || 'vi';
             const res = await fetch('/api/public/chatbot', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text })
+                body: JSON.stringify({ message: text, language: reqLang })
             });
 
             if (res.ok) {

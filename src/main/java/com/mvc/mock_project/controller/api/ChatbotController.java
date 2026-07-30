@@ -19,10 +19,11 @@ public class ChatbotController {
     @PostMapping
     public ResponseEntity<Map<String, String>> ask(@RequestBody Map<String, String> payload) {
         String message = payload.get("message");
+        String language = payload.getOrDefault("language", "vi");
         if (message == null || message.trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("reply", "Vui lòng nhập câu hỏi của bạn."));
         }
-        String reply = chatbotService.askQuestion(message);
+        String reply = chatbotService.askQuestion(message, language);
         return ResponseEntity.ok(Map.of("reply", reply));
     }
 }
