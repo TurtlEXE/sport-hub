@@ -100,122 +100,57 @@
                         <span class="alert-msg font-medium"></span>
                     </div>
 
-                    <form id="ownerRegisterForm">
-
-                        <div class="grid md:grid-cols-2 gap-6 mb-8">
-                            <!-- Personal Details -->
-                            <div class="space-y-4">
-                                <h3 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4">Personal Details</h3>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Full Name <span
-                                            class="text-rose-500">*</span></label>
-                                    <input type="text" name="fullName" required
-                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Email Address <span
-                                            class="text-rose-500">*</span></label>
-                                    <input type="email" name="email" required
-                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Phone Number <span
-                                            class="text-rose-500">*</span></label>
-                                    <input type="tel" name="phone" required
-                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                </div>
-
-                                <div class="relative">
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Password <span
-                                            class="text-rose-500">*</span></label>
-                                    <input type="password" id="passwordOwner" name="password" required
-                                        class="w-full pl-4 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                    <button type="button"
-                                        class="toggle-password absolute bottom-0 right-0 h-10 pr-3 flex items-center text-slate-400 focus:outline-none"
-                                        data-target="passwordOwner">
-                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Business & Bank Details -->
-                            <div class="space-y-4">
-                                <h3 class="text-lg font-bold text-slate-900 border-b pb-2 mb-4">Business Information
-                                </h3>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Business Name <span
-                                            class="text-rose-500">*</span></label>
-                                    <input type="text" name="businessName" required
-                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Tax Code
-                                        (MST)</label>
-                                    <input type="text" name="taxCode"
-                                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                </div>
-
-                                <div class="pt-2">
-                                    <h4 class="text-sm font-bold text-slate-900 mb-3 text-slate-500">Payout Details</h4>
-
-                                    <div class="space-y-3">
-                                        <div>
-                                            <input type="text" name="bankName"
-                                                placeholder="Bank Name (e.g. VCB, Techcombank)"
-                                                class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                        </div>
-                                        <div>
-                                            <input type="text" name="bankAccountNo" placeholder="Account Number"
-                                                class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                        </div>
-                                        <div>
-                                            <input type="text" name="bankAccountName" placeholder="Account Name"
-                                                class="w-full px-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-secondary-green/20 focus:border-secondary-green">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                    <!-- Contact Info for Registration -->
+                    <div class="bg-slate-50 rounded-3xl p-6 sm:p-8 border border-slate-100 text-center shadow-sm">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 text-primary-blue shadow-inner">
+                            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path>
+                            </svg>
                         </div>
+                        <h3 class="text-2xl font-black text-slate-900 mb-3">Partner Registration</h3>
+                        <p class="text-slate-500 mb-8 max-w-sm mx-auto leading-relaxed text-sm">
+                            To ensure the highest quality of our network, partner registration is currently processed manually by our team. Please reach out to us via the channels below:
+                        </p>
 
-                        <div class="mt-6 flex justify-end">
-                            <button type="submit"
-                                class="w-full md:w-auto px-12 bg-slate-900 hover:bg-secondary-green text-white font-bold py-3.5 rounded-xl transition-colors shadow-lg shadow-slate-900/10 flex items-center justify-center">
-                                Submit Application
-                            </button>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+                            <!-- Zalo -->
+                            <a href="https://zalo.me/0123456789" target="_blank" class="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-lg hover:shadow-blue-500/10 transition-all group cursor-pointer decoration-none">
+                                <div class="w-12 h-12 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                    <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Icon_of_Zalo.svg" alt="Zalo Logo" class="w-6 h-6">
+                                </div>
+                                <div>
+                                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Message via Zalo</div>
+                                    <div class="font-bold text-slate-800 text-sm">0123 456 789</div>
+                                </div>
+                            </a>
+
+                            <!-- Hotline -->
+                            <a href="tel:0123456789" class="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-lg hover:shadow-emerald-500/10 transition-all group cursor-pointer decoration-none">
+                                <div class="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition-colors">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Support Hotline</div>
+                                    <div class="font-bold text-slate-800 text-sm">0123 456 789</div>
+                                </div>
+                            </a>
+
+                            <!-- Email -->
+                            <a href="mailto:sporthubvn.support@gmail.com" class="flex items-center gap-4 p-4 rounded-2xl bg-white border border-slate-200 hover:border-rose-400 hover:shadow-lg hover:shadow-rose-500/10 transition-all group cursor-pointer decoration-none sm:col-span-2">
+                                <div class="w-12 h-12 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-rose-600 group-hover:text-white transition-colors">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Send an Email</div>
+                                    <div class="font-bold text-slate-800 text-sm">sporthubvn.support@gmail.com</div>
+                                </div>
+                            </a>
                         </div>
-                    </form>
-
-                    <p class="mt-8 text-center text-sm text-slate-600">
-                        Already a partner? <a th:href="@{/auth/login}"
-                            class="font-bold text-secondary-green hover:underline">Sign in to Dashboard</a>
-                    </p>
-                </div>
-            </div>
-
-        </div>
-    </main>
-
-    <th:block layout:fragment="pageScripts">
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const form = document.getElementById('ownerRegisterForm');
-                handleAuthFormSubmit(form, '/api/auth/register/owner', (result, data) => {
-                    // Redirect to OTP verification on success
-                    window.location.href = `/auth/verify?email=${encodeURIComponent(data.email)}`;
-                });
-            });
-        </script>
-    </th:block>
+                    </div>
 </body>
 
 </html>

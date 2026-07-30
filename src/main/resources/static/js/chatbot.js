@@ -4,9 +4,16 @@ document.addEventListener('DOMContentLoaded', function () {
     chatbotContainer.id = 'ai-chatbot-widget';
     chatbotContainer.innerHTML = `
         <!-- Floating Chat Button -->
-        <button id="chatbot-toggle-btn" class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-tr from-primary-blue to-blue-500 text-white rounded-full shadow-2xl hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center border-2 border-white/20 group">
-            <svg id="chatbot-icon-msg" class="w-7 h-7 transition-transform duration-300 group-hover:rotate-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+        <button id="chatbot-toggle-btn" class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-gradient-to-tr from-primary-blue to-blue-500 text-white rounded-full shadow-[0_0_20px_rgba(59,130,246,0.5)] hover:shadow-[0_0_30px_rgba(59,130,246,0.8)] hover:scale-110 active:scale-95 transition-all duration-300 flex items-center justify-center border-2 border-white/20 group">
+            <svg id="chatbot-icon-msg" class="w-7 h-7 transition-all duration-300 group-hover:rotate-12 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Antenna and Head -->
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2a2 2 0 012 2v2h3.5a2.5 2.5 0 012.5 2.5v9a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5v-9A2.5 2.5 0 016.5 6H10V4a2 2 0 012-2z"></path>
+                <!-- Eyes -->
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.5 11.5h.01M14.5 11.5h.01"></path>
+                <!-- Mouth -->
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 15.5h6"></path>
+                <!-- Ears -->
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 12h2m16 0h2"></path>
             </svg>
             <svg id="chatbot-icon-close" class="w-6 h-6 hidden transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -20,7 +27,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center backdrop-blur-md border border-white/30">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2a2 2 0 012 2v2h3.5a2.5 2.5 0 012.5 2.5v9a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5v-9A2.5 2.5 0 016.5 6H10V4a2 2 0 012-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.5 11.5h.01M14.5 11.5h.01"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 15.5h6"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 12h2m16 0h2"></path>
                         </svg>
                     </div>
                     <div>
@@ -42,8 +52,13 @@ document.addEventListener('DOMContentLoaded', function () {
             <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto space-y-3.5 bg-slate-50/50 text-sm">
                 <!-- Welcome Message -->
                 <div class="flex gap-2.5 items-start">
-                    <div class="w-8 h-8 rounded-full bg-primary-blue text-white flex-shrink-0 flex items-center justify-center text-xs font-bold shadow-md shadow-blue-500/20">
-                        AI
+                    <div class="w-8 h-8 rounded-full bg-primary-blue text-white flex-shrink-0 flex items-center justify-center shadow-md shadow-blue-500/20">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2a2 2 0 012 2v2h3.5a2.5 2.5 0 012.5 2.5v9a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5v-9A2.5 2.5 0 016.5 6H10V4a2 2 0 012-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.5 11.5h.01M14.5 11.5h.01"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 15.5h6"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 12h2m16 0h2"></path>
+                        </svg>
                     </div>
                     <div class="bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-slate-700 max-w-[80%] leading-relaxed">
                         Xin chào! 👋 Tôi là trợ lý ảo AI của Sport Hub. Tôi có thể giúp bạn kiểm tra sân trống, thông tin giá cả, mã giảm giá và quy trình đặt sân. Bạn cần hỗ trợ gì hôm nay?
@@ -53,8 +68,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <!-- Typing Indicator (Hidden by default) -->
             <div id="chatbot-typing" class="hidden px-4 pb-2 bg-slate-50/50 flex items-center gap-2">
-                <div class="w-6 h-6 rounded-full bg-primary-blue/10 text-primary-blue flex-shrink-0 flex items-center justify-center text-[10px] font-bold">
-                    AI
+                <div class="w-6 h-6 rounded-full bg-primary-blue/10 text-primary-blue flex-shrink-0 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2a2 2 0 012 2v2h3.5a2.5 2.5 0 012.5 2.5v9a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5v-9A2.5 2.5 0 016.5 6H10V4a2 2 0 012-2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.5 11.5h.01M14.5 11.5h.01"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 15.5h6"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 12h2m16 0h2"></path>
+                    </svg>
                 </div>
                 <div class="bg-slate-200/70 px-3 py-2 rounded-full flex items-center gap-1">
                     <div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"></div>
@@ -69,8 +89,8 @@ document.addEventListener('DOMContentLoaded', function () {
                     <input type="text" id="chatbot-input" placeholder="Hỏi AI về giờ trống, sân bãi..." 
                            class="flex-1 bg-slate-100/80 border border-slate-200 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue focus:bg-white transition-all placeholder:text-slate-400">
                     <button type="submit" id="chatbot-send-btn" class="w-10 h-10 rounded-xl bg-primary-blue hover:bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:pointer-events-none">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M3.478 2.405a.75.75 0 00-.926.94l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.405z"></path>
                         </svg>
                     </button>
                 </form>
@@ -124,8 +144,13 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
         } else {
             msgDiv.innerHTML = `
-                <div class="w-8 h-8 rounded-full bg-primary-blue text-white flex-shrink-0 flex items-center justify-center text-xs font-bold shadow-md shadow-blue-500/20">
-                    AI
+                <div class="w-8 h-8 rounded-full bg-primary-blue text-white flex-shrink-0 flex items-center justify-center shadow-md shadow-blue-500/20">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 2a2 2 0 012 2v2h3.5a2.5 2.5 0 012.5 2.5v9a2.5 2.5 0 01-2.5 2.5h-11A2.5 2.5 0 014 17.5v-9A2.5 2.5 0 016.5 6H10V4a2 2 0 012-2z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9.5 11.5h.01M14.5 11.5h.01"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 15.5h6"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2 12h2m16 0h2"></path>
+                    </svg>
                 </div>
                 <div class="bg-white p-3.5 rounded-2xl rounded-tl-none shadow-sm border border-slate-100 text-slate-700 max-w-[80%] leading-relaxed break-words whitespace-pre-line">
                     ${escapeHtml(text)}
