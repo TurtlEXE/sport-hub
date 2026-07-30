@@ -597,13 +597,13 @@ public class BookingServiceImpl implements BookingService {
             if (staffOpt.isPresent()) {
                 staffEntity = staffOpt.get();
                 if (staffEntity.getFacility() == null || !staffEntity.getFacility().getId().equals(facility.getId())) {
-                    throw new org.springframework.security.access.AccessDeniedException("Nhân viên không có quyền quản lý cơ sở này");
+                    throw new org.springframework.security.access.AccessDeniedException("Staff member does not have permission to manage this facility");
                 }
                 ownerAccount = null; // Do not attach owner_id when Staff creates booking
             } else {
                 ownerAccount = creatorAccount;
                 if (facility.getOwner() == null || !facility.getOwner().getId().equals(creatorAccount.getId())) {
-                    throw new org.springframework.security.access.AccessDeniedException("Bạn không phải là chủ sở hữu của cơ sở này");
+                    throw new org.springframework.security.access.AccessDeniedException("You are not the owner of this facility");
                 }
             }
         }
@@ -618,7 +618,7 @@ public class BookingServiceImpl implements BookingService {
         if (targetCustomerAccount == null) {
             guest = Guest.builder()
                     .guestName(request.getCustomerName() != null && !request.getCustomerName().trim().isEmpty() 
-                            ? request.getCustomerName().trim() : "Khách vãng lai")
+                            ? request.getCustomerName().trim() : "Walk-in Guest")
                     .phone(request.getCustomerPhone() != null && !request.getCustomerPhone().trim().isEmpty() 
                             ? request.getCustomerPhone().trim() : "N/A")
                     .email(request.getCustomerEmail())
@@ -928,12 +928,12 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public Map<String, Object> checkInSlots(List<Integer> slotIds, Account ownerAccount) {
         if (slotIds == null || slotIds.isEmpty()) {
-            throw new IllegalArgumentException("Vui lòng chọn ít nhất một ca đặt để check-in");
+            throw new IllegalArgumentException("Please select at least one court slot to check-in");
         }
 
         List<BookingSlot> slots = bookingSlotRepository.findAllById(slotIds);
         if (slots.isEmpty()) {
-            throw new IllegalArgumentException("Không tìm thấy thông tin ca đặt");
+            throw new IllegalArgumentException("Court slot information not found");
         }
 
         Booking booking = slots.get(0).getBooking();
@@ -944,7 +944,7 @@ public class BookingServiceImpl implements BookingService {
                     .map(s -> s.getFacility() != null && s.getFacility().getId().equals(facility.getId()))
                     .orElse(false);
             if (!isOwner && !isStaff) {
-                throw new org.springframework.security.access.AccessDeniedException("Bạn không có quyền quản lý đơn hàng này");
+                throw new org.springframework.security.access.AccessDeniedException("You do not have permission to manage this order");
             }
         }
 
@@ -967,7 +967,7 @@ public class BookingServiceImpl implements BookingService {
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("success", true);
-        resp.put("message", "Check-in ca đặt thành công!");
+        resp.put("message", "Court slot check-in successful!");
         resp.put("bookingId", booking.getId());
         return resp;
     }
@@ -976,7 +976,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public Map<String, Object> checkOutAndSettle(Integer bookingId, List<Integer> slotIds, String paymentMethod, Account ownerAccount) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new RuntimeException("Không tìm thấy đơn đặt sân #" + bookingId));
+                .orElseThrow(() -> new RuntimeException("Booking order not found #" + bookingId));
 
         if (ownerAccount != null && booking.getFacility() != null) {
             Facility facility = booking.getFacility();
@@ -985,7 +985,7 @@ public class BookingServiceImpl implements BookingService {
                     .map(s -> s.getFacility() != null && s.getFacility().getId().equals(facility.getId()))
                     .orElse(false);
             if (!isOwner && !isStaff) {
-                throw new org.springframework.security.access.AccessDeniedException("Bạn không có quyền quản lý đơn hàng này");
+                throw new org.springframework.security.access.AccessDeniedException("You do not have permission to manage this order");
             }
         }
 
@@ -1062,7 +1062,7 @@ public class BookingServiceImpl implements BookingService {
 
         Map<String, Object> resp = new HashMap<>();
         resp.put("success", true);
-        resp.put("message", allCheckedOut ? "Đã check-out toàn bộ đơn và quyết toán thành công!" : "Check-out ca đặt thành công!");
+        resp.put("message", allCheckedOut ? "Successfully checked out all slots and settled the order!" : "Slot check-out successful!");
         resp.put("bookingId", booking.getId());
         return resp;
     }
