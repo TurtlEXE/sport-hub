@@ -17,6 +17,133 @@ let facilityProducts = [];
 let selectedProductsMap = {}; // productId -> qty
 let fpInstance = null;
 
+// --- CUSTOM NOTIFICATION MODAL SYSTEM (REPLACES NATIVE BROWSER ALERT/CONFIRM) ---
+
+function getNotificationModalElements() {
+    let modal = document.getElementById('appNotificationModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'appNotificationModal';
+        modal.className = 'fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center hidden p-4 transition-all duration-200 opacity-0';
+        modal.innerHTML = `
+            <div id="appNotificationModalBox" class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden border border-slate-100 transform scale-95 transition-all duration-200 my-8">
+                <div class="p-6 text-center space-y-4">
+                    <div id="appNotifIconContainer" class="w-14 h-14 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                        <!-- Icon injected by JS -->
+                    </div>
+                    <div>
+                        <h3 id="appNotifTitle" class="font-extrabold text-slate-800 text-lg">Notification</h3>
+                        <p id="appNotifMessage" class="text-xs text-slate-500 mt-1.5 leading-relaxed whitespace-pre-line">Message content...</p>
+                    </div>
+                    <div id="appNotifActions" class="pt-2 flex items-center justify-center gap-3">
+                        <button id="appNotifBtnCancel" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors hidden">Cancel</button>
+                        <button id="appNotifBtnOk" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md min-w-24">OK</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    return modal;
+}
+
+window.showCustomAlert = function (message, title = 'Notification', type = 'info') {
+    return new Promise((resolve) => {
+        const modal = getNotificationModalElements();
+        const iconContainer = document.getElementById('appNotifIconContainer');
+        const titleEl = document.getElementById('appNotifTitle');
+        const msgEl = document.getElementById('appNotifMessage');
+        const btnCancel = document.getElementById('appNotifBtnCancel');
+        const btnOk = document.getElementById('appNotifBtnOk');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        btnCancel.classList.add('hidden');
+        btnOk.textContent = 'OK';
+
+        if (type === 'success') {
+            iconContainer.className = 'w-14 h-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto text-2xl';
+            iconContainer.innerHTML = `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>`;
+            btnOk.className = 'px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md shadow-emerald-600/20 min-w-24';
+        } else if (type === 'warning' || type === 'amber') {
+            iconContainer.className = 'w-14 h-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mx-auto text-2xl';
+            iconContainer.innerHTML = `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+            btnOk.className = 'px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md shadow-amber-600/20 min-w-24';
+        } else if (type === 'error' || type === 'danger') {
+            iconContainer.className = 'w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto text-2xl';
+            iconContainer.innerHTML = `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>`;
+            btnOk.className = 'px-6 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md shadow-rose-600/20 min-w-24';
+        } else {
+            iconContainer.className = 'w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto text-2xl';
+            iconContainer.innerHTML = `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+            btnOk.className = 'px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md shadow-blue-600/20 min-w-24';
+        }
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            const box = document.getElementById('appNotificationModalBox');
+            if (box) box.classList.remove('scale-95');
+        }, 10);
+
+        const handleOk = () => {
+            btnOk.onclick = null;
+            modal.classList.add('opacity-0');
+            const box = document.getElementById('appNotificationModalBox');
+            if (box) box.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                resolve();
+            }, 200);
+        };
+
+        btnOk.onclick = handleOk;
+    });
+};
+
+window.showCustomConfirm = function (message, title = 'Confirm Action', okText = 'Confirm', cancelText = 'Cancel') {
+    return new Promise((resolve) => {
+        const modal = getNotificationModalElements();
+        const iconContainer = document.getElementById('appNotifIconContainer');
+        const titleEl = document.getElementById('appNotifTitle');
+        const msgEl = document.getElementById('appNotifMessage');
+        const btnCancel = document.getElementById('appNotifBtnCancel');
+        const btnOk = document.getElementById('appNotifBtnOk');
+
+        titleEl.textContent = title;
+        msgEl.textContent = message;
+        btnCancel.classList.remove('hidden');
+        btnCancel.textContent = cancelText;
+        btnOk.textContent = okText;
+
+        iconContainer.className = 'w-14 h-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mx-auto text-2xl';
+        iconContainer.innerHTML = `<svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`;
+        btnOk.className = 'px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl transition-colors shadow-md shadow-blue-600/20 min-w-24';
+
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            const box = document.getElementById('appNotificationModalBox');
+            if (box) box.classList.remove('scale-95');
+        }, 10);
+
+        const closeWithResult = (res) => {
+            btnOk.onclick = null;
+            btnCancel.onclick = null;
+            modal.classList.add('opacity-0');
+            const box = document.getElementById('appNotificationModalBox');
+            if (box) box.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                resolve(res);
+            }, 200);
+        };
+
+        btnOk.onclick = () => closeWithResult(true);
+        btnCancel.onclick = () => closeWithResult(false);
+    });
+};
+
 document.addEventListener('DOMContentLoaded', function () {
     timelineGrid = document.getElementById('timelineGrid');
     loadingOverlay = document.getElementById('loadingOverlay');
@@ -356,7 +483,7 @@ function getBlockDurationMinutes(block) {
     return lastEnd > firstStart ? (lastEnd - firstStart) : (1440 - firstStart);
 }
 
-function validateMinDuration() {
+async function validateMinDuration() {
     if (selectedSlots.length === 0) return false;
 
     const blocks = getContinuousBlocksPerCourt();
@@ -365,7 +492,11 @@ function validateMinDuration() {
         if (currentMinDurationMinutes > 0 && duration < currentMinDurationMinutes) {
             const firstStart = b.slots[0].startTime;
             const lastEnd = b.slots[b.slots.length - 1].endTime;
-            alert(`⚠️ Khung giờ liền nhau (${firstStart} - ${lastEnd}) trên ${b.courtName} mới chỉ có ${duration} phút.\nThời lượng đặt tối thiểu cho mỗi khung giờ liên tục là ${currentMinDurationMinutes} phút! Vui lòng chọn thêm ca liền kề.`);
+            await showCustomAlert(
+                `Continuous slots (${firstStart} - ${lastEnd}) on ${b.courtName} is only ${duration} mins.\nMinimum booking duration for continuous slots is ${currentMinDurationMinutes} mins! Please select adjacent slots.`,
+                "Booking Duration Warning",
+                "warning"
+            );
             return false;
         }
     }
@@ -385,9 +516,10 @@ function updateSelectionSummaryBar() {
     document.getElementById('selectedSlotsCount').textContent = selectedSlots.length;
 
     const totalCourtFee = selectedSlots.reduce((sum, s) => sum + Number(s.price), 0);
-    document.getElementById('selectedSlotsCourtText').textContent = `Đã chọn ${selectedSlots.length} ca`;
-
     const blocks = getContinuousBlocksPerCourt();
+    const courtSummaryText = blocks.map(b => `${b.courtName} (${b.slots[0].startTime} - ${b.slots[b.slots.length - 1].endTime})`).join(', ');
+    document.getElementById('selectedSlotsCourtText').textContent = courtSummaryText || `${selectedSlots.length} slot(s) selected`;
+
     let hasUnmetMin = false;
     for (const b of blocks) {
         const duration = getBlockDurationMinutes(b);
@@ -400,24 +532,24 @@ function updateSelectionSummaryBar() {
     const priceTextEl = document.getElementById('selectedSlotsPriceText');
     if (priceTextEl) {
         if (hasUnmetMin) {
-            priceTextEl.innerHTML = `<span class="text-amber-300 font-bold">⚠️ Chưa đủ tối thiểu ${currentMinDurationMinutes} phút / khung giờ kề nhau</span> | Tổng tiền: ${formatVND(totalCourtFee)}`;
+            priceTextEl.innerHTML = `<span class="text-amber-300 font-bold">⚠️ Under minimum ${currentMinDurationMinutes} mins / slot interval</span> | Total: ${formatVND(totalCourtFee)}`;
         } else {
-            priceTextEl.textContent = `Tổng tiền: ${formatVND(totalCourtFee)}`;
+            priceTextEl.textContent = `Total: ${formatVND(totalCourtFee)}`;
         }
     }
 }
 
 function formatVND(amount) {
-    return new Intl.NumberFormat('vi-VN').format(amount) + ' VNĐ';
+    return new Intl.NumberFormat('vi-VN').format(amount) + ' VND';
 }
 
 window.openOnSiteBookingModal = async function () {
     if (selectedSlots.length === 0) {
-        alert("Vui lòng click chọn ít nhất 1 ca trống trên lịch để đặt sân!");
+        await showCustomAlert("Please click to select at least one available court slot on the schedule!", "Slot Selection Required", "warning");
         return;
     }
 
-    if (!validateMinDuration()) {
+    if (!(await validateMinDuration())) {
         return;
     }
 
@@ -427,11 +559,15 @@ window.openOnSiteBookingModal = async function () {
     const listEl = document.getElementById('modalSelectedSlotsList');
     let courtFeeTotal = 0;
     if (listEl) {
-        listEl.innerHTML = selectedSlots.map(s => {
-            courtFeeTotal += Number(s.price);
-            return `<div class="flex justify-between items-center py-1 border-b border-blue-100/50 last:border-none">
-                <span>• ${s.courtName} (${s.startTime} - ${s.endTime})</span>
-                <span class="font-bold text-blue-900">${formatVND(s.price)}</span>
+        const blocks = getContinuousBlocksPerCourt();
+        listEl.innerHTML = blocks.map(b => {
+            const firstStart = b.slots[0].startTime;
+            const lastEnd = b.slots[b.slots.length - 1].endTime;
+            const blockPrice = b.slots.reduce((sum, s) => sum + Number(s.price), 0);
+            courtFeeTotal += blockPrice;
+            return `<div class="flex justify-between items-center py-1.5 border-b border-blue-100/50 last:border-none">
+                <span class="font-semibold text-slate-800">• ${b.courtName} (${firstStart} - ${lastEnd})</span>
+                <span class="font-extrabold text-blue-900">${formatVND(blockPrice)}</span>
             </div>`;
         }).join('');
     }
@@ -458,7 +594,7 @@ async function loadFacilityProducts() {
         facilityProducts = await res.json();
 
         if (facilityProducts.length === 0) {
-            container.innerHTML = `<div class="text-xs text-slate-400 italic p-3 text-center col-span-full">Không có dịch vụ thêm nào tại cơ sở này.</div>`;
+            container.innerHTML = `<div class="text-xs text-slate-400 italic p-3 text-center col-span-full">No add-on services available at this facility.</div>`;
             return;
         }
 
@@ -478,7 +614,7 @@ async function loadFacilityProducts() {
         }).join('');
     } catch (e) {
         console.error(e);
-        container.innerHTML = `<div class="text-xs text-slate-400 italic p-3 text-center col-span-full">Không thể tải dịch vụ.</div>`;
+        container.innerHTML = `<div class="text-xs text-slate-400 italic p-3 text-center col-span-full">Failed to load services.</div>`;
     }
 }
 
@@ -528,17 +664,17 @@ window.submitOnSiteBooking = async function () {
     const paymentMethod = document.querySelector('input[name="modalPaymentMethod"]:checked').value;
 
     if (!customerName) {
-        alert("Please enter customer full name!");
+        await showCustomAlert("Please enter customer full name!", "Missing Field", "warning");
         document.getElementById('modalCustomerName').focus();
         return;
     }
     if (!customerPhone) {
-        alert("Please enter customer phone number!");
+        await showCustomAlert("Please enter customer phone number!", "Missing Field", "warning");
         document.getElementById('modalCustomerPhone').focus();
         return;
     }
     if (selectedSlots.length === 0) {
-        alert("Please select at least one court time slot!");
+        await showCustomAlert("Please select at least one court time slot!", "Missing Selection", "warning");
         return;
     }
 
@@ -563,11 +699,14 @@ window.submitOnSiteBooking = async function () {
                 const phoneCheckData = await phoneCheckRes.json();
                 if (phoneCheckData.exists && phoneCheckData.account) {
                     const acc = phoneCheckData.account;
-                    const confirmUseAccount = confirm(
+                    const confirmUseAccount = await showCustomConfirm(
                         `The phone number [${customerPhone}] matches an existing registered account:\n` +
                         `• Account Name: ${acc.fullName || 'Customer'}\n` +
                         `• Email: ${acc.email || 'N/A'}\n\n` +
-                        `Would you like to associate this reservation directly with this user's account?`
+                        `Would you like to associate this reservation directly with this user's account?`,
+                        "Account Match Found",
+                        "Associate Account",
+                        "Create Guest Instead"
                     );
                     if (confirmUseAccount) {
                         targetAccountId = acc.id;
@@ -619,10 +758,10 @@ window.submitOnSiteBooking = async function () {
 
         if (res.ok && result.success) {
             if (result.paymentMethod === 'VNPAY' && result.paymentUrl) {
-                alert("🎉 On-site reservation created successfully!\nRedirecting to VNPay payment gateway...");
+                await showCustomAlert("🎉 On-site reservation created successfully!\nRedirecting to VNPay payment gateway...", "Reservation Created", "success");
                 window.location.href = result.paymentUrl;
             } else {
-                alert("🎉 On-site reservation completed successfully!");
+                await showCustomAlert(result.message || "🎉 On-site reservation completed successfully!", "Reservation Completed", "success");
                 window.closeOnSiteBookingModal();
                 window.clearSlotSelection();
                 selectedProductsMap = {};
@@ -633,11 +772,11 @@ window.submitOnSiteBooking = async function () {
                 loadTimelineData();
             }
         } else {
-            alert("Reservation Error: " + (result.message || "Failed to complete transaction."));
+            await showCustomAlert(result.message || "Failed to complete transaction.", "Reservation Error", "error");
         }
     } catch (e) {
         console.error("On-site booking error:", e);
-        alert("Connection or data processing error: " + (e.message || "Please try again."));
+        await showCustomAlert(e.message || "Please try again.", "Connection Error", "error");
     } finally {
         if (btnSubmit) {
             btnSubmit.disabled = false;
@@ -657,7 +796,7 @@ window.fetchAndShowBookingDetail = async function (bookingId) {
 
     panel.classList.remove('hidden');
     content.innerHTML = `<div class="p-6 text-center text-slate-400 flex items-center justify-center gap-2">
-        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div> Đang tải thông tin...
+        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div> Loading details...
     </div>`;
 
     try {
@@ -668,7 +807,7 @@ window.fetchAndShowBookingDetail = async function (bookingId) {
         renderBookingDetailCard(data);
     } catch (e) {
         console.error(e);
-        content.innerHTML = `<div class="p-4 text-center text-red-500 font-semibold">Không thể tải thông tin đơn hàng #${bookingId}.</div>`;
+        content.innerHTML = `<div class="p-4 text-center text-red-500 font-semibold">Failed to load details for booking #${bookingId}.</div>`;
     }
 };
 
@@ -689,20 +828,20 @@ function renderBookingDetailCard(data) {
         <!-- Section 1: Header Status -->
         <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-2xs">
             <div class="flex justify-between items-center">
-                <span class="font-extrabold text-sm text-slate-800">Đơn Hàng #${data.bookingId}</span>
+                <span class="font-extrabold text-sm text-slate-800">Order #${data.bookingId}</span>
                 <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold ${isConfirmed ? 'bg-emerald-100 text-emerald-800 border border-emerald-200' : 'bg-amber-100 text-amber-800 border border-amber-200'}">
-                    ${isConfirmed ? 'Đã xác nhận' : 'Chờ xử lý'}
+                    ${isConfirmed ? 'Confirmed' : 'Pending'}
                 </span>
             </div>
             <div class="text-[11px] text-slate-400 flex justify-between items-center">
-                <span>Thời gian tạo:</span>
+                <span>Created time:</span>
                 <span class="font-medium text-slate-600">${data.createdAt || 'N/A'}</span>
             </div>
         </div>
 
         <!-- Section 2: Customer Information -->
         <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-2xs">
-            <div class="font-bold text-[10px] uppercase tracking-wider text-slate-400">Thông Tin Khách Hàng</div>
+            <div class="font-bold text-[10px] uppercase tracking-wider text-slate-400">CUSTOMER INFORMATION</div>
             <div class="space-y-1.5 text-slate-700">
                 <div class="flex items-center gap-2 font-bold text-slate-800 text-xs">
                     <svg class="w-3.5 h-3.5 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -728,7 +867,7 @@ function renderBookingDetailCard(data) {
 
         <!-- Section 3: Booked Slots Details -->
         <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-2xs">
-            <div class="font-bold text-[10px] uppercase tracking-wider text-slate-400">Danh Sách Ca Đặt (${data.groupedSlotBlocks ? data.groupedSlotBlocks.length : 0})</div>
+            <div class="font-bold text-[10px] uppercase tracking-wider text-slate-400">BOOKED SLOTS (${data.groupedSlotBlocks ? data.groupedSlotBlocks.length : 0})</div>
             <div class="space-y-2">
                 ${data.groupedSlotBlocks && data.groupedSlotBlocks.length > 0 ? data.groupedSlotBlocks.map(b => {
                     const isPending = b.slotStatus === 'PENDING';
@@ -741,9 +880,9 @@ function renderBookingDetailCard(data) {
                         <div class="flex justify-between items-center text-slate-700">
                             <div>
                                 <div class="font-bold text-xs text-slate-800">⚽ ${b.courtName} (${b.startTime} - ${b.endTime})</div>
-                                <div class="text-[10px] text-slate-500 font-medium">Trạng thái: 
+                                <div class="text-[10px] text-slate-500 font-medium">Status: 
                                     <span class="font-bold ${isCheckedOut ? 'text-slate-500' : (isCheckedIn ? 'text-emerald-600' : 'text-amber-600')}">
-                                        ${isCheckedOut ? 'Đã Check-out' : (isCheckedIn ? 'Đã Check-in' : 'Chờ Check-in')}
+                                        ${isCheckedOut ? 'Checked Out' : (isCheckedIn ? 'Checked In' : 'Pending Check-in')}
                                     </span>
                                 </div>
                             </div>
@@ -754,34 +893,34 @@ function renderBookingDetailCard(data) {
                             ${isPending ? `
                                 <button onclick="handleCheckIn(${slotIdsJson}, ${data.bookingId})" class="w-full py-1.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                                    <span>Check-in Ca Này</span>
+                                    <span>Check-in Slot</span>
                                 </button>
                             ` : ''}
                             ${isCheckedIn ? `
                                 <button onclick="openCheckOutModal(${data.bookingId}, ${slotIdsJson})" class="w-full py-1.5 px-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg shadow-xs transition-colors flex items-center justify-center gap-1">
                                     <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                                    <span>Check-out & Thanh Toán</span>
+                                    <span>Check-out & Pay</span>
                                 </button>
                             ` : ''}
                             ${isCheckedOut ? `
                                 <div class="w-full py-1 text-center bg-slate-200 text-slate-600 font-bold text-[11px] rounded-lg">
-                                    ✓ Đã Hoàn Tất Ca
+                                    ✓ Completed
                                 </div>
                             ` : ''}
                         </div>
                     </div>
                     `;
                 }).join('') : `
-                    <div class="text-slate-400 italic text-center py-2">Không có ca đặt</div>
+                    <div class="text-slate-400 italic text-center py-2">No court slots</div>
                 `}
             </div>
         </div>
 
         <!-- Section 4: Accompanying Services -->
         <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-2xs">
-            <div class="font-bold text-[10px] uppercase tracking-wider text-slate-400">Dịch Vụ Đi Kèm (${data.services ? data.services.length : 0})</div>
+            <div class="font-bold text-[10px] uppercase tracking-wider text-slate-400">ADD-ON SERVICES (${data.services ? data.services.length : 0})</div>
             ${!data.services || data.services.length === 0 ? `
-                <div class="text-slate-400 italic text-center py-2">Không có dịch vụ đi kèm</div>
+                <div class="text-slate-400 italic text-center py-2">No add-on services</div>
             ` : `
                 <div class="space-y-1.5">
                     ${data.services.map(s => `
@@ -800,29 +939,29 @@ function renderBookingDetailCard(data) {
         <!-- Section 5: Payment Summary -->
         <div class="bg-slate-900 text-white p-4 rounded-xl space-y-2 shadow-md">
             <div class="flex justify-between text-xs text-slate-300">
-                <span>Tiền sân:</span>
+                <span>Court fee:</span>
                 <span>${formatVND(data.courtAmount || 0)}</span>
             </div>
             <div class="flex justify-between text-xs text-slate-300">
-                <span>Tiền dịch vụ:</span>
+                <span>Service fee:</span>
                 <span>${formatVND(data.productAmount || 0)}</span>
             </div>
             <div class="pt-2 border-t border-slate-800 flex justify-between items-center font-extrabold text-sm">
-                <span>Tổng cộng:</span>
+                <span>Grand Total:</span>
                 <span class="text-emerald-400 text-base">${formatVND(data.totalAmount || 0)}</span>
             </div>
             <div class="flex justify-between items-center text-xs pt-1 border-t border-slate-800/60">
-                <span class="text-slate-400">Đã thanh toán:</span>
+                <span class="text-slate-400">Paid Amount:</span>
                 <span class="font-bold text-emerald-400">${formatVND(data.paidAmount || 0)}</span>
             </div>
             <div class="flex justify-between items-center text-xs font-bold text-red-400 bg-red-950/60 p-2 rounded-lg border border-red-800/40">
-                <span>Còn thiếu:</span>
+                <span>Remaining:</span>
                 <span>${formatVND(data.remainingAmount || 0)}</span>
             </div>
             <div class="flex justify-between items-center text-[11px] pt-1">
-                <span class="text-slate-400">Trạng thái TT:</span>
+                <span class="text-slate-400">Payment Status:</span>
                 <span class="font-bold ${isPaid ? 'text-emerald-400' : (isPartial ? 'text-amber-400' : 'text-red-400')}">
-                    ${isPaid ? 'Đã thanh toán đủ' : (isPartial ? 'Thanh toán 1 phần' : 'Chưa thanh toán')}
+                    ${isPaid ? 'Fully Paid' : (isPartial ? 'Partially Paid' : 'Unpaid')}
                 </span>
             </div>
         </div>
@@ -841,15 +980,15 @@ window.handleCheckIn = async function (slotIds, bookingId) {
         });
         const result = await res.json();
         if (res.ok && result.success) {
-            alert(result.message || "Check-in thành công!");
+            await showCustomAlert(result.message || "Check-in successful!", "Check-in Status", "success");
             fetchAndShowBookingDetail(bookingId);
             loadTimelineData();
         } else {
-            alert("Lỗi khi Check-in: " + (result.message || "Thao tác thất bại."));
+            await showCustomAlert(result.message || "Check-in operation failed.", "Check-in Error", "error");
         }
     } catch (e) {
         console.error("Check-in error:", e);
-        alert("Lỗi kết nối khi Check-in.");
+        await showCustomAlert("Connection error during Check-in.", "System Error", "error");
     }
 };
 
@@ -873,7 +1012,7 @@ window.openCheckOutModal = async function (bookingId, slotIds) {
         if (modal) modal.classList.remove('hidden');
     } catch (e) {
         console.error("Error opening checkout modal:", e);
-        alert("Không thể tải thông tin quyết toán.");
+        await showCustomAlert("Failed to load settlement details.", "Data Error", "error");
     }
 };
 
@@ -891,7 +1030,7 @@ window.confirmCheckOutSettlement = async function () {
     const btn = document.getElementById('btnConfirmCheckOut');
     if (btn) {
         btn.disabled = true;
-        btn.innerText = "Đang xử lý...";
+        btn.innerText = "Processing...";
     }
 
     try {
@@ -906,20 +1045,20 @@ window.confirmCheckOutSettlement = async function () {
         });
         const result = await res.json();
         if (res.ok && result.success) {
-            alert(result.message || "Check-out & Quyết toán thành công!");
             closeCheckOutModal();
+            await showCustomAlert(result.message || "Check-out & settlement completed successfully!", "Check-out Status", "success");
             fetchAndShowBookingDetail(bookingId);
             loadTimelineData();
         } else {
-            alert("Lỗi khi Check-out: " + (result.message || "Thao tác thất bại."));
+            await showCustomAlert(result.message || "Check-out operation failed.", "Check-out Error", "error");
         }
     } catch (e) {
         console.error("Checkout settlement error:", e);
-        alert("Đã xảy ra lỗi kết nối khi quyết toán.");
+        await showCustomAlert("Connection error during settlement.", "System Error", "error");
     } finally {
         if (btn) {
             btn.disabled = false;
-            btn.innerText = "Xác Nhận Check-out";
+            btn.innerText = "Confirm Check-out";
         }
     }
 };

@@ -72,7 +72,7 @@ public class OwnerBookingApiController {
 
         String pm = request.getPaymentMethod() != null ? request.getPaymentMethod().toUpperCase() : "CASH";
         resp.put("paymentMethod", pm);
-        resp.put("message", "🎉 Đặt sân tại chỗ thành công! Đã ghi nhận thanh toán tiền sân.");
+        resp.put("message", "🎉 On-site reservation created successfully! Payment recorded.");
 
         return ResponseEntity.ok(resp);
     }
