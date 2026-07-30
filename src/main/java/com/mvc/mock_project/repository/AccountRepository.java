@@ -14,4 +14,5 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
     boolean existsByEmail(String email);
     boolean existsByPhone(String phone);
     boolean existsByPhoneAndIdNot(String phone, Integer id);
+    long countByRole(com.mvc.mock_project.entities.enums.Role role);
 }
