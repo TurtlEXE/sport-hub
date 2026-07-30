@@ -32,6 +32,10 @@ public class Booking {
     @JoinColumn(name = "staff_id")
     private Staff staff;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private Account owner;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_status", length = 20)
     private BookingStatus bookingStatus = BookingStatus.PENDING;

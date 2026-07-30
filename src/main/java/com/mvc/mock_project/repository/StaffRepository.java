@@ -9,14 +9,12 @@ import java.util.Optional;
 
 @Repository
 public interface StaffRepository extends JpaRepository<Staff, Integer> {
+    Optional<Staff> findByAccountId(Integer accountId);
+    Optional<Staff> findByAccountIdAndIsActiveTrue(Integer accountId);
 
     List<Staff> findByOwner_IdAndIsActiveTrue(Integer ownerId);
-
     List<Staff> findByFacility_IdAndIsActiveTrue(Integer facilityId);
-
     Optional<Staff> findByIdAndIsActiveTrue(Integer staffId);
-
     Optional<Staff> findByAccount_Id(Integer accountId);
-
     boolean existsByAccount_IdAndIsActiveTrue(Integer accountId);
 }

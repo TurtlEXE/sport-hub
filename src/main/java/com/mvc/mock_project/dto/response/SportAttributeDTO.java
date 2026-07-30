@@ -16,4 +16,5 @@ public class SportAttributeDTO {
     private String dataType;
     private String optionsJson;
     private Boolean isRequired;
+    private Boolean isActive;
 }

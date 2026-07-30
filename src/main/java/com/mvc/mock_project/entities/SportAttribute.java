@@ -31,4 +31,7 @@ public class SportAttribute {
 
     @Column(name = "is_required")
     private Boolean isRequired = false;
+
+    @Column(name = "is_active")
+    private Boolean isActive = true;
 }

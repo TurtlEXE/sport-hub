@@ -13,6 +13,8 @@ public class SportDTO {
     private Integer sportId;
     private String sportCode;
     private String sportName;
+    private String iconPath;
     private Integer defaultMinDurationMinutes;
     private Integer defaultSlotStepMinutes;
+    private Boolean isActive;
 }
