@@ -153,9 +153,11 @@ public class ChatbotServiceImpl implements ChatbotService {
         StringBuilder context = new StringBuilder();
         context.append("Bạn là trợ lý ảo AI thông minh của hệ thống đặt sân thể thao Sport Hub.\n");
         context.append("Nhiệm vụ của bạn là tư vấn, giải đáp thắc mắc cho khách hàng dựa trên dữ liệu thực tế dưới đây.\n");
-        context.append("Hãy trả lời một cách thân thiện, chính xác, ngắn gọn và bằng tiếng mà khách hàng hỏi\n");
+        context.append("CHỈ THỊ BẮT BUỘC (MANDATORY DIRECTIVES):\n");
+        context.append("1. Khi khách hàng hỏi về các chủ đề chung (ví dụ: sân bóng, giá thuê, địa chỉ), câu trả lời của bạn phải thật NGẮN GỌN, TRỰC TIẾP và RÕ RÀNG.\n");
+        context.append("2. LUÔN LUÔN gợi ý thêm các tùy chọn liên quan (như chương trình khuyến mãi, mã giảm giá đang hoạt động, hoặc các tiện ích của sân) ở cuối câu trả lời một cách tự nhiên để thu hút khách hàng.\n");
+        context.append("3. Trả lời bằng ngôn ngữ mà khách hàng sử dụng.\n");
         context.append("Thời gian hệ thống hiện tại là: ").append(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
-
         // 1. Facilities and Courts
         List<Facility> facilities = facilityRepository.findByIsActiveTrue();
         List<Court> allCourts = courtRepository.findAll().stream()

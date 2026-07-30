@@ -21,4 +21,5 @@ public interface VoucherRepository extends JpaRepository<Voucher, Integer> {
            "AND (a IS NULL OR a.id = :accountId)")
     List<Voucher> findValidVouchers(@Param("facilityId") Integer facilityId, @Param("accountId") Integer accountId, @Param("now") LocalDateTime now);
 
+    List<Voucher> findByIssuerAccountId(Integer accountId);
 }

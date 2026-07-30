@@ -12,6 +12,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -57,4 +58,6 @@ public class VoucherFormDTO {
     private Integer perUserLimit;
 
     private Boolean isActive = true;
+
+    private List<Integer> facilityIds;
 }

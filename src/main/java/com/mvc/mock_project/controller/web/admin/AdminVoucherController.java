@@ -3,6 +3,7 @@ package com.mvc.mock_project.controller.web.admin;
 import com.mvc.mock_project.dto.request.VoucherFormDTO;
 import com.mvc.mock_project.entities.Voucher;
 import com.mvc.mock_project.entities.enums.DiscountType;
+import com.mvc.mock_project.entities.enums.IssuerType;
 import com.mvc.mock_project.service.VoucherService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -43,7 +44,7 @@ public class AdminVoucherController {
         }
         
         try {
-            voucherService.save(voucherForm);
+            voucherService.save(voucherForm, IssuerType.PLATFORM, null);
             redirectAttributes.addFlashAttribute("successMessage", "Voucher created successfully!");
             return "redirect:/admin/vouchers";
         } catch (Exception e) {
@@ -89,7 +90,7 @@ public class AdminVoucherController {
         }
         
         try {
-            voucherService.update(id, voucherForm);
+            voucherService.update(id, voucherForm, IssuerType.PLATFORM, null);
             redirectAttributes.addFlashAttribute("successMessage", "Voucher updated successfully!");
             return "redirect:/admin/vouchers";
         } catch (Exception e) {
