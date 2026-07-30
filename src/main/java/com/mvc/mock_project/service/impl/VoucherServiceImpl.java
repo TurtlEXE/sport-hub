@@ -1,8 +1,11 @@
 package com.mvc.mock_project.service.impl;
 
 import com.mvc.mock_project.dto.request.VoucherFormDTO;
+import com.mvc.mock_project.entities.Account;
+import com.mvc.mock_project.entities.Facility;
 import com.mvc.mock_project.entities.Voucher;
 import com.mvc.mock_project.entities.enums.IssuerType;
+import com.mvc.mock_project.repository.FacilityRepository;
 import com.mvc.mock_project.repository.VoucherRepository;
 import com.mvc.mock_project.service.VoucherService;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -17,6 +21,7 @@ import java.util.List;
 public class VoucherServiceImpl implements VoucherService {
 
     private final VoucherRepository voucherRepository;
+    private final FacilityRepository facilityRepository;
 
     @Override
     public List<Voucher> findAll() {
@@ -31,7 +36,7 @@ public class VoucherServiceImpl implements VoucherService {
 
     @Override
     @Transactional
-    public void save(VoucherFormDTO form) {
+    public void save(VoucherFormDTO form, IssuerType issuerType, Account issuerAccount) {
         Voucher voucher = Voucher.builder()
                 .code(form.getCode())
                 .name(form.getName())
@@ -45,15 +50,23 @@ public class VoucherServiceImpl implements VoucherService {
                 .usageLimit(form.getUsageLimit())
                 .perUserLimit(form.getPerUserLimit() != null ? form.getPerUserLimit() : 1)
                 .isActive(form.getIsActive() != null ? form.getIsActive() : true)
-                .issuerType(IssuerType.PLATFORM)
+                .issuerType(issuerType)
+                .issuerAccount(issuerAccount)
                 .build();
+        
+        if (issuerType == IssuerType.OWNER && form.getFacilityIds() != null && !form.getFacilityIds().isEmpty()) {
+            List<Facility> facilities = facilityRepository.findAllById(form.getFacilityIds());
+            voucher.setApplicableFacilities(facilities);
+        } else {
+            voucher.setApplicableFacilities(new ArrayList<>());
+        }
         
         voucherRepository.save(voucher);
     }
 
     @Override
     @Transactional
-    public void update(Integer id, VoucherFormDTO form) {
+    public void update(Integer id, VoucherFormDTO form, IssuerType issuerType, Account issuerAccount) {
         Voucher voucher = findById(id);
         
         voucher.setCode(form.getCode());
@@ -68,6 +81,16 @@ public class VoucherServiceImpl implements VoucherService {
         voucher.setUsageLimit(form.getUsageLimit());
         voucher.setPerUserLimit(form.getPerUserLimit() != null ? form.getPerUserLimit() : 1);
         voucher.setIsActive(form.getIsActive() != null ? form.getIsActive() : false);
+        // Do not update issuerType and issuerAccount unless explicitly changed
+        
+        if (voucher.getIssuerType() == IssuerType.OWNER) {
+            if (form.getFacilityIds() != null && !form.getFacilityIds().isEmpty()) {
+                List<Facility> facilities = facilityRepository.findAllById(form.getFacilityIds());
+                voucher.setApplicableFacilities(facilities);
+            } else {
+                voucher.setApplicableFacilities(new ArrayList<>());
+            }
+        }
         
         voucherRepository.save(voucher);
     }
