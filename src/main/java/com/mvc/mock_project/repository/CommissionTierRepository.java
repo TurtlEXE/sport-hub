@@ -22,6 +22,9 @@ public interface CommissionTierRepository extends JpaRepository<CommissionTier, 
     
     Page<CommissionTier> findByStatusAndIsCurrent(TierStatus status, Boolean isCurrent, Pageable pageable);
 
+    @Query("SELECT c FROM CommissionTier c WHERE c.status = :status AND c.isCurrent = true AND c.minPricePerMinute <= :price AND (c.maxPricePerMinute IS NULL OR c.maxPricePerMinute >= :price)")
+    List<CommissionTier> findActiveTierForPrice(@Param("price") BigDecimal price, @Param("status") TierStatus status);
+
     @Query("SELECT COUNT(c) > 0 FROM CommissionTier c WHERE " +
            "(c.status = 'ACTIVE' OR c.status = 'ANNOUNCED') AND " +
            "(c.effectiveTo IS NULL OR c.effectiveTo > :start) AND " +
