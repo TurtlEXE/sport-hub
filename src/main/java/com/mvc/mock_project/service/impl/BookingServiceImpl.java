@@ -46,6 +46,8 @@ public class BookingServiceImpl implements BookingService {
     private final FacilityPriceRuleRepository facilityPriceRuleRepository;
     private final AccountRepository accountRepository;
     private final EmailService emailService;
+    private final PlatformCommissionRepository platformCommissionRepository;
+    private final CommissionTierRepository commissionTierRepository;
 
     @Override
     public List<Map<String, Object>> getFacilitySportsByVenue(Integer venueId) {
@@ -561,6 +563,63 @@ public class BookingServiceImpl implements BookingService {
                 .build();
         paymentRepository.save(payment);
         
+        // --- ADD PLATFORM COMMISSION FOR ONLINE BOOKING ---
+        if (invoice.getBooking() != null && invoice.getBooking().getStaff() == null && invoice.getBooking().getOwner() == null) {
+            BigDecimal courtAmount = invoice.getCourtAmount() != null ? invoice.getCourtAmount() : BigDecimal.ZERO;
+            long totalMinutes = 0;
+            if (invoice.getBooking().getBookingSlots() != null) {
+                for (BookingSlot bs : invoice.getBooking().getBookingSlots()) {
+                    totalMinutes += java.time.Duration.between(bs.getStartTime(), bs.getEndTime()).toMinutes();
+                }
+            }
+            
+            BigDecimal commissionRate = new BigDecimal("0.05"); // Default 5%
+            if (totalMinutes > 0 && courtAmount.compareTo(BigDecimal.ZERO) > 0) {
+                BigDecimal pricePerMinute = courtAmount.divide(new BigDecimal(totalMinutes), 2, java.math.RoundingMode.HALF_UP);
+                List<CommissionTier> activeTiers = commissionTierRepository.findActiveTierForPrice(pricePerMinute, com.mvc.mock_project.entities.enums.TierStatus.ACTIVE);
+                if (!activeTiers.isEmpty()) {
+                    commissionRate = activeTiers.get(0).getCommissionRate();
+                }
+            }
+            
+            BigDecimal commissionAmount = courtAmount.multiply(commissionRate).setScale(2, java.math.RoundingMode.HALF_UP);
+            BigDecimal voucherCostPlatform = BigDecimal.ZERO;
+            
+            if (invoice.getVoucherPlatform() != null) {
+                if (invoice.getVoucherPlatform().getDiscountType() == com.mvc.mock_project.entities.enums.DiscountType.FIXED_AMOUNT) {
+                    voucherCostPlatform = invoice.getVoucherPlatform().getDiscountValue();
+                } else if (invoice.getVoucherPlatform().getDiscountType() == com.mvc.mock_project.entities.enums.DiscountType.PERCENTAGE) {
+                    voucherCostPlatform = courtAmount.multiply(invoice.getVoucherPlatform().getDiscountValue()).divide(new BigDecimal("100"), 2, java.math.RoundingMode.HALF_UP);
+                    if (invoice.getVoucherPlatform().getMaxDiscountAmount() != null && voucherCostPlatform.compareTo(invoice.getVoucherPlatform().getMaxDiscountAmount()) > 0) {
+                        voucherCostPlatform = invoice.getVoucherPlatform().getMaxDiscountAmount();
+                    }
+                }
+                if (voucherCostPlatform.compareTo(courtAmount) > 0) {
+                    voucherCostPlatform = courtAmount;
+                }
+            }
+            
+            BigDecimal voucherCostOwner = invoice.getDiscountAmount() != null ? invoice.getDiscountAmount().subtract(voucherCostPlatform) : BigDecimal.ZERO;
+            if (voucherCostOwner.compareTo(BigDecimal.ZERO) < 0) {
+                voucherCostOwner = BigDecimal.ZERO;
+            }
+            BigDecimal ownerPayout = courtAmount.subtract(commissionAmount).subtract(voucherCostOwner);
+            
+            PlatformCommission pc = PlatformCommission.builder()
+                    .invoice(invoice)
+                    .ownerAccount(invoice.getBooking().getFacility().getOwner())
+                    .courtRevenue(courtAmount)
+                    .commissionRate(commissionRate)
+                    .commissionAmount(commissionAmount)
+                    .voucherCostOwner(voucherCostOwner)
+                    .voucherCostPlatform(voucherCostPlatform)
+                    .ownerPayout(ownerPayout)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            platformCommissionRepository.save(pc);
+        }
+        // -------------------------------------------------
+
         if (email != null && !email.isEmpty() && !"null".equals(email)) {
             String formattedTime = payTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
             String facilityName = (invoice.getBooking() != null && invoice.getBooking().getFacility() != null) 

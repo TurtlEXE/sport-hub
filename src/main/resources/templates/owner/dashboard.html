@@ -18,56 +18,131 @@
 
     <!-- Main Content -->
     <div layout:fragment="content">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TOTAL NET PROFIT</span>
+                    <span class="p-2 bg-emerald-50 text-emerald-500 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 mb-1" id="kpi-net-profit">...</div>
+                <div class="text-[10px] text-slate-400">Total earnings after platform fee</div>
+            </div>
             
+            <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">REVENUE SPLIT</span>
+                    <span class="p-2 bg-blue-50 text-blue-500 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+                    </span>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-500">Court:</span>
+                        <span class="text-sm font-bold text-slate-900" id="kpi-court-rev">...</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-500">Service:</span>
+                        <span class="text-sm font-bold text-slate-900" id="kpi-service-rev">...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TOTAL BOOKINGS</span>
+                    <span class="p-2 bg-purple-50 text-purple-500 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </span>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-500">Online:</span>
+                        <span class="text-sm font-bold text-emerald-600" id="kpi-online-bookings">...</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-semibold text-slate-500">Offline:</span>
+                        <span class="text-sm font-bold text-amber-500" id="kpi-offline-bookings">...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">UNIQUE CUSTOMERS</span>
+                    <span class="p-2 bg-orange-50 text-orange-500 rounded-lg">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+                    </span>
+                </div>
+                <div class="text-2xl font-black text-slate-900 mb-1" id="kpi-customers">...</div>
+                <div class="text-[10px] text-slate-400">Total users booked</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Left Column (Wider) -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- KPIs Section -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 relative overflow-hidden">
+                <!-- Revenue Chart -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                     <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-sm font-black text-slate-900 uppercase tracking-wider">YOUR FACILITIES OVERVIEW</h2>
+                        <div>
+                            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wider">MONTHLY NET PROFIT (12 MONTHS)</h2>
+                            <p class="text-xs text-slate-500 mt-1">Court vs Service Profit trend</p>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-indigo-500 rounded"></div>
+                                <span class="text-xs font-bold text-slate-500">Court</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <div class="w-3 h-3 bg-teal-400 rounded"></div>
+                                <span class="text-xs font-bold text-slate-500">Service</span>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
-                        <div class="bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">TOTAL REVENUE</span>
-                                <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-600 text-[9px] font-black rounded text-emerald-700">+12%</span>
-                            </div>
-                            <div class="text-3xl font-black text-slate-900 mb-1">$4,250</div>
-                            <div class="text-[10px] text-slate-400">This month</div>
+                    <div class="h-48 flex items-end justify-between gap-2 px-2 mt-4 relative" id="chart-bars">
+                        <!-- Grid lines -->
+                        <div class="absolute inset-0 flex flex-col justify-between opacity-10 pointer-events-none">
+                            <div class="w-full h-px bg-slate-400"></div>
+                            <div class="w-full h-px bg-slate-400"></div>
+                            <div class="w-full h-px bg-slate-400"></div>
+                            <div class="w-full h-px bg-slate-400"></div>
+                            <div class="w-full h-px bg-slate-400"></div>
                         </div>
-                        
-                        <div class="bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">NEW BOOKINGS</span>
-                                <span class="px-1.5 py-0.5 bg-emerald-100 text-emerald-600 text-[9px] font-black rounded text-emerald-700">+5%</span>
-                            </div>
-                            <div class="text-3xl font-black text-slate-900 mb-1">128</div>
-                            <div class="text-[10px] text-slate-400">Active reservations</div>
-                        </div>
-                        
-                        <div class="bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">COURTS</span>
-                            </div>
-                            <div class="text-3xl font-black text-slate-900 mb-1">4</div>
-                            <div class="text-[10px] text-slate-400">Total facilities managed</div>
-                        </div>
-                        
-                        <div class="bg-white border border-slate-100 rounded-xl p-4 shadow-sm">
-                            <div class="flex items-center gap-2 mb-2">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">RATING</span>
-                            </div>
-                            <div class="text-3xl font-black text-slate-900 mb-1">4.8</div>
-                            <div class="text-[10px] text-slate-400">Average customer score</div>
-                        </div>
+                    </div>
+                    <div class="flex justify-between mt-3 px-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest" id="chart-labels">
                     </div>
                 </div>
                 
-                <!-- Chart Section Placeholder -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex items-center justify-center h-64 text-slate-400 border-dashed border-2">
-                    <p class="font-semibold">Owner Revenue Chart Placeholder</p>
+                <!-- Facility Table -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-sm font-black text-slate-900 uppercase tracking-wider">FACILITY PERFORMANCE</h2>
+                            <p class="text-xs text-slate-500 mt-1">Detailed breakdown by facility</p>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead>
+                                <tr class="border-b border-slate-100">
+                                    <th class="py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Facility Name</th>
+                                    <th class="py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider text-center">Bookings</th>
+                                    <th class="py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Court Rev</th>
+                                    <th class="py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Service Rev</th>
+                                    <th class="py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Platform Fee</th>
+                                    <th class="py-3 px-4 text-[10px] font-bold text-slate-400 uppercase tracking-wider">Net Profit</th>
+                                </tr>
+                            </thead>
+                            <tbody id="facility-stats-tbody" class="divide-y divide-slate-50">
+                                <tr>
+                                    <td colspan="6" class="py-8 text-center text-slate-500 text-sm">Loading data...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -78,24 +153,178 @@
                     <div class="flex justify-between items-start mb-6">
                         <div>
                             <h3 class="text-[10px] font-black uppercase tracking-widest opacity-80">FACILITY STATUS</h3>
-                            <p class="text-xl font-bold">All Courts Active</p>
+                            <p class="text-xl font-bold"><span id="kpi-facilities">0</span> Facilities Active</p>
                         </div>
                         <span class="px-2 py-1 bg-white/20 rounded text-[10px] font-bold uppercase">Open</span>
                     </div>
-                    
-                    <div class="bg-white rounded-lg p-3">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-[9px] font-black uppercase tracking-widest text-slate-500">TODAY'S UTILIZATION</span>
-                            <span class="text-[9px] font-black uppercase tracking-widest text-emerald-500">85% BOOKED</span>
-                        </div>
-                        <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                            <div class="bg-emerald-500 h-full w-[85%]"></div>
-                        </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                    <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">QUICK ACTIONS</h3>
+                    <div class="space-y-3">
+                        <a href="/owner/facilities" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">Manage Facilities</h4>
+                                <p class="text-[10px] text-slate-500">Add, edit, or configure your venues</p>
+                            </div>
+                        </a>
+                        
+                        <a href="/owner/bookings" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 group-hover:text-purple-600 transition-colors">View Bookings</h4>
+                                <p class="text-[10px] text-slate-500">Check upcoming and past reservations</p>
+                            </div>
+                        </a>
+                        
+                        <a href="/owner/staff" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">Staff Directory</h4>
+                                <p class="text-[10px] text-slate-500">Manage employees and roles</p>
+                            </div>
+                        </a>
+
+                        <a href="/owner/vouchers" class="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all group">
+                            <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-500 flex items-center justify-center group-hover:scale-110 transition-transform">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+                            </div>
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-900 group-hover:text-amber-600 transition-colors">Manage Vouchers</h4>
+                                <p class="text-[10px] text-slate-500">Create and track promotional codes</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</body>
+    
+    <th:block layout:fragment="pageScripts">
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                const formatCurrency = (amount) => {
+                    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+                };
 
+                fetch('/api/owner/dashboard/stats')
+                    .then(response => response.json())
+                    .then(res => {
+                        if (res.success && res.data) {
+                            const data = res.data;
+                            
+                            // 1. Update KPIs
+                            document.getElementById('kpi-net-profit').textContent = formatCurrency(data.totalNetProfit);
+                            document.getElementById('kpi-court-rev').textContent = formatCurrency(data.totalCourtRevenue);
+                            document.getElementById('kpi-service-rev').textContent = formatCurrency(data.totalServiceRevenue);
+                            document.getElementById('kpi-online-bookings').textContent = data.totalOnlineBookings;
+                            document.getElementById('kpi-offline-bookings').textContent = data.totalOfflineBookings;
+                            document.getElementById('kpi-customers').textContent = data.totalCustomers;
+                            document.getElementById('kpi-facilities').textContent = data.totalFacilities;
+                            
+                            // 2. Render Facility Stats
+                            const tbody = document.getElementById('facility-stats-tbody');
+                            tbody.innerHTML = '';
+                            if (data.facilityStats && data.facilityStats.length > 0) {
+                                data.facilityStats.forEach(stat => {
+                                    const tr = document.createElement('tr');
+                                    tr.className = 'hover:bg-slate-50 transition-colors';
+                                    tr.innerHTML = `
+                                        <td class="py-4 px-4 font-bold text-slate-900">${stat.facilityName}</td>
+                                        <td class="py-4 px-4 text-center font-bold">${stat.totalBookings}</td>
+                                        <td class="py-4 px-4 text-slate-700">${formatCurrency(stat.courtRevenue)}</td>
+                                        <td class="py-4 px-4 text-slate-700">${formatCurrency(stat.serviceRevenue)}</td>
+                                        <td class="py-4 px-4 text-rose-500">-${formatCurrency(stat.platformCommission)}</td>
+                                        <td class="py-4 px-4 font-bold text-emerald-600">${formatCurrency(stat.netProfit)}</td>
+                                    `;
+                                    tbody.appendChild(tr);
+                                });
+                            } else {
+                                tbody.innerHTML = '<tr><td colspan="6" class="py-4 px-4 text-center text-slate-500">No data available</td></tr>';
+                            }
+                            
+                            // 3. Render Chart
+                            const chartBars = document.getElementById('chart-bars');
+                            const chartLabels = document.getElementById('chart-labels');
+                            
+                            const last12Months = [];
+                            for (let i = 11; i >= 0; i--) {
+                                const d = new Date();
+                                d.setMonth(d.getMonth() - i);
+                                const monthStr = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+                                last12Months.push(monthStr);
+                            }
+                            
+                            const revenueMap = {};
+                            if (data.monthlyRevenueData && data.monthlyRevenueData.length > 0) {
+                                data.monthlyRevenueData.forEach(m => {
+                                    revenueMap[m.month] = m;
+                                });
+                            }
+                            
+                            let maxRev = 0;
+                            last12Months.forEach(monthStr => {
+                                const m = revenueMap[monthStr] || { courtNetProfit: 0, serviceRevenue: 0 };
+                                const total = m.courtNetProfit + m.serviceRevenue;
+                                if (total > maxRev) maxRev = total;
+                            });
+                            
+                            last12Months.forEach(monthStr => {
+                                const m = revenueMap[monthStr] || { courtNetProfit: 0, serviceRevenue: 0 };
+                                const total = m.courtNetProfit + m.serviceRevenue;
+                                
+                                let cPct = 0, sPct = 0;
+                                if (maxRev > 0) {
+                                    cPct = (m.courtNetProfit / maxRev) * 100;
+                                    sPct = (m.serviceRevenue / maxRev) * 100;
+                                }
+                                
+                                const barWrapper = document.createElement('div');
+                                barWrapper.className = 'w-full h-full flex flex-col justify-end group relative flex-1 mx-1';
+                                
+                                const inner = document.createElement('div');
+                                inner.className = 'w-full flex flex-col justify-end';
+                                inner.style.height = Math.max(cPct + sPct, 5) + '%';
+                                
+                                const serviceBar = document.createElement('div');
+                                serviceBar.className = 'w-full bg-teal-400 rounded-t-sm';
+                                serviceBar.style.height = (sPct / (cPct + sPct || 1)) * 100 + '%';
+                                
+                                const courtBar = document.createElement('div');
+                                courtBar.className = 'w-full bg-indigo-500';
+                                if (sPct === 0) courtBar.classList.add('rounded-t-sm');
+                                courtBar.style.height = (cPct / (cPct + sPct || 1)) * 100 + '%';
+                                
+                                inner.appendChild(serviceBar);
+                                inner.appendChild(courtBar);
+                                barWrapper.appendChild(inner);
+                                
+                                // tooltip
+                                barWrapper.innerHTML += `<div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-20 flex flex-col gap-1 items-center">
+                                    <span>Court: ${formatCurrency(m.courtNetProfit)}</span>
+                                    <span>Service: ${formatCurrency(m.serviceRevenue)}</span>
+                                </div>`;
+                                
+                                chartBars.appendChild(barWrapper);
+                                
+                                const monthLabel = document.createElement('span');
+                                monthLabel.textContent = monthStr.split('-')[1];
+                                monthLabel.className = "flex-1 text-center";
+                                chartLabels.appendChild(monthLabel);
+                            });
+                        }
+                    })
+                    .catch(err => console.error("Error fetching dashboard stats:", err));
+            });
+        </script>
+    </th:block>
+</body>
 </html>

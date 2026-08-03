@@ -62,6 +62,12 @@ public class OwnerController {
         return "owner/facility/detail";
     }
 
+    @GetMapping("/facilities/{id}/products")
+    public String facilityProducts(@org.springframework.web.bind.annotation.PathVariable Integer id, org.springframework.ui.Model model) {
+        model.addAttribute("facilityId", id);
+        return "owner/facility/products";
+    }
+
     @GetMapping("/staff")
     public String staffList() {
         return "owner/staff/list";

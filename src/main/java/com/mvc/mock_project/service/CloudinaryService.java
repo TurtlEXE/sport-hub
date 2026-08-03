@@ -28,4 +28,13 @@ public interface CloudinaryService {
      * @return the secure URL of the uploaded image
      */
     String uploadFacilityImage(MultipartFile file, Integer facilityId);
+
+    /**
+     * Upload a product image to Cloudinary.
+     *
+     * @param file       the image file to upload
+     * @param facilityId the facility ID (used for folder organization)
+     * @return the secure URL of the uploaded image
+     */
+    String uploadProductImage(MultipartFile file, Integer facilityId);
 }
