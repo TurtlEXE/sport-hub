@@ -3,13 +3,19 @@ document.addEventListener('DOMContentLoaded', function () {
     const currentLang = document.documentElement.lang || 'vi';
     let welcomeMsg = "Xin chào! 👋 Tôi là trợ lý ảo AI của Sport Hub. Tôi có thể giúp bạn kiểm tra sân trống, thông tin giá cả, mã giảm giá và quy trình đặt sân. Bạn cần hỗ trợ gì hôm nay?";
     let placeholderMsg = "Hỏi AI về giờ trống, sân bãi...";
+    let chatbotTitle = "Trợ Lý AI Sport Hub";
+    let chatbotStatus = "Sẵn sàng hỗ trợ 24/7";
 
     if (currentLang === 'en') {
         welcomeMsg = "Hello! 👋 I am Sport Hub's AI virtual assistant. I can help you check court availability, pricing information, discount codes, and the booking process. How can I help you today?";
         placeholderMsg = "Ask AI about availability, courts...";
+        chatbotTitle = "Sport Hub AI Assistant";
+        chatbotStatus = "Ready to help 24/7";
     } else if (currentLang === 'mm' || currentLang === 'my') {
         welcomeMsg = "မင်္ဂလာပါ! 👋 ကျွန်ုပ်သည် Sport Hub ၏ AI virtual လက်ထောက်ဖြစ်သည်။ ကွင်းရရှိနိုင်မှု၊ စျေးနှုန်းအချက်အလက်၊ လျှော့စျေးကုဒ်များနှင့် ဘွတ်ကင်လုပ်ငန်းစဉ်များကို စစ်ဆေးရန် သင့်အား ကျွန်ုပ်ကူညီနိုင်ပါသည်။ ဒီနေ့ သင့်ကို ဘယ်လိုကူညီနိုင်မလဲ။";
         placeholderMsg = "ရရှိနိုင်မှုအကြောင်း AI ကို မေးပါ...";
+        chatbotTitle = "Sport Hub AI လက်ထောက်";
+        chatbotStatus = "24/7 ကူညီပေးရန် အဆင်သင့်ဖြစ်ပါပြီ";
     }
         
     const chatbotContainer = document.createElement('div');
@@ -46,10 +52,10 @@ document.addEventListener('DOMContentLoaded', function () {
                         </svg>
                     </div>
                     <div>
-                        <h4 class="font-bold text-sm tracking-wide">Trợ Lý AI Sport Hub</h4>
+                        <h4 class="font-bold text-sm tracking-wide">${chatbotTitle}</h4>
                         <span class="flex items-center gap-1.5 text-[11px] text-blue-100 font-medium">
                             <span class="w-2 h-2 rounded-full bg-secondary-green animate-pulse"></span>
-                            Sẵn sàng hỗ trợ 24/7
+                            ${chatbotStatus}
                         </span>
                     </div>
                 </div>
