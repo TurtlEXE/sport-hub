@@ -9,4 +9,5 @@ import java.util.List;
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
     List<Product> findByFacility_IdAndIsActiveTrue(Integer facilityId);
+    List<Product> findByFacility_Id(Integer facilityId);
 }

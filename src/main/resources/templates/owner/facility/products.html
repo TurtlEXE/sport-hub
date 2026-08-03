@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{dashboard-layout}">
+<head>
+    <title>Products & Services Configuration</title>
+</head>
+<body>
+    <div layout:fragment="sidebar-menu" th:replace="~{owner/fragments/sidebar :: sidebar('facilities')}"></div>
+
+    <div layout:fragment="header-title" class="flex-1">
+        <h1 class="text-xl font-bold text-slate-900">Products & Services Configuration</h1>
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">OWNER DASHBOARD • FACILITY MANAGEMENT</p>
+    </div>
+
+    <div layout:fragment="content">
+        <div class="container mx-auto px-4 py-6">
+            
+            <!-- Top Actions -->
+            <div class="mb-6 flex justify-between items-center">
+                <a th:href="@{'/owner/facilities/' + ${facilityId}}" class="text-sm font-semibold text-gray-500 hover:text-gray-800 flex items-center transition">
+                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                    <span>Back to Facility Details</span>
+                </a>
+                <button type="button" onclick="openProductModal(null)" class="px-5 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold flex items-center shadow-sm hover:-translate-y-0.5 hover:shadow-md hover:bg-emerald-700 transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Add New Product/Service</span>
+                </button>
+            </div>
+
+            <!-- Products List -->
+            <div class="bg-white rounded-3xl p-7 shadow-sm border border-gray-100 mb-8 overflow-hidden">
+                <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-primary-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
+                    Current Products & Services
+                </h3>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200 text-sm text-slate-500">
+                                <th class="py-3 px-4 font-semibold w-16">Image</th>
+                                <th class="py-3 px-4 font-semibold">Name</th>
+                                <th class="py-3 px-4 font-semibold">Category</th>
+                                <th class="py-3 px-4 font-semibold text-center">Type</th>
+                                <th class="py-3 px-4 font-semibold text-right">Price</th>
+                                <!-- <th class="py-3 px-4 font-semibold text-center">Stock</th> -->
+                                <th class="py-3 px-4 font-semibold text-center">Status</th>
+                                <th class="py-3 px-4 font-semibold text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productTableBody" class="text-sm">
+                            <!-- JS Renders here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Modal -->
+        <div id="productModal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeProductModal()"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+                <!-- Header -->
+                <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                    <h3 id="modalTitle" class="text-lg font-bold text-slate-800">Add New Product/Service</h3>
+                    <button type="button" onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-lg hover:bg-slate-100">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <!-- Body -->
+                <div class="p-6 overflow-y-auto">
+                    <form id="productForm" class="space-y-5" onsubmit="event.preventDefault(); saveProduct();">
+                        <input type="hidden" id="productId" name="productId">
+
+                        <div class="grid grid-cols-2 gap-5">
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Name <span class="text-red-500">*</span></label>
+                                <input type="text" id="productName" name="productName" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all" placeholder="e.g. Yonex Badminton Racket">
+                            </div>
+
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Category <span class="text-red-500">*</span></label>
+                                <select id="categoryId" name="categoryId" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all bg-white">
+                                    <option value="">-- Select Category --</option>
+                                    <!-- Options injected by JS -->
+                                </select>
+                            </div>
+
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Business Type <span class="text-red-500">*</span></label>
+                                <div class="flex items-center gap-4 mt-2">
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="productType" value="SALE" checked onchange="toggleRentalUnit()" class="text-primary-blue focus:ring-primary-blue h-4 w-4">
+                                        <span class="text-sm font-medium text-slate-700">Sale</span>
+                                    </label>
+                                    <label class="flex items-center gap-2 cursor-pointer">
+                                        <input type="radio" name="productType" value="RENTAL" onchange="toggleRentalUnit()" class="text-primary-blue focus:ring-primary-blue h-4 w-4">
+                                        <span class="text-sm font-medium text-slate-700">Rental</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Price (VNĐ) <span class="text-red-500">*</span></label>
+                                <input type="number" id="price" name="price" required min="0" step="1000" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all" placeholder="100000">
+                            </div>
+
+                            <div class="col-span-2 sm:col-span-1 hidden" id="rentalUnitContainer">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Rental Unit (RENTAL only)</label>
+                                <select id="rentalUnit" name="rentalUnit" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all bg-white">
+                                    <option value="PER_HOUR">Per Hour</option>
+                                    <option value="PER_30MIN">Per 30 Minutes</option>
+                                    <option value="PER_SESSION">Per Session</option>
+                                </select>
+                            </div>
+
+                            <div class="col-span-2 sm:col-span-1 hidden">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Stock (Leave blank = Unlimited)</label>
+                                <input type="number" id="stockQuantity" name="stockQuantity" min="0" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all" placeholder="e.g. 50">
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Product Image (Cloudinary)</label>
+                                <input type="file" id="imageFile" name="imageFile" accept="image/*" class="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                <div id="currentImageContainer" class="mt-2 hidden">
+                                    <img id="currentImagePreview" src="" alt="Current Image" class="h-20 w-20 object-cover rounded-lg border border-slate-200">
+                                </div>
+                            </div>
+
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Description (Optional)</label>
+                                <textarea id="description" name="description" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all" placeholder="Product details..."></textarea>
+                            </div>
+                            
+                            <div class="col-span-2">
+                                <label class="flex items-center gap-3 cursor-pointer">
+                                    <input type="checkbox" id="isActive" name="isActive" checked class="w-5 h-5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500">
+                                    <span class="text-sm font-semibold text-slate-700">Active (Visible to users)</span>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <!-- Footer -->
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                    <button type="button" onclick="closeProductModal()" class="px-5 py-2 text-sm font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-200 rounded-xl transition-colors">Cancel</button>
+                    <button type="submit" form="productForm" id="btnSaveProduct" class="px-5 py-2 text-sm font-bold text-white bg-primary-blue hover:bg-blue-700 rounded-xl shadow-sm hover:shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed">Save Product</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <th:block layout:fragment="pageScripts">
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const facilityId = /*[[${facilityId}]]*/ 0;
+            
+            let categories = [];
+            let products = [];
+
+            document.addEventListener('DOMContentLoaded', () => {
+                loadCategories();
+                loadProducts();
+            });
+
+            function loadCategories() {
+                fetch('/api/owner/product-categories')
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success === true) {
+                            categories = data.data;
+                            const select = document.getElementById('categoryId');
+                            select.innerHTML = '<option value="">-- Select Category --</option>';
+                            categories.forEach(c => {
+                                const option = document.createElement('option');
+                                option.value = c.categoryId;
+                                option.textContent = c.categoryName;
+                                select.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(err => console.error("Error loading categories:", err));
+            }
+
+            function loadProducts() {
+                fetch(`/api/owner/facilities/${facilityId}/products`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success === true) {
+                            products = data.data;
+                            renderTable();
+                        }
+                    })
+                    .catch(err => console.error("Error loading products:", err));
+            }
+
+            function renderTable() {
+                const tbody = document.getElementById('productTableBody');
+                tbody.innerHTML = '';
+                if(products.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-500">No products/services configured yet.</td></tr>`;
+                    return;
+                }
+
+                products.forEach(p => {
+                    const priceFmt = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.price);
+                    const typeBadge = p.productType === 'SALE' 
+                        ? `<span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold">SALE</span>`
+                        : `<span class="px-2.5 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold">RENTAL</span>`;
+                    
+                    const unitStr = p.productType === 'RENTAL' && p.rentalUnit ? ` / ${p.rentalUnit.replace('PER_','')}` : '';
+                    const stockStr = p.stockQuantity !== null ? p.stockQuantity : '<span class="text-slate-400">Unlimited</span>';
+                    const activeBadge = p.isActive 
+                        ? `<label class="relative inline-flex items-center cursor-pointer" title="Toggle Status">
+                             <input type="checkbox" class="sr-only peer" checked onchange="toggleStatus(${p.id})">
+                             <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                           </label>`
+                        : `<label class="relative inline-flex items-center cursor-pointer" title="Toggle Status">
+                             <input type="checkbox" class="sr-only peer" onchange="toggleStatus(${p.id})">
+                             <div class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                           </label>`;
+                    
+                    const imgHtml = p.imagePath ? `<img src="${p.imagePath}" class="w-10 h-10 object-cover rounded border">` : `<div class="w-10 h-10 bg-slate-100 rounded flex items-center justify-center text-slate-400"><svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg></div>`;
+
+                    const tr = document.createElement('tr');
+                    tr.className = 'border-b border-gray-100 hover:bg-slate-50/50 transition-colors';
+                    tr.innerHTML = `
+                        <td class="py-3 px-4">${imgHtml}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-800">${p.productName}</td>
+                        <td class="py-3 px-4 text-slate-600">${p.categoryName}</td>
+                        <td class="py-3 px-4 text-center">${typeBadge}</td>
+                        <td class="py-3 px-4 text-right font-bold text-emerald-600">${priceFmt}${unitStr}</td>
+                        <td class="py-3 px-4 text-center">${activeBadge}</td>
+                        <td class="py-3 px-4 text-center">
+                            <button onclick="editProduct(${p.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Product">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            function toggleRentalUnit() {
+                const typeInput = document.querySelector('input[name="productType"]:checked');
+                if(!typeInput) return;
+                const type = typeInput.value;
+                const container = document.getElementById('rentalUnitContainer');
+                if(type === 'RENTAL') {
+                    container.classList.remove('hidden');
+                } else {
+                    container.classList.add('hidden');
+                }
+            }
+
+            // Expose the function to the global scope explicitly
+            window.openProductModal = function(productId = null) {
+                const form = document.getElementById('productForm');
+                if(form) form.reset();
+                document.getElementById('productId').value = '';
+                document.getElementById('currentImageContainer').classList.add('hidden');
+                document.getElementById('currentImagePreview').src = '';
+                
+                if(productId) {
+                    document.getElementById('modalTitle').textContent = 'Update Product/Service';
+                    const p = products.find(x => x.id === productId);
+                    if(p) {
+                        document.getElementById('productId').value = p.id;
+                        document.getElementById('productName').value = p.productName;
+                        document.getElementById('categoryId').value = p.categoryId;
+                        const typeRadio = document.querySelector('input[name="productType"][value="' + p.productType + '"]');
+                        if (typeRadio) typeRadio.checked = true;
+                        
+                        document.getElementById('price').value = p.price;
+                        if(p.rentalUnit) document.getElementById('rentalUnit').value = p.rentalUnit;
+                        if(p.stockQuantity !== null) document.getElementById('stockQuantity').value = p.stockQuantity;
+                        document.getElementById('description').value = p.description || '';
+                        document.getElementById('isActive').checked = p.isActive;
+
+                        if (p.imagePath) {
+                            document.getElementById('currentImageContainer').classList.remove('hidden');
+                            document.getElementById('currentImagePreview').src = p.imagePath;
+                        }
+                    }
+                } else {
+                    document.getElementById('modalTitle').textContent = 'Add New Product/Service';
+                    const saleRadio = document.querySelector('input[name="productType"][value="SALE"]');
+                    if (saleRadio) saleRadio.checked = true;
+                }
+                toggleRentalUnit();
+                document.getElementById('productModal').classList.remove('hidden');
+            };
+
+            window.closeProductModal = function() {
+                document.getElementById('productModal').classList.add('hidden');
+            };
+
+            window.editProduct = function(id) {
+                openProductModal(id);
+            };
+
+            window.toggleStatus = function(id) {
+                fetch(`/api/owner/facilities/${facilityId}/products/${id}/toggle`, {
+                    method: 'PATCH'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success === true) {
+                        loadProducts();
+                    } else {
+                        showCustomAlert(data.message || "An error occurred", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error toggling status:", err);
+                    showCustomAlert("Network error", "error");
+                });
+            };
+
+            window.saveProduct = function() {
+                const form = document.getElementById('productForm');
+                if(!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                const productId = document.getElementById('productId').value;
+                const formData = new FormData(form);
+                
+                // If stockQuantity is empty, remove it to send as null
+                if(!formData.get('stockQuantity')) {
+                    formData.delete('stockQuantity');
+                }
+
+                const url = productId 
+                    ? `/api/owner/facilities/${facilityId}/products/${productId}`
+                    : `/api/owner/facilities/${facilityId}/products`;
+                
+                const method = productId ? 'PUT' : 'POST';
+
+                const btn = document.getElementById('btnSaveProduct');
+                btn.disabled = true;
+                btn.textContent = 'Saving...';
+
+                fetch(url, {
+                    method: method,
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success === true) {
+                        closeProductModal();
+                        loadProducts();
+                        showCustomAlert("Product saved successfully!", "success");
+                    } else {
+                        showCustomAlert(data.message || "An error occurred", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error saving product:", err);
+                    showCustomAlert("Network error", "error");
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = 'Save Product';
+                });
+            };
+            /*]]>*/
+        </script>
+    </th:block>
+</body>
+</html>
