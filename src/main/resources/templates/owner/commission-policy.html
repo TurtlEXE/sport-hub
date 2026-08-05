@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      layout:decorate="~{dashboard-layout}"
+      th:with="LAYOUT_TITLE='Owner', CONTENT_TITLE='Platform Commission Policy'">
+<head>
+    <title>Platform Commission Policy - SportHub</title>
+</head>
+<body>
+    
+    <!-- Inject Sidebar Menu -->
+    <div layout:fragment="sidebar-menu" th:replace="~{owner/fragments/sidebar :: sidebar('commission')}"></div>
+
+    <!-- Inject Custom Header Title -->
+    <div layout:fragment="header-title">
+        <h1 class="text-xl md:text-2xl font-bold text-slate-900">Platform Commission Policy</h1>
+        <p class="text-[10px] md:text-xs font-semibold text-slate-400 uppercase tracking-wider hidden sm:block">PLATFORM RULES &bull; COMMISSION TIERS</p>
+    </div>
+
+    <!-- Main Content -->
+    <th:block layout:fragment="content">
+        <main class="flex-1 min-w-0 bg-slate-50 relative">
+            <!-- Header Section -->
+            <div class="px-8 py-6 max-w-7xl mx-auto space-y-6">
+                <!-- Page Title Header -->
+                <div class="bg-indigo-900 rounded-3xl p-8 relative overflow-hidden shadow-2xl shadow-indigo-900/20">
+                    <div class="absolute top-0 right-0 p-12 opacity-10 pointer-events-none">
+                        <svg class="w-64 h-64 text-white transform rotate-12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z"/></svg>
+                    </div>
+                    <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                        <div class="space-y-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-400 text-xs font-bold border border-blue-500/20">
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                PLATFORM INFORMATION
+                            </span>
+                            <h1 class="text-3xl font-bold text-white tracking-tight">Commission Tiers</h1>
+                            <p class="text-indigo-200 max-w-2xl text-sm leading-relaxed">Review the current and upcoming platform commission rates that apply to your facility bookings based on your rental pricing.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Commission Tiers -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-slate-100 flex flex-col">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-800">Commission Tiers by Price Range</h2>
+                            <p class="text-sm text-slate-500">Commission rates applied by Sporthub on facility bookings.</p>
+                        </div>
+                        <div class="px-4 py-2 bg-indigo-50 rounded-lg border border-indigo-100 text-indigo-700 text-xs font-bold" id="totalTiersCount">
+                            Total: 0 Tiers
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-2xl border border-slate-100">
+                        <table class="w-full text-left border-collapse min-w-[900px]">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100">
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider w-48">Price Range<br/>(VND/min)</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Commission Rate</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Effective Period</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Tier Status</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider text-center">Is Current</th>
+                                    <th class="py-4 px-6 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Notice Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tiersTableBody" class="divide-y divide-slate-100 bg-white">
+                                <!-- Tiers will be rendered here -->
+                                <tr><td colspan="6" class="py-12 text-center text-slate-400 text-sm">Loading data...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </th:block>
+
+    <th:block layout:fragment="pageScripts">
+        <script>
+            /*<![CDATA[*/
+            let tiersData = [];
+
+            // Utils
+            function formatCurrency(amount) {
+                if (amount === null || amount === undefined) return '∞';
+                return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(amount);
+            }
+
+            function formatDateTime(isoString) {
+                if (!isoString) return '--';
+                const date = new Date(isoString);
+                return date.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            }
+
+            // Document Ready
+            document.addEventListener('DOMContentLoaded', () => {
+                fetchTiers();
+            });
+
+            // Tiers Logic
+            async function fetchTiers() {
+                try {
+                    const response = await fetch('/api/owner/commission/tiers');
+                    const json = await response.json();
+                    if (json.success) {
+                        tiersData = json.data || [];
+                        renderTiers(tiersData);
+                    }
+                } catch (e) {
+                    console.error("Failed to fetch tiers", e);
+                }
+            }
+
+            function renderTiers(tiers) {
+                const tbody = document.getElementById('tiersTableBody');
+                document.getElementById('totalTiersCount').textContent = `Total: ${tiers.length} Tiers`;
+
+                if (tiers.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6" class="py-12 text-center text-slate-400 text-sm">No commission tiers currently available.</td></tr>`;
+                    return;
+                }
+                
+                // Sort by status (ACTIVE first) then by minPrice
+                tiers.sort((a, b) => {
+                    if (a.status === 'ACTIVE' && b.status !== 'ACTIVE') return -1;
+                    if (a.status !== 'ACTIVE' && b.status === 'ACTIVE') return 1;
+                    return a.minPricePerMinute - b.minPricePerMinute;
+                });
+
+                tbody.innerHTML = tiers.map(t => {
+                    const minStr = formatCurrency(t.minPricePerMinute);
+                    const maxStr = formatCurrency(t.maxPricePerMinute);
+                    
+                    // Badges
+                    let statusBadge = '';
+                    if (t.status === 'ACTIVE') {
+                        statusBadge = `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-md">ACTIVE</span>`;
+                    } else if (t.status === 'ANNOUNCED') {
+                        statusBadge = `<span class="px-2.5 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold rounded-md">UPCOMING</span>`;
+                    }
+
+                    const isCurrentBadge = t.isCurrent 
+                        ? `<span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-full border border-emerald-200">
+                             <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                             Current
+                           </span>`
+                        : `<span class="text-slate-300">-</span>`;
+
+                    const announcedInfo = t.announcedAt 
+                        ? `<div class="text-xs text-slate-500">Notice: <span class="font-bold text-slate-700">${t.noticeDays || '--'} days</span></div>
+                           <div class="text-[10px] text-amber-600 font-semibold mt-0.5">Announced on:<br/>${formatDateTime(t.announcedAt)}</div>`
+                        : `<span class="text-slate-300">-</span>`;
+
+                    return `
+                        <tr class="hover:bg-slate-50/50 transition-colors group">
+                            <td class="py-5 px-6">
+                                <div class="font-bold text-slate-800 text-sm">${minStr} → ${maxStr}</div>
+                                <div class="font-bold text-slate-900 text-[11px] mt-0.5">VND/min</div>
+                                <div class="text-[10px] text-slate-500 mt-1 italic max-w-[150px] whitespace-normal line-clamp-3" title="${t.description || ''}">
+                                    "${t.description || 'No description'}"
+                                </div>
+                            </td>
+                            <td class="py-5 px-6">
+                                <span class="inline-flex items-center px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-bold border border-emerald-100">
+                                    ${(t.commissionRate * 100).toFixed(1)}%
+                                </span>
+                            </td>
+                            <td class="py-5 px-6 text-sm text-slate-600 font-medium">
+                                <div class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                                    ${formatDateTime(t.effectiveFrom)} 
+                                    <span class="text-slate-300 mx-1">→</span> 
+                                    ${formatDateTime(t.effectiveTo)}
+                                </div>
+                            </td>
+                            <td class="py-5 px-6 text-center">${statusBadge}</td>
+                            <td class="py-5 px-6 text-center">${isCurrentBadge}</td>
+                            <td class="py-5 px-6">${announcedInfo}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            /*]]>*/
+        </script>
+    </th:block>
+</body>
+</html>

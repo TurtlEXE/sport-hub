@@ -163,6 +163,7 @@ public class ChatbotServiceImpl implements ChatbotService {
         context.append("3. Ngôn ngữ hiện tại của trang web là: ").append(langName).append(".\n");
         context.append("4. RẤT QUAN TRỌNG: Nếu khách hàng chỉ nói những câu ngắn ngọn (như 'hi', 'hello', 'chào'), hãy chào lại bằng ngôn ngữ hiện tại của trang web. TUY NHIÊN, nếu khách hàng hỏi bằng ngôn ngữ nào, BẠN BẮT BUỘC PHẢI TRẢ LỜI BẰNG NGÔN NGỮ ĐÓ (ví dụ khách hỏi Tiếng Anh thì trả lời Tiếng Anh).\n");
         context.append("5. KHÔNG SỬ DỤNG markdown in đậm (như **chữ**) trong câu trả lời vì trình duyệt không hiển thị được. Hãy viết text bình thường.\n");
+        context.append("6. KHI GỢI Ý CƠ SỞ THỂ THAO: Nếu bạn đề cập đến một cơ sở cụ thể trong câu trả lời, BẮT BUỘC sử dụng format [FACILITY_LINK:ID:TÊN_CƠ_SỞ] để tạo link dẫn đến trang đặt sân. Ví dụ: [FACILITY_LINK:5:Sân Bóng Đá ABC]\n");
         context.append("Thời gian hệ thống hiện tại là: ").append(LocalDate.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))).append("\n\n");
         // 1. Facilities and Courts
         List<Facility> facilities = facilityRepository.findByIsActiveTrue();
@@ -172,8 +173,8 @@ public class ChatbotServiceImpl implements ChatbotService {
 
         context.append("--- DANH SÁCH CƠ SỞ THỂ THAO VÀ SÂN ---\n");
         for (Facility f : facilities) {
-            context.append(String.format("Cơ sở: %s | Địa chỉ: %s | Giờ mở cửa: %s - %s\n",
-                    f.getName(), f.getAddress(), f.getOpenTime(), f.getCloseTime()));
+            context.append(String.format("Cơ sở ID: %d | Tên: %s | Địa chỉ: %s | Giờ mở cửa: %s - %s\n",
+                    f.getId(), f.getName(), f.getAddress(), f.getOpenTime(), f.getCloseTime()));
             List<Court> courtsInFacility = allCourts.stream()
                     .filter(c -> c.getFacilitySport() != null && c.getFacilitySport().getFacility().getId().equals(f.getId()))
                     .collect(Collectors.toList());
