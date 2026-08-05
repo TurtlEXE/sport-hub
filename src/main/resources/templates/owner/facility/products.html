@@ -26,6 +26,38 @@
                 </button>
             </div>
 
+            <!-- Filters -->
+            <div class="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Search</label>
+                        <input type="text" id="filterSearch" placeholder="Search by name..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 transition-all text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Category</label>
+                        <select id="filterCategory" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 transition-all bg-white text-sm">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Type</label>
+                        <select id="filterType" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 transition-all bg-white text-sm">
+                            <option value="">All Types</option>
+                            <option value="SALE">SALE</option>
+                            <option value="RENTAL">RENTAL</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Status</label>
+                        <select id="filterStatus" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 transition-all bg-white text-sm">
+                            <option value="">All Statuses</option>
+                            <option value="true">Active</option>
+                            <option value="false">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <!-- Products List -->
             <div class="bg-white rounded-3xl p-7 shadow-sm border border-gray-100 mb-8 overflow-hidden">
                 <h3 class="text-lg font-bold text-slate-800 mb-6 flex items-center">
@@ -51,6 +83,14 @@
                             <!-- JS Renders here -->
                         </tbody>
                     </table>
+                </div>
+                <!-- Pagination Controls -->
+                <div id="paginationControls" class="flex justify-between items-center mt-6 border-t border-gray-100 pt-6">
+                    <span id="pageInfo" class="text-sm text-slate-500 font-medium">Showing page 1 of 1</span>
+                    <div class="flex gap-2">
+                        <button type="button" id="btnPrevPage" onclick="changePage(currentPage - 1)" class="px-4 py-2 text-sm font-semibold text-slate-600 bg-slate-50 hover:bg-slate-100 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
+                        <button type="button" id="btnNextPage" onclick="changePage(currentPage + 1)" class="px-4 py-2 text-sm font-semibold text-white bg-primary-blue hover:bg-blue-700 rounded-lg shadow-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -89,11 +129,11 @@
                                 <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Business Type <span class="text-red-500">*</span></label>
                                 <div class="flex items-center gap-4 mt-2">
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="productType" value="SALE" checked onchange="toggleRentalUnit()" class="text-primary-blue focus:ring-primary-blue h-4 w-4">
+                                        <input type="radio" name="productType" value="SALE" checked onchange="updateUnitSuggestions()" class="text-primary-blue focus:ring-primary-blue h-4 w-4">
                                         <span class="text-sm font-medium text-slate-700">Sale</span>
                                     </label>
                                     <label class="flex items-center gap-2 cursor-pointer">
-                                        <input type="radio" name="productType" value="RENTAL" onchange="toggleRentalUnit()" class="text-primary-blue focus:ring-primary-blue h-4 w-4">
+                                        <input type="radio" name="productType" value="RENTAL" onchange="updateUnitSuggestions()" class="text-primary-blue focus:ring-primary-blue h-4 w-4">
                                         <span class="text-sm font-medium text-slate-700">Rental</span>
                                     </label>
                                 </div>
@@ -104,13 +144,10 @@
                                 <input type="number" id="price" name="price" required min="0" step="1000" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all" placeholder="100000">
                             </div>
 
-                            <div class="col-span-2 sm:col-span-1 hidden" id="rentalUnitContainer">
-                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Rental Unit (RENTAL only)</label>
-                                <select id="rentalUnit" name="rentalUnit" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all bg-white">
-                                    <option value="PER_HOUR">Per Hour</option>
-                                    <option value="PER_30MIN">Per 30 Minutes</option>
-                                    <option value="PER_SESSION">Per Session</option>
-                                </select>
+                            <div class="col-span-2 sm:col-span-1" id="rentalUnitContainer">
+                                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Đơn vị tính / Unit <span class="text-red-500">*</span></label>
+                                <input type="text" id="rentalUnit" name="rentalUnit" list="unitSuggestions" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-blue/20 focus:border-primary-blue transition-all" placeholder="VD: Chai, Quả/Trận">
+                                <datalist id="unitSuggestions"></datalist>
                             </div>
 
                             <div class="col-span-2 sm:col-span-1 hidden">
@@ -148,8 +185,23 @@
             </div>
         </div>
 
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="fixed inset-0 z-50 hidden">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeDeleteModal()"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col p-6 text-center">
+                <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-800 mb-2">Confirm Delete</h3>
+                <p id="deleteModalDesc" class="text-sm text-slate-500 mb-6">Are you sure you want to delete this product?</p>
+                <div class="flex justify-center gap-3">
+                    <input type="hidden" id="deleteProductId">
+                    <button type="button" onclick="closeDeleteModal()" class="px-5 py-2.5 text-sm font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors w-full">Cancel</button>
+                    <button type="button" id="btnConfirmDelete" onclick="executeDelete()" class="px-5 py-2.5 text-sm font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm hover:shadow-md transition-all w-full">Delete</button>
+                </div>
+            </div>
+        </div>
     </div>
-    
     <th:block layout:fragment="pageScripts">
         <script th:inline="javascript">
             /*<![CDATA[*/
@@ -157,10 +209,30 @@
             
             let categories = [];
             let products = [];
+            let currentPage = 0;
+            const pageSize = 10;
+            let totalPages = 1;
 
             document.addEventListener('DOMContentLoaded', () => {
                 loadCategories();
                 loadProducts();
+
+                // Setup Filter Listeners
+                let searchTimeout;
+                document.getElementById('filterSearch').addEventListener('input', () => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        currentPage = 0;
+                        loadProducts();
+                    }, 500);
+                });
+
+                ['filterCategory', 'filterType', 'filterStatus'].forEach(id => {
+                    document.getElementById(id).addEventListener('change', () => {
+                        currentPage = 0;
+                        loadProducts();
+                    });
+                });
             });
 
             function loadCategories() {
@@ -170,12 +242,18 @@
                         if (data.success === true) {
                             categories = data.data;
                             const select = document.getElementById('categoryId');
+                            const selectFilter = document.getElementById('filterCategory');
                             select.innerHTML = '<option value="">-- Select Category --</option>';
                             categories.forEach(c => {
                                 const option = document.createElement('option');
                                 option.value = c.categoryId;
                                 option.textContent = c.categoryName;
                                 select.appendChild(option);
+                                
+                                const optionFilter = document.createElement('option');
+                                optionFilter.value = c.categoryId;
+                                optionFilter.textContent = c.categoryName;
+                                selectFilter.appendChild(optionFilter);
                             });
                         }
                     })
@@ -183,16 +261,42 @@
             }
 
             function loadProducts() {
-                fetch(`/api/owner/facilities/${facilityId}/products`)
+                const search = document.getElementById('filterSearch').value;
+                const categoryId = document.getElementById('filterCategory').value;
+                const type = document.getElementById('filterType').value;
+                const status = document.getElementById('filterStatus').value;
+
+                let url = `/api/owner/facilities/${facilityId}/products?page=${currentPage}&size=${pageSize}`;
+                if(search) url += `&search=${encodeURIComponent(search)}`;
+                if(categoryId) url += `&categoryId=${categoryId}`;
+                if(type) url += `&type=${type}`;
+                if(status) url += `&status=${status}`;
+
+                fetch(url)
                     .then(res => res.json())
                     .then(data => {
                         if (data.success === true) {
-                            products = data.data;
+                            products = data.data.content;
+                            totalPages = data.data.totalPages || 1;
+                            updatePaginationUI();
                             renderTable();
                         }
                     })
                     .catch(err => console.error("Error loading products:", err));
             }
+
+            function updatePaginationUI() {
+                document.getElementById('pageInfo').textContent = `Showing page ${currentPage + 1} of ${totalPages}`;
+                document.getElementById('btnPrevPage').disabled = currentPage === 0;
+                document.getElementById('btnNextPage').disabled = currentPage >= totalPages - 1;
+            }
+
+            window.changePage = function(newPage) {
+                if (newPage >= 0 && newPage < totalPages) {
+                    currentPage = newPage;
+                    loadProducts();
+                }
+            };
 
             function renderTable() {
                 const tbody = document.getElementById('productTableBody');
@@ -208,7 +312,7 @@
                         ? `<span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-lg text-xs font-bold">SALE</span>`
                         : `<span class="px-2.5 py-1 bg-purple-100 text-purple-700 rounded-lg text-xs font-bold">RENTAL</span>`;
                     
-                    const unitStr = p.productType === 'RENTAL' && p.rentalUnit ? ` / ${p.rentalUnit.replace('PER_','')}` : '';
+                    const unitStr = p.rentalUnit ? ` / ${p.rentalUnit.replace('PER_','')}` : '';
                     const stockStr = p.stockQuantity !== null ? p.stockQuantity : '<span class="text-slate-400">Unlimited</span>';
                     const activeBadge = p.isActive 
                         ? `<label class="relative inline-flex items-center cursor-pointer" title="Toggle Status">
@@ -235,22 +339,34 @@
                             <button onclick="editProduct(${p.id})" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Edit Product">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                             </button>
+                            <button onclick="confirmDelete(${p.id}, ${p.hasOrders})" class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete Product">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
 
-            function toggleRentalUnit() {
+            function updateUnitSuggestions() {
                 const typeInput = document.querySelector('input[name="productType"]:checked');
                 if(!typeInput) return;
                 const type = typeInput.value;
-                const container = document.getElementById('rentalUnitContainer');
-                if(type === 'RENTAL') {
-                    container.classList.remove('hidden');
+                const datalist = document.getElementById('unitSuggestions');
+                datalist.innerHTML = '';
+                
+                let suggestions = [];
+                if(type === 'SALE') {
+                    suggestions = ['Chai', 'Lon', 'Hộp', 'Gói', 'Cái', 'Bộ'];
                 } else {
-                    container.classList.add('hidden');
+                    suggestions = ['Giờ', 'Buổi', 'Trận', '30 Phút'];
                 }
+                
+                suggestions.forEach(s => {
+                    const option = document.createElement('option');
+                    option.value = s;
+                    datalist.appendChild(option);
+                });
             }
 
             // Expose the function to the global scope explicitly
@@ -287,7 +403,7 @@
                     const saleRadio = document.querySelector('input[name="productType"][value="SALE"]');
                     if (saleRadio) saleRadio.checked = true;
                 }
-                toggleRentalUnit();
+                updateUnitSuggestions();
                 document.getElementById('productModal').classList.remove('hidden');
             };
 
@@ -363,6 +479,54 @@
                 .finally(() => {
                     btn.disabled = false;
                     btn.textContent = 'Save Product';
+                });
+            };
+
+            window.confirmDelete = function(id, hasOrders) {
+                document.getElementById('deleteProductId').value = id;
+                const modalDesc = document.getElementById('deleteModalDesc');
+                if (hasOrders) {
+                    modalDesc.innerHTML = 'This product has been used in orders. Are you sure you want to delete it?<br><strong class="text-amber-600 mt-2 block">The product will be deactivated (Soft Delete) instead of fully removed.</strong>';
+                } else {
+                    modalDesc.innerHTML = 'Are you sure you want to delete this product?<br><strong class="text-red-600 mt-2 block">This action cannot be undone. It will be permanently removed.</strong>';
+                }
+                document.getElementById('deleteModal').classList.remove('hidden');
+            };
+
+            window.closeDeleteModal = function() {
+                document.getElementById('deleteModal').classList.add('hidden');
+            };
+
+            window.executeDelete = function() {
+                const id = document.getElementById('deleteProductId').value;
+                const btn = document.getElementById('btnConfirmDelete');
+                btn.disabled = true;
+                btn.textContent = 'Deleting...';
+
+                fetch(`/api/owner/facilities/${facilityId}/products/${id}`, {
+                    method: 'DELETE'
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success === true) {
+                        closeDeleteModal();
+                        // If it was the last item on the page, go to previous page
+                        if(products.length === 1 && currentPage > 0) {
+                            currentPage--;
+                        }
+                        loadProducts();
+                        showCustomAlert("Product deleted successfully!", "success");
+                    } else {
+                        showCustomAlert(data.message || "An error occurred", "error");
+                    }
+                })
+                .catch(err => {
+                    console.error("Error deleting product:", err);
+                    showCustomAlert("Network error", "error");
+                })
+                .finally(() => {
+                    btn.disabled = false;
+                    btn.textContent = 'Delete';
                 });
             };
             /*]]>*/

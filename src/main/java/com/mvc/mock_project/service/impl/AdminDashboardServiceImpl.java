@@ -13,7 +13,13 @@ import com.mvc.mock_project.dto.response.FacilityBookingDetailDTO;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Comparator;
+import org.springframework.data.domain.PageRequest;
+import com.mvc.mock_project.repository.CommissionTierRepository;
+import com.mvc.mock_project.entities.CommissionTier;
+import com.mvc.mock_project.entities.enums.TierStatus;
 
 @Service
 @RequiredArgsConstructor
@@ -22,6 +28,7 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
 
     @PersistenceContext
     private final EntityManager entityManager;
+    private final CommissionTierRepository commissionTierRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -120,6 +127,42 @@ public class AdminDashboardServiceImpl implements AdminDashboardService {
                     .build());
         }
         dto.setFacilityStats(facilityStats);
+
+        // 4. Check for commission tier gaps
+        boolean hasGaps = false;
+        List<CommissionTier> activeTiers = commissionTierRepository.findByStatusAndIsCurrent(TierStatus.ACTIVE, true, PageRequest.of(0, 1000)).getContent();
+        log.info("Checking commission gaps. Active tiers count: {}", activeTiers.size());
+        if (activeTiers.isEmpty()) {
+            hasGaps = true;
+            log.info("Gap reason: no active tiers");
+        } else {
+            List<CommissionTier> sortedTiers = new ArrayList<>(activeTiers);
+            sortedTiers.sort(Comparator.comparing(CommissionTier::getMinPricePerMinute));
+            
+            if (sortedTiers.get(0).getMinPricePerMinute().compareTo(BigDecimal.ZERO) != 0) {
+                hasGaps = true;
+                log.info("Gap reason: first tier min price is {}, expected 0", sortedTiers.get(0).getMinPricePerMinute());
+            } else if (sortedTiers.get(sortedTiers.size() - 1).getMaxPricePerMinute() != null) {
+                hasGaps = true;
+                log.info("Gap reason: last tier max price is {}, expected null", sortedTiers.get(sortedTiers.size() - 1).getMaxPricePerMinute());
+            } else {
+                for (int i = 0; i < sortedTiers.size() - 1; i++) {
+                    CommissionTier current = sortedTiers.get(i);
+                    CommissionTier next = sortedTiers.get(i + 1);
+                    if (current.getMaxPricePerMinute() == null) {
+                        hasGaps = true;
+                        break;
+                    }
+                    BigDecimal diff = next.getMinPricePerMinute().subtract(current.getMaxPricePerMinute());
+                    if (diff.compareTo(BigDecimal.ZERO) < 0 || diff.compareTo(new BigDecimal("1.00")) > 0) {
+                        hasGaps = true;
+                        break;
+                    }
+                }
+            }
+        }
+        log.info("Final hasGaps result: {}", hasGaps);
+        dto.setHasCommissionGaps(hasGaps);
 
         return dto;
     }

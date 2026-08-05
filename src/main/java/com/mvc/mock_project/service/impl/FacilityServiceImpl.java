@@ -42,6 +42,7 @@ public class FacilityServiceImpl implements FacilityService {
     private final ProductRepository productRepository;
     private final ProductCategoryRepository productCategoryRepository;
     private final ReviewRepository reviewRepository;
+    private final com.mvc.mock_project.repository.CustomerFavoriteFacilityRepository favoriteRepository;
 
     @Override
     public List<Sport> getAllActiveSports() {
@@ -54,17 +55,35 @@ public class FacilityServiceImpl implements FacilityService {
     }
 
     @Override
-    public List<VenueCardDTO> getFilteredFacilities(String keyword, String sportCode, Double maxPrice, List<Integer> categoryIds) {
+    public List<VenueCardDTO> getFilteredFacilities(String keyword, String sportCode, Double maxPrice,
+            List<Integer> categoryIds, Boolean onlyFavorites, Integer accountId) {
         List<VenueCardDTO> allVenues = getAllActiveVenues();
+        
+        List<Integer> favoriteIds = null;
+        if (Boolean.TRUE.equals(onlyFavorites) && accountId != null) {
+            favoriteIds = favoriteRepository.findFacilityIdsByAccountId(accountId);
+        }
+        final List<Integer> finalFavoriteIds = favoriteIds;
+
         return allVenues.stream()
-                .filter(v -> keyword == null || keyword.trim().isEmpty() || v.getName().toLowerCase().contains(keyword.toLowerCase()) || v.getAddress().toLowerCase().contains(keyword.toLowerCase()))
+                .filter(v -> {
+                    if (Boolean.TRUE.equals(onlyFavorites) && accountId != null) {
+                        return finalFavoriteIds != null && finalFavoriteIds.contains(v.getFacilityId());
+                    }
+                    return true;
+                })
+                .filter(v -> keyword == null || keyword.trim().isEmpty()
+                        || v.getName().toLowerCase().contains(keyword.toLowerCase())
+                        || v.getAddress().toLowerCase().contains(keyword.toLowerCase()))
                 .filter(v -> sportCode == null || sportCode.trim().isEmpty() || v.getSports().contains(sportCode))
                 .filter(v -> maxPrice == null || v.getMinPricePerHour() <= maxPrice)
                 .filter(v -> {
-                    if (categoryIds == null || categoryIds.isEmpty()) return true;
+                    if (categoryIds == null || categoryIds.isEmpty())
+                        return true;
                     // For each required category, check if the venue has it
                     // The venue's amenities (List<String>) now contains the names of the categories
-                    // but we need to check IDs. Since the mock project requires in-memory filtering,
+                    // but we need to check IDs. Since the mock project requires in-memory
+                    // filtering,
                     // we'll fetch the venue's products and check their category IDs.
                     List<Product> products = productRepository.findByFacility_IdAndIsActiveTrue(v.getFacilityId());
                     List<Integer> venueCategoryIds = products.stream()
@@ -78,27 +97,30 @@ public class FacilityServiceImpl implements FacilityService {
 
     @Override
     public List<VenueCardDTO> getAllActiveVenues() {
-        List<Facility> facilities = facilityRepository.findByIsActiveTrueAndApprovalStatus(com.mvc.mock_project.entities.enums.ApprovalStatus.APPROVED);
+        List<Facility> facilities = facilityRepository
+                .findByIsActiveTrueAndApprovalStatus(com.mvc.mock_project.entities.enums.ApprovalStatus.APPROVED);
         List<VenueCardDTO> venueCards = new ArrayList<>();
         Random random = new Random();
 
         for (Facility facility : facilities) {
             // Get Thumbnail
             FacilityImage thumbnail = facilityImageRepository.findFirstByFacilityIdAndIsThumbnailTrue(facility.getId());
-            String imageUrl = (thumbnail != null) ? thumbnail.getImagePath() : "https://via.placeholder.com/400x250?text=No+Image";
+            String imageUrl = (thumbnail != null) ? thumbnail.getImagePath()
+                    : "https://via.placeholder.com/400x250?text=No+Image";
 
             // Get Sports
             List<String> sports = new ArrayList<>();
             List<String> sportNames = new ArrayList<>();
             Double minPrice = Double.MAX_VALUE;
-            
+
             if (facility.getFacilitySports() != null) {
                 for (FacilitySport fs : facility.getFacilitySports()) {
                     if (Boolean.TRUE.equals(fs.getIsActive())) {
                         sports.add(fs.getSport().getSportCode());
                         sportNames.add(fs.getSport().getSportName());
                         // Find min price for this sport
-                        List<FacilityPriceRule> rules = facilityPriceRuleRepository.findByFacilitySportIdAndIsActiveTrue(fs.getId());
+                        List<FacilityPriceRule> rules = facilityPriceRuleRepository
+                                .findByFacilitySportIdAndIsActiveTrue(fs.getId());
                         for (FacilityPriceRule rule : rules) {
                             if (rule.getPricePerSlot() != null && rule.getPricePerSlot().doubleValue() < minPrice) {
                                 minPrice = rule.getPricePerSlot().doubleValue();
@@ -107,7 +129,7 @@ public class FacilityServiceImpl implements FacilityService {
                     }
                 }
             }
-            
+
             if (minPrice == Double.MAX_VALUE) {
                 minPrice = 0.0;
             }
@@ -127,7 +149,8 @@ public class FacilityServiceImpl implements FacilityService {
             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
             String openingHours = "";
             if (facility.getOpenTime() != null && facility.getCloseTime() != null) {
-                openingHours = facility.getOpenTime().format(formatter) + " - " + facility.getCloseTime().format(formatter);
+                openingHours = facility.getOpenTime().format(formatter) + " - "
+                        + facility.getCloseTime().format(formatter);
             }
 
             VenueCardDTO dto = VenueCardDTO.builder()
@@ -154,24 +177,27 @@ public class FacilityServiceImpl implements FacilityService {
 
     @Override
     public VenueCardDTO getVenueById(Integer id) {
-        Facility facility = facilityRepository.findById(id).orElseThrow(() -> new RuntimeException("Facility not found"));
+        Facility facility = facilityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Facility not found"));
         Random random = new Random();
 
         // Get Thumbnail
         FacilityImage thumbnail = facilityImageRepository.findFirstByFacilityIdAndIsThumbnailTrue(facility.getId());
-        String imageUrl = (thumbnail != null) ? thumbnail.getImagePath() : "https://via.placeholder.com/400x250?text=No+Image";
+        String imageUrl = (thumbnail != null) ? thumbnail.getImagePath()
+                : "https://via.placeholder.com/400x250?text=No+Image";
 
         // Get Sports
         List<String> sports = new ArrayList<>();
         List<String> sportNames = new ArrayList<>();
         Double minPrice = Double.MAX_VALUE;
-        
+
         if (facility.getFacilitySports() != null) {
             for (FacilitySport fs : facility.getFacilitySports()) {
                 if (Boolean.TRUE.equals(fs.getIsActive())) {
                     sports.add(fs.getSport().getSportCode());
                     sportNames.add(fs.getSport().getSportName());
-                    List<FacilityPriceRule> rules = facilityPriceRuleRepository.findByFacilitySportIdAndIsActiveTrue(fs.getId());
+                    List<FacilityPriceRule> rules = facilityPriceRuleRepository
+                            .findByFacilitySportIdAndIsActiveTrue(fs.getId());
                     for (FacilityPriceRule rule : rules) {
                         if (rule.getPricePerSlot() != null && rule.getPricePerSlot().doubleValue() < minPrice) {
                             minPrice = rule.getPricePerSlot().doubleValue();
@@ -180,14 +206,14 @@ public class FacilityServiceImpl implements FacilityService {
                 }
             }
         }
-        
+
         if (minPrice == Double.MAX_VALUE) {
             minPrice = 0.0;
         }
 
         double rating = 0.0;
         int reviewCount = 0;
-        
+
         List<Product> products = productRepository.findByFacility_IdAndIsActiveTrue(facility.getId());
         List<String> amenities = products.stream()
                 .map(p -> p.getCategory().getCategoryName())
@@ -223,7 +249,8 @@ public class FacilityServiceImpl implements FacilityService {
     @Override
     public VenueDetailDTO getVenueDetailById(Integer id) {
         VenueCardDTO base = getVenueById(id);
-        Facility facility = facilityRepository.findById(id).orElseThrow(() -> new RuntimeException("Facility not found"));
+        Facility facility = facilityRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Facility not found"));
 
         // Fetch products
         List<Product> products = productRepository.findByFacility_IdAndIsActiveTrue(id);
@@ -233,8 +260,7 @@ public class FacilityServiceImpl implements FacilityService {
                 .price(p.getPrice())
                 .rentalUnit(p.getRentalUnit())
                 .categoryName(p.getCategory() != null ? p.getCategory().getCategoryName() : "Dịch vụ khác")
-                .build()
-        ).collect(Collectors.groupingBy(ProductDTO::getCategoryName));
+                .build()).collect(Collectors.groupingBy(ProductDTO::getCategoryName));
 
         // Fetch price rules
         List<FacilityPriceRule> allRules = new ArrayList<>();
@@ -249,10 +275,11 @@ public class FacilityServiceImpl implements FacilityService {
                 }
             }
         }
-        
+
         Map<String, List<PriceRuleDTO>> groupedPriceRules = allRules.stream().map(r -> {
             String sportName = (r.getFacilitySport() != null && r.getFacilitySport().getSport() != null)
-                    ? r.getFacilitySport().getSport().getSportName() : "General";
+                    ? r.getFacilitySport().getSport().getSportName()
+                    : "General";
             return PriceRuleDTO.builder()
                     .startTime(r.getStartTime())
                     .endTime(r.getEndTime())
@@ -271,15 +298,17 @@ public class FacilityServiceImpl implements FacilityService {
             }
         }
 
-        List<com.mvc.mock_project.entities.Review> reviewEntities = reviewRepository.findByFacilityIdOrderByCreatedAtDesc(id);
-        List<com.mvc.mock_project.dto.response.ReviewDTO> reviewDTOs = reviewEntities.stream().map(r -> com.mvc.mock_project.dto.response.ReviewDTO.builder()
-                .id(r.getId())
-                .reviewerName(r.getAccount() != null ? r.getAccount().getFullName() : "Khách")
-                .rating(r.getRating())
-                .comment(r.getComment())
-                .createdAt(r.getCreatedAt())
-                .build()
-        ).collect(Collectors.toList());
+        List<com.mvc.mock_project.entities.Review> reviewEntities = reviewRepository
+                .findByFacilityIdOrderByCreatedAtDesc(id);
+        List<com.mvc.mock_project.dto.response.ReviewDTO> reviewDTOs = reviewEntities.stream()
+                .map(r -> com.mvc.mock_project.dto.response.ReviewDTO.builder()
+                        .id(r.getId())
+                        .reviewerName(r.getAccount() != null ? r.getAccount().getFullName() : "Khách")
+                        .rating(r.getRating())
+                        .comment(r.getComment())
+                        .createdAt(r.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
 
         return VenueDetailDTO.builder()
                 .facilityId(base.getFacilityId())

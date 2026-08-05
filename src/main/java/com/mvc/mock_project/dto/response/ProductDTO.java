@@ -27,5 +27,6 @@ public class ProductDTO {
     private String rentalUnit;
     private Integer stockQuantity;
     private Boolean isActive;
+    private Boolean hasOrders;
     private LocalDateTime createdAt;
 }

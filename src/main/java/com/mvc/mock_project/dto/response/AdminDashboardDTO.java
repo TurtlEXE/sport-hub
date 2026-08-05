@@ -22,6 +22,8 @@ public class AdminDashboardDTO {
     private Long pendingFacilities;
     private Long totalUsers;
     private Long activeVouchers;
+    
+    private Boolean hasCommissionGaps;
 
     private List<MonthlyRevenueDTO> monthlyRevenueData;
     private List<FacilityStatDTO> facilityStats;

@@ -9,9 +9,14 @@ import java.util.List;
 
 public interface FacilityService {
     List<Sport> getAllActiveSports();
+
     List<ProductCategory> getAllActiveProductCategories();
-    List<VenueCardDTO> getFilteredFacilities(String keyword, String sportCode, Double maxPrice, List<Integer> categoryIds);
+
+    List<VenueCardDTO> getFilteredFacilities(String keyword, String sportCode, Double maxPrice, List<Integer> categoryIds, Boolean onlyFavorites, Integer accountId);
+
     List<VenueCardDTO> getAllActiveVenues();
+
     VenueCardDTO getVenueById(Integer id);
+
     VenueDetailDTO getVenueDetailById(Integer id);
 }
