@@ -224,10 +224,18 @@ document.addEventListener('DOMContentLoaded', () => {
         cornerCell.textContent = 'COURT';
         headerFrag.appendChild(cornerCell);
 
-        courts[0].slots.forEach(slot => {
+        courts[0].slots.forEach((slot, idx) => {
             const timeCell = document.createElement('div');
-            timeCell.className = 'timeline-header timeline-cell px-1 font-mono text-[10px] select-none';
-            timeCell.innerHTML = `<div class="flex justify-between items-center w-full"><span class="font-bold text-slate-700">${slot.startTime}</span><span class="text-slate-400 font-normal">${slot.endTime}</span></div>`;
+            timeCell.className = 'timeline-header timeline-cell';
+            timeCell.style.overflow = 'visible';
+            if (idx === 0) {
+                timeCell.innerHTML = `<span class="time-ruler-label" style="left: 4px; transform: translateY(-50%);">${slot.startTime}</span>`;
+            } else {
+                timeCell.innerHTML = `<span class="time-ruler-label">${slot.startTime}</span>`;
+            }
+            if (idx === courts[0].slots.length - 1) {
+                timeCell.innerHTML += `<span class="time-ruler-label" style="left: calc(100% - 4px); transform: translate(-100%, -50%);">${slot.endTime}</span>`;
+            }
             headerFrag.appendChild(timeCell);
         });
         timelineGrid.appendChild(headerFrag);

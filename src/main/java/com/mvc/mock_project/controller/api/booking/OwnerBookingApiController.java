@@ -122,4 +122,27 @@ public class OwnerBookingApiController {
         Map<String, Object> resp = bookingService.checkOutAndSettle(bookingId, slotIds, paymentMethod, userDetails != null ? userDetails.getAccount() : null);
         return ResponseEntity.ok(resp);
     }
+
+    @PostMapping("/update-services")
+    public ResponseEntity<Map<String, Object>> updateBookingServices(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestBody Map<String, Object> body) {
+        
+        Integer bookingId = body.get("bookingId") != null ? Integer.parseInt(body.get("bookingId").toString()) : null;
+        List<com.mvc.mock_project.dto.request.OnSiteBookingRequestDTO.ServiceItemDTO> services = new java.util.ArrayList<>();
+        if (body.get("services") instanceof List) {
+            List<?> rawList = (List<?>) body.get("services");
+            for (Object item : rawList) {
+                Map<?, ?> map = (Map<?, ?>) item;
+                Integer productId = map.get("productId") != null ? Integer.parseInt(map.get("productId").toString()) : null;
+                Integer quantity = map.get("quantity") != null ? Integer.parseInt(map.get("quantity").toString()) : 1;
+                if (productId != null) {
+                    services.add(new com.mvc.mock_project.dto.request.OnSiteBookingRequestDTO.ServiceItemDTO(productId, quantity, null));
+                }
+            }
+        }
+        
+        Map<String, Object> resp = bookingService.updateBookingServices(bookingId, services, userDetails != null ? userDetails.getAccount() : null);
+        return ResponseEntity.ok(resp);
+    }
 }

@@ -27,4 +27,5 @@ public class VenueCardDTO {
     private String description;
     private String ownerName;
     private String contactPhone;
+    private String province;
 }

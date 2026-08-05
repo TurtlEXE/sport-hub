@@ -34,4 +34,6 @@ public interface BookingService {
     Map<String, Object> checkInSlots(List<Integer> slotIds, Account ownerAccount);
 
     Map<String, Object> checkOutAndSettle(Integer bookingId, List<Integer> slotIds, String paymentMethod, Account ownerAccount);
+
+    Map<String, Object> updateBookingServices(Integer bookingId, List<com.mvc.mock_project.dto.request.OnSiteBookingRequestDTO.ServiceItemDTO> services, Account userAccount);
 }

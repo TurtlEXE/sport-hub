@@ -833,6 +833,7 @@ public class BookingServiceImpl implements BookingService {
 
         Map<String, Object> detail = new HashMap<>();
         detail.put("bookingId", booking.getId());
+        detail.put("facilityId", booking.getFacility().getId());
         detail.put("bookingStatus", booking.getBookingStatus() != null ? booking.getBookingStatus().name() : "PENDING");
         detail.put("note", booking.getNote() != null ? booking.getNote() : "");
         detail.put("createdAt", booking.getCreatedAt() != null ? booking.getCreatedAt().toString() : "");
@@ -943,12 +944,15 @@ public class BookingServiceImpl implements BookingService {
                 Map<String, Object> iMap = new HashMap<>();
                 String pName = "Dịch vụ";
                 String unitStr = "";
+                Integer pId = null;
                 try {
                     if (item.getProduct() != null) {
+                        pId = item.getProduct().getId();
                         if (item.getProduct().getProductName() != null) pName = item.getProduct().getProductName();
                         if (item.getProduct().getRentalUnit() != null) unitStr = item.getProduct().getRentalUnit();
                     }
                 } catch (Exception ignored) {}
+                iMap.put("productId", pId);
                 iMap.put("productName", pName);
                 iMap.put("unit", unitStr);
                 iMap.put("quantity", item.getQuantity() != null ? item.getQuantity() : 1);
@@ -1277,4 +1281,106 @@ public class BookingServiceImpl implements BookingService {
         return slots;
     }
 
+    @Override
+    @Transactional
+    public Map<String, Object> updateBookingServices(Integer bookingId, List<com.mvc.mock_project.dto.request.OnSiteBookingRequestDTO.ServiceItemDTO> services, Account userAccount) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new IllegalArgumentException("Booking not found"));
+
+        // 1. Verify user permission
+        if (userAccount != null) {
+            Optional<Staff> staffOpt = staffRepository.findByAccountId(userAccount.getId());
+            if (staffOpt.isPresent()) {
+                Staff staff = staffOpt.get();
+                if (staff.getFacility() == null || !staff.getFacility().getId().equals(booking.getFacility().getId())) {
+                    throw new org.springframework.security.access.AccessDeniedException("Staff does not have permission to manage this facility");
+                }
+            } else {
+                if (booking.getFacility().getOwner() == null || !booking.getFacility().getOwner().getId().equals(userAccount.getId())) {
+                    throw new org.springframework.security.access.AccessDeniedException("You are not the owner of this facility");
+                }
+            }
+        }
+
+        // 2. Verify status: Must have at least one PENDING or CHECKED_IN slot
+        boolean hasEditableSlots = false;
+        if (booking.getBookingSlots() != null) {
+            hasEditableSlots = booking.getBookingSlots().stream()
+                    .anyMatch(s -> s.getSlotStatus() == SlotStatus.PENDING || s.getSlotStatus() == SlotStatus.CHECKED_IN);
+        }
+        if (!hasEditableSlots) {
+            throw new IllegalArgumentException("Cannot update services for a fully checked-out, cancelled, or completed booking.");
+        }
+
+        // 3. Clear existing OrderItems
+        if (booking.getOrderItems() != null) {
+            booking.getOrderItems().clear();
+        } else {
+            booking.setOrderItems(new ArrayList<>());
+        }
+        bookingRepository.saveAndFlush(booking);
+
+        // 4. Save new OrderItems and calculate totals
+        BigDecimal totalProductAmount = BigDecimal.ZERO;
+        if (services != null) {
+            for (com.mvc.mock_project.dto.request.OnSiteBookingRequestDTO.ServiceItemDTO svcDto : services) {
+                Product product = productRepository.findById(svcDto.getProductId())
+                        .orElseThrow(() -> new IllegalArgumentException("Product not found: " + svcDto.getProductId()));
+                if (!product.getFacility().getId().equals(booking.getFacility().getId())) {
+                    throw new IllegalArgumentException("Product does not belong to this facility");
+                }
+                if (!Boolean.TRUE.equals(product.getIsActive())) {
+                    throw new IllegalArgumentException("Product is inactive: " + product.getProductName());
+                }
+
+                int qty = svcDto.getQuantity() != null && svcDto.getQuantity() > 0 ? svcDto.getQuantity() : 1;
+                BigDecimal unitPrice = product.getPrice();
+                BigDecimal lineTotal = unitPrice.multiply(new BigDecimal(qty));
+                totalProductAmount = totalProductAmount.add(lineTotal);
+
+                OrderItem item = OrderItem.builder()
+                        .booking(booking)
+                        .product(product)
+                        .quantity(qty)
+                        .unitPriceSnapshot(unitPrice)
+                        .totalAmount(lineTotal)
+                        .addedBy(userAccount != null ? "STAFF_OWNER" : "SYSTEM")
+                        .build();
+                orderItemRepository.save(item);
+                booking.getOrderItems().add(item);
+            }
+        }
+
+        // 5. Update Invoice details
+        Invoice invoice = booking.getInvoice();
+        if (invoice != null) {
+            BigDecimal totalCourtAmount = invoice.getCourtAmount() != null ? invoice.getCourtAmount() : BigDecimal.ZERO;
+            BigDecimal subtotal = totalCourtAmount.add(totalProductAmount);
+            BigDecimal discount = invoice.getDiscountAmount() != null ? invoice.getDiscountAmount() : BigDecimal.ZERO;
+            BigDecimal totalAmount = subtotal.subtract(discount);
+            if (totalAmount.compareTo(BigDecimal.ZERO) < 0) totalAmount = BigDecimal.ZERO;
+
+            invoice.setProductAmount(totalProductAmount);
+            invoice.setSubtotal(subtotal);
+            invoice.setTotalAmount(totalAmount);
+
+            // Adjust payment status
+            BigDecimal paid = invoice.getPaidAmount() != null ? invoice.getPaidAmount() : BigDecimal.ZERO;
+            if (paid.compareTo(totalAmount) >= 0) {
+                invoice.setPaymentStatus(InvoiceStatus.PAID);
+            } else if (paid.compareTo(BigDecimal.ZERO) > 0) {
+                invoice.setPaymentStatus(InvoiceStatus.PARTIAL);
+            } else {
+                invoice.setPaymentStatus(InvoiceStatus.UNPAID);
+            }
+            invoiceRepository.save(invoice);
+        }
+
+        bookingRepository.save(booking);
+
+        Map<String, Object> resp = new HashMap<>();
+        resp.put("success", true);
+        resp.put("message", "Add-on services updated successfully!");
+        return resp;
+    }
 }

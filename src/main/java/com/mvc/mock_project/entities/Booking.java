@@ -69,6 +69,6 @@ public class Booking {
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL)
     private Review review;
 
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 }
