@@ -18,6 +18,36 @@ document.addEventListener('DOMContentLoaded', function () {
         chatbotStatus = "24/7 ကူညီပေးရန် အဆင်သင့်ဖြစ်ပါပြီ";
     }
         
+    let faqHtml = '';
+    if (currentLang === 'en') {
+        faqHtml = `
+            <div class="flex flex-wrap gap-2 mt-3 pl-10">
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="How to book a court?">How to book a court?</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="Which courts are available?">Which courts are available?</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="Any discount codes?">Any discount codes?</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="What are the court prices?">What are the court prices?</button>
+            </div>
+        `;
+    } else if (currentLang === 'mm' || currentLang === 'my') {
+        faqHtml = `
+            <div class="flex flex-wrap gap-2 mt-3 pl-10">
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="ကွင်းဘယ်လိုဘွတ်ကင်လုပ်ရမလဲ။">ကွင်းဘယ်လိုဘွတ်ကင်လုပ်ရမလဲ။</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="ဘယ်ကွင်းတွေ ရနိုင်လဲ။">ဘယ်ကွင်းတွေ ရနိုင်လဲ။</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="လျှော့စျေးကုဒ်တွေ ရှိလား။">လျှော့စျေးကုဒ်တွေ ရှိလား။</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="ကွင်းစျေးနှုန်းများက ဘယ်လောက်လဲ။">ကွင်းစျေးနှုန်းများက ဘယ်လောက်လဲ။</button>
+            </div>
+        `;
+    } else {
+        faqHtml = `
+            <div class="flex flex-wrap gap-2 mt-3 pl-10">
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="Cách đặt sân?">Cách đặt sân?</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="Sân nào đang trống?">Sân nào đang trống?</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="Có mã giảm giá nào không?">Có mã giảm giá nào không?</button>
+                <button class="faq-btn text-[11px] font-medium bg-white border border-primary-blue text-primary-blue px-3 py-1.5 rounded-full hover:bg-primary-blue hover:text-white transition-colors shadow-sm" data-question="Giá thuê sân bao nhiêu?">Giá thuê sân bao nhiêu?</button>
+            </div>
+        `;
+    }
+
     const chatbotContainer = document.createElement('div');
     chatbotContainer.id = 'ai-chatbot-widget';
     chatbotContainer.innerHTML = `
@@ -82,6 +112,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         ${welcomeMsg}
                     </div>
                 </div>
+                ${faqHtml}
             </div>
 
             <!-- Typing Indicator (Hidden by default) -->
@@ -150,6 +181,14 @@ document.addEventListener('DOMContentLoaded', function () {
     toggleBtn.addEventListener('click', toggleChat);
     minimizeBtn.addEventListener('click', toggleChat);
 
+    // FAQ Buttons Listener
+    document.querySelectorAll('.faq-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            input.value = this.getAttribute('data-question');
+            form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+        });
+    });
+
     function appendMessage(sender, text) {
         const msgDiv = document.createElement('div');
         msgDiv.className = 'flex gap-2.5 items-start ' + (sender === 'user' ? 'flex-row-reverse' : '');
@@ -192,6 +231,20 @@ document.addEventListener('DOMContentLoaded', function () {
         let safeText = escapeHtml(text);
         // Replace **text** with <b>text</b>
         safeText = safeText.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+        
+        // Parse [FACILITY_LINK:id:name] and remove leading dashes/asterisks and trailing commas/conjunctions
+        const facilityRegex = /(?:-\s*|\*\s*)*\[FACILITY_LINK:(\d+):(.*?)\](?:[,.\s]*(?:hoặc|or|và|and)?\s*)?/gi;
+        safeText = safeText.replace(facilityRegex, (match, id, name) => {
+            let bookText = currentLang === 'en' ? 'Book Now' : (currentLang === 'mm' || currentLang === 'my' ? 'ဘွတ်ကင်လုပ်ပါ' : 'Đặt sân');
+            return `<a href="/booking/${id}" class="flex items-center justify-between w-full gap-2 px-3 py-2.5 mt-2 mb-1 bg-blue-50 text-primary-blue border border-blue-100 rounded-xl text-sm font-semibold hover:bg-primary-blue hover:text-white hover:border-primary-blue transition-all shadow-sm group">
+                <div class="flex items-center gap-1.5 min-w-0 pr-2">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    <span class="leading-tight text-left break-words whitespace-normal">${name}</span>
+                </div>
+                <span class="flex-shrink-0 flex items-center bg-white text-primary-blue group-hover:bg-white/20 group-hover:text-white px-2 py-1 rounded-md text-[11px] uppercase tracking-wider shadow-sm transition-colors">${bookText} &rarr;</span>
+            </a>`;
+        });
+        
         return safeText;
     }
 

@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Slf4j
 @Service
@@ -108,8 +109,21 @@ public class CommissionServiceImpl implements CommissionService {
             throw new CommissionTierOverlapException("Tier overlaps with an existing announced or active tier");
         }
 
+        CommissionPolicy policy = commissionPolicyRepository.getSingletonPolicy()
+                .orElseGet(() -> {
+                    CommissionPolicy p = new CommissionPolicy();
+                    p.setMinNoticeDays(14);
+                    return p;
+                });
+
+        long actualNoticeDays = ChronoUnit.DAYS.between(LocalDateTime.now(), tier.getEffectiveFrom());
+        if (actualNoticeDays < policy.getMinNoticeDays()) {
+            throw new RuntimeException("Notice period (" + actualNoticeDays + " days) is less than the required minimum policy (" + policy.getMinNoticeDays() + " days)");
+        }
+
         tier.setStatus(TierStatus.ANNOUNCED);
         tier.setAnnouncedAt(LocalDateTime.now());
+        tier.setNoticeDays((int) actualNoticeDays);
         
         CommissionTier saved = commissionTierRepository.save(tier);
         log.info("Announced commission tier with id: {}", saved.getId());

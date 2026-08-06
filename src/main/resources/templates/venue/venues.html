@@ -38,7 +38,9 @@
 
                 <!-- Sidebar Filters -->
                 <div class="w-full lg:w-1/4 flex-shrink-0">
-                    <form id="filterForm" class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 sticky top-28" action="/venues" method="GET">
+                    <form id="filterForm"
+                        class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 sticky top-28"
+                        action="/venues" method="GET">
                         <div class="flex justify-between items-center mb-6">
                             <h2 class="text-sm font-bold text-slate-800 tracking-wider flex items-center gap-2">
                                 <svg class="w-4 h-4 text-primary-blue" fill="none" viewBox="0 0 24 24"
@@ -49,13 +51,15 @@
                                 <span th:text="#{venue.filter.title}">SEARCH FILTERS</span>
                             </h2>
                             <button type="button" onclick="resetFilters()"
-                                class="text-xs font-semibold text-slate-400 hover:text-primary-blue transition-colors" th:text="#{venue.filter.clear}">Clear
+                                class="text-xs font-semibold text-slate-400 hover:text-primary-blue transition-colors"
+                                th:text="#{venue.filter.clear}">Clear
                                 all</button>
                         </div>
 
                         <!-- Keyword Search -->
                         <div class="mb-8">
-                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider" th:text="#{venue.filter.keyword.label}">KEYWORD
+                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider"
+                                th:text="#{venue.filter.keyword.label}">KEYWORD
                                 / VENUE NAME</label>
                             <div class="relative rounded-md shadow-sm">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -74,19 +78,23 @@
 
                         <!-- Sport Categories -->
                         <div class="mb-8">
-                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider" th:text="#{venue.filter.sport.label}">SPORT
+                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider"
+                                th:text="#{venue.filter.sport.label}">SPORT
                                 CATEGORIES</label>
                             <div class="space-y-1">
                                 <!-- All Sports Option -->
                                 <label
                                     class="flex items-center justify-between p-2.5 rounded-xl border border-transparent cursor-pointer group hover:bg-slate-50 transition-all"
                                     th:classappend="${sportCode == null or sportCode == ''} ? 'bg-blue-50/50 border-blue-100' : ''">
-                                    <input type="radio" name="sportCode" value="" class="filter-input hidden" th:checked="${sportCode == null or sportCode == ''}">
+                                    <input type="radio" name="sportCode" value="" class="filter-input hidden"
+                                        th:checked="${sportCode == null or sportCode == ''}">
                                     <div class="flex items-center gap-3">
-                                        <span class="text-sm font-bold text-primary-blue" th:text="#{venue.filter.sport.all}">All Sports</span>
+                                        <span class="text-sm font-bold text-primary-blue"
+                                            th:text="#{venue.filter.sport.all}">All Sports</span>
                                     </div>
-                                    <svg class="w-5 h-5 transition-colors" th:classappend="${sportCode == null or sportCode == ''} ? 'text-primary-blue' : 'text-transparent group-hover:text-slate-300'" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
+                                    <svg class="w-5 h-5 transition-colors"
+                                        th:classappend="${sportCode == null or sportCode == ''} ? 'text-primary-blue' : 'text-transparent group-hover:text-slate-300'"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M5 13l4 4L19 7" />
                                     </svg>
@@ -96,14 +104,18 @@
                                 <label th:each="sport : ${sports}"
                                     class="flex items-center justify-between p-2.5 rounded-xl cursor-pointer group transition-all"
                                     th:classappend="${sportCode == sport.sportCode} ? 'bg-blue-50/50 border-blue-100' : 'hover:bg-slate-50 border-transparent hover:border-slate-100'">
-                                    <input type="radio" name="sportCode" th:value="${sport.sportCode}" class="filter-input hidden" th:checked="${sportCode == sport.sportCode}">
+                                    <input type="radio" name="sportCode" th:value="${sport.sportCode}"
+                                        class="filter-input hidden" th:checked="${sportCode == sport.sportCode}">
                                     <div class="flex items-center gap-3">
                                         <span class="text-sm font-medium transition-colors"
-                                              th:classappend="${sportCode == sport.sportCode} ? 'text-primary-blue font-bold' : 'text-slate-600 group-hover:text-slate-900'"
-                                              th:text="${sport.sportName}">Sport Name</span>
+                                            th:classappend="${sportCode == sport.sportCode} ? 'text-primary-blue font-bold' : 'text-slate-600 group-hover:text-slate-900'"
+                                            th:text="${sport.sportName}">Sport Name</span>
                                     </div>
-                                    <svg class="w-5 h-5 transition-colors" th:classappend="${sportCode == sport.sportCode} ? 'text-primary-blue' : 'text-transparent group-hover:text-slate-300'" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                    <svg class="w-5 h-5 transition-colors"
+                                        th:classappend="${sportCode == sport.sportCode} ? 'text-primary-blue' : 'text-transparent group-hover:text-slate-300'"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M5 13l4 4L19 7" />
                                     </svg>
                                 </label>
                             </div>
@@ -131,18 +143,18 @@
                                 </span>
                                 <input type="hidden" id="i18nAllPrices" th:value="#{venue.filter.price.all}">
                             </div>
-                            
+
                             <!-- Dual Slider Container -->
                             <div class="relative w-full h-8 flex items-center">
                                 <!-- Track Background -->
                                 <div class="absolute w-full h-2 bg-slate-200 rounded-lg"></div>
                                 <!-- Active Range Track -->
                                 <div id="sliderRangeTrack" class="absolute h-2 bg-primary-blue rounded-lg"></div>
-                                
-                                <input type="range" name="minPrice" id="minPriceSlider" min="0" max="1000000" step="50000" 
+
+                                <input type="range" name="minPrice" id="minPriceSlider" min="0" max="1000000" step="50000"
                                     th:value="${minPrice != null ? minPrice : 0}"
                                     class="range-slider-input filter-input absolute w-full h-2 appearance-none bg-transparent pointer-events-none z-20 accent-primary-blue">
-                                <input type="range" name="maxPrice" id="maxPriceSlider" min="0" max="1000000" step="50000" 
+                                <input type="range" name="maxPrice" id="maxPriceSlider" min="0" max="1000000" step="50000"
                                     th:value="${maxPrice != null ? maxPrice : 1000000}"
                                     class="range-slider-input filter-input absolute w-full h-2 appearance-none bg-transparent pointer-events-none z-30 accent-primary-blue">
                             </div>
@@ -155,14 +167,18 @@
 
                         <!-- Venue Amenities -->
                         <div>
-                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider" th:text="#{venue.filter.amenities.label}">FACILITY SERVICES</label>
+                            <label class="block text-xs font-bold text-slate-500 mb-3 uppercase tracking-wider"
+                                th:text="#{venue.filter.amenities.label}">FACILITY SERVICES</label>
                             <div class="space-y-3">
-                                <label th:each="category : ${categories}" class="flex items-center gap-3 cursor-pointer group">
-                                    <input type="checkbox" name="amenities" th:value="${category.id}" th:checked="${selectedAmenities.contains(category.id)}"
+                                <label th:each="category : ${categories}"
+                                    class="flex items-center gap-3 cursor-pointer group">
+                                    <input type="checkbox" name="amenities" th:value="${category.id}"
+                                        th:checked="${selectedAmenities.contains(category.id)}"
                                         class="filter-input w-4 h-4 text-primary-blue border-slate-300 rounded focus:ring-primary-blue focus:ring-2">
                                     <span
                                         class="text-sm font-medium text-slate-600 group-hover:text-slate-900 transition-colors flex items-center gap-2">
-                                        <span class="text-lg text-primary-blue"></span> <span th:text="${category.categoryName}">Amenity</span>
+                                        <span class="text-lg text-primary-blue"></span> <span
+                                            th:text="${category.categoryName}">Amenity</span>
                                     </span>
                                 </label>
                             </div>
@@ -173,21 +189,43 @@
                 <!-- Venues Grid -->
                 <div class="w-full lg:w-3/4" id="venueGridContainer" th:fragment="venueListFragment">
                     <!-- Loading Overlay -->
-                    <div id="gridLoadingOverlay" class="hidden absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-2xl">
-                        <svg class="animate-spin h-10 w-10 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    <div id="gridLoadingOverlay"
+                        class="hidden absolute inset-0 bg-white/60 backdrop-blur-[2px] z-10 flex items-center justify-center rounded-2xl">
+                        <svg class="animate-spin h-10 w-10 text-primary-blue" xmlns="http://www.w3.org/2000/svg"
+                            fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                     </div>
-                    
-                    <div th:if="${venues.isEmpty()}" class="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm">
-                        <div class="text-5xl mb-4">🔍</div>
-                        <h3 class="text-xl font-bold text-slate-800 mb-2" th:text="#{venue.empty.title}">No venues found</h3>
-                        <p class="text-slate-500" th:text="#{venue.empty.message}">Sorry, no venues match your current filters.</p>
-                        <button onclick="resetFilters()" class="mt-6 bg-blue-50 text-primary-blue font-bold px-6 py-2.5 rounded-xl hover:bg-blue-100 transition-colors" th:text="#{venue.empty.clear}">Clear filters</button>
+
+                    <!-- Only Favorites Filter (Top of Grid) -->
+                    <div sec:authorize="isAuthenticated()" class="flex justify-end mb-6">
+                        <label th:classappend="${onlyFavorites} ? 'bg-rose-50 border-rose-200' : 'bg-white border-slate-200 hover:border-rose-300'" class="flex items-center gap-2 cursor-pointer group px-4 py-2 rounded-xl shadow-sm border transition-all">
+                            <input type="checkbox" id="onlyFavoritesTop" th:checked="${onlyFavorites}" class="hidden">
+                            <svg class="w-5 h-5 transition-colors" th:classappend="${onlyFavorites} ? 'text-rose-500' : 'text-slate-400 group-hover:text-rose-400'" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd" />
+                            </svg>
+                            <span class="text-sm font-bold transition-colors" th:classappend="${onlyFavorites} ? 'text-rose-600' : 'text-slate-700 group-hover:text-rose-500'" th:text="#{venue.filter.favorites}">My Favorites</span>
+                        </label>
                     </div>
 
-                    <div th:if="${!venues.isEmpty()}" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
+                    <div th:if="${venues.isEmpty()}"
+                        class="bg-white rounded-2xl p-12 text-center border border-slate-100 shadow-sm">
+                        <div class="text-5xl mb-4">🔍</div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-2" th:text="#{venue.empty.title}">No venues found
+                        </h3>
+                        <p class="text-slate-500" th:text="#{venue.empty.message}">Sorry, no venues match your current
+                            filters.</p>
+                        <button onclick="resetFilters()"
+                            class="mt-6 bg-blue-50 text-primary-blue font-bold px-6 py-2.5 rounded-xl hover:bg-blue-100 transition-colors"
+                            th:text="#{venue.empty.clear}">Clear filters</button>
+                    </div>
+
+                    <div th:if="${!venues.isEmpty()}"
+                        class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 relative">
 
                         <!-- Venue Card -->
                         <div th:each="venue : ${venues}"
@@ -209,9 +247,10 @@
                                 </div>
 
                                 <!-- Favorite Button Top Right -->
-                                <button
-                                    class="absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-white transition-all shadow-sm">
-                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                                <button th:data-facility-id="${venue.facilityId}"
+                                    class="favorite-btn absolute top-3 right-3 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-white transition-all shadow-sm group">
+                                    <svg class="w-4 h-4 transition-transform duration-300 group-active:scale-75"
+                                        fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd"
                                             d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
                                             clip-rule="evenodd" />
@@ -269,7 +308,11 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
-                                    <span class="text-xs text-slate-500"><th:block th:text="#{venue.card.openingHours}"></th:block> <strong class="text-slate-700" th:text="${venue.openingHours}">05:00 - 23:00</strong></span>
+                                    <span class="text-xs text-slate-500">
+                                        <th:block th:text="#{venue.card.openingHours}"></th:block> <strong
+                                            class="text-slate-700" th:text="${venue.openingHours}">05:00 -
+                                            23:00</strong>
+                                    </span>
                                 </div>
 
                                 <!-- Amenities small tags -->
@@ -288,13 +331,16 @@
                                 <!-- Price and Action -->
                                 <div class="mt-auto border-t border-slate-100 pt-4">
                                     <div class="flex items-center justify-between mb-3">
-                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider" th:text="#{venue.card.priceFrom}">
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-wider"
+                                            th:text="#{venue.card.priceFrom}">
                                             FROM
                                         </div>
                                         <div class="flex items-baseline gap-1">
                                             <span class="text-xl font-black text-slate-900"
-                                                th:text="${#numbers.formatDecimal(venue.minPricePerHour, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">150,000 VNĐ</span>
-                                            <span class="text-[10px] font-bold text-slate-400" th:text="#{venue.card.perSlot}">/ slot</span>
+                                                th:text="${#numbers.formatDecimal(venue.minPricePerHour, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">150,000
+                                                VNĐ</span>
+                                            <span class="text-[10px] font-bold text-slate-400"
+                                                th:text="#{venue.card.perSlot}">/ slot</span>
                                         </div>
                                     </div>
                                     <a th:href="@{/booking/{id}(id=${venue.facilityId})}"
@@ -319,32 +365,192 @@
         <!-- Venue Details Modal -->
         <div id="venueModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center overflow-y-auto">
             <!-- Backdrop with blur -->
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" id="venueModalBackdrop"></div>
-            
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" id="venueModalBackdrop">
+            </div>
+
             <!-- Modal Content Shell -->
-            <div class="relative bg-white rounded-3xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl flex flex-col transform transition-all">
+            <div
+                class="relative bg-white rounded-3xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden shadow-2xl flex flex-col transform transition-all">
                 <!-- Close button -->
-                <button id="closeVenueModal" class="absolute top-4 right-4 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white transition-all shadow-sm z-10">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                <button id="closeVenueModal"
+                    class="absolute top-4 right-4 w-8 h-8 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800 hover:bg-white transition-all shadow-sm z-10">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                 </button>
-                
+
                 <div id="venueModalContent" class="w-full flex-1 overflow-y-auto">
                     <div class="p-12 text-center text-slate-500">
-                        <svg class="animate-spin h-8 w-8 mx-auto mb-4 text-primary-blue" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg class="animate-spin h-8 w-8 mx-auto mb-4 text-primary-blue"
+                            xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                            </circle>
+                            <path class="opacity-75" fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                            </path>
                         </svg>
                         Loading venue data...
                     </div>
                 </div>
             </div>
         </div>
+        <!-- Login Required Modal -->
+        <div id="favoriteLoginModal" class="hidden fixed inset-0 z-[110] flex items-center justify-center">
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+                onclick="document.getElementById('favoriteLoginModal').classList.add('hidden')"></div>
+            <!-- Modal Content -->
+            <div
+                class="relative bg-white rounded-3xl p-8 max-w-sm w-full mx-4 shadow-2xl flex flex-col items-center text-center transform transition-all scale-100">
+                <div class="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd"
+                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-bold text-slate-900 mb-2" th:text="#{favorite.login.required.title}">Login
+                    Required</h3>
+                <p class="text-sm text-slate-500 mb-6" th:text="#{favorite.login.required.message}">You need to log in
+                    to add venues to your favorites.</p>
+                <div class="flex gap-3 w-full">
+                    <button onclick="document.getElementById('favoriteLoginModal').classList.add('hidden')"
+                        class="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-colors"
+                        th:text="#{favorite.login.cancel}">Cancel</button>
+                    <a href="/auth/login"
+                        class="flex-1 py-2.5 px-4 rounded-xl bg-primary-blue text-white font-bold text-sm hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+                        th:text="#{favorite.login.btn}">Log In</a>
+                </div>
+            </div>
+        </div>
+
     </main>
 
 
 
     <th:block layout:fragment="pageScripts">
+        <script th:inline="javascript">
+            const isAuthenticated = /*[[${#authorization.expression('isAuthenticated()')}]]*/ false;
+        </script>
         <script>
+            // Favorite Logic
+            async function initFavoriteLogic() {
+                // Top filter toggle
+                const topFav = document.getElementById('onlyFavoritesTop');
+                if (topFav) {
+                    topFav.addEventListener('change', function() {
+                        const form = document.getElementById('filterForm');
+                        const formData = new FormData(form);
+                        if (this.checked) {
+                            formData.append('onlyFavorites', 'true');
+                        }
+                        const searchParams = new URLSearchParams(formData);
+
+                        const overlay = document.getElementById('gridLoadingOverlay');
+                        if (overlay) overlay.classList.remove('hidden');
+
+                        fetch('/venues?' + searchParams.toString(), {
+                            headers: { 'Fetch': 'true' }
+                        })
+                        .then(res => res.text())
+                        .then(html => {
+                            const currentContainer = document.getElementById('venueGridContainer');
+                            if (currentContainer) {
+                                currentContainer.outerHTML = html;
+                            }
+                            if ("geolocation" in navigator) {
+                                navigator.geolocation.getCurrentPosition(function (position) {
+                                    calculateDistances(position.coords.latitude, position.coords.longitude);
+                                }, mockDistances);
+                            } else {
+                                mockDistances();
+                            }
+                            initVenueModal();
+                            initFavoriteLogic();
+                        })
+                        .catch(err => console.error("Error fetching filtered venues", err));
+                    });
+                }
+
+                if (isAuthenticated) {
+                    try {
+                        const res = await fetch('/api/customer/favorites/ids');
+                        if (res.ok) {
+                            const result = await res.json();
+                            if (result.success && result.data) {
+                                const favoriteIds = result.data;
+                                document.querySelectorAll('.favorite-btn').forEach(btn => {
+                                    const id = parseInt(btn.getAttribute('data-facility-id'));
+                                    if (favoriteIds.includes(id)) {
+                                        btn.classList.add('text-rose-500');
+                                        btn.classList.remove('text-slate-400');
+                                    } else {
+                                        btn.classList.add('text-slate-400');
+                                        btn.classList.remove('text-rose-500');
+                                    }
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Failed to fetch favorites', e);
+                    }
+                }
+
+                // Bind click events
+                document.querySelectorAll('.favorite-btn').forEach(btn => {
+                    // Remove old listeners by cloning
+                    const newBtn = btn.cloneNode(true);
+                    btn.parentNode.replaceChild(newBtn, btn);
+
+                    newBtn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+
+                        if (!isAuthenticated) {
+                            document.getElementById('favoriteLoginModal').classList.remove('hidden');
+                            return;
+                        }
+
+                        const id = newBtn.getAttribute('data-facility-id');
+                        const originalHtml = newBtn.innerHTML;
+                        newBtn.innerHTML = '<svg class="animate-spin w-4 h-4 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+                        newBtn.disabled = true;
+
+                        try {
+                            const res = await fetch(`/api/customer/favorites/${id}/toggle`, {
+                                method: 'POST',
+                                headers: {
+                                    'Accept': 'application/json'
+                                }
+                            });
+
+                            newBtn.innerHTML = originalHtml;
+                            newBtn.disabled = false;
+
+                            if (res.ok) {
+                                const result = await res.json();
+                                if (result.success) {
+                                    if (result.data.favorited) {
+                                        newBtn.classList.add('text-rose-500');
+                                        newBtn.classList.remove('text-slate-400');
+                                    } else {
+                                        newBtn.classList.add('text-slate-400');
+                                        newBtn.classList.remove('text-rose-500');
+                                    }
+                                }
+                            } else if (res.status === 401 || res.status === 403) {
+                                document.getElementById('favoriteLoginModal').classList.remove('hidden');
+                            }
+                        } catch (e) {
+                            console.error('Toggle error', e);
+                            newBtn.innerHTML = originalHtml;
+                            newBtn.disabled = false;
+                        }
+                    });
+                });
+            }
+
             // Geolocation Script to Calculate Distance
             document.addEventListener('DOMContentLoaded', function () {
                 if ("geolocation" in navigator) {
@@ -409,12 +615,12 @@
                 console.log("Initializing Venue Modal scripts...");
                 const cards = document.querySelectorAll('.venue-card');
                 console.log("Found " + cards.length + " venue cards.");
-                
+
                 const modal = document.getElementById('venueModal');
                 const modalContent = document.getElementById('venueModalContent');
                 const closeBtn = document.getElementById('closeVenueModal');
                 const backdrop = document.getElementById('venueModalBackdrop');
-                
+
                 if (!modal || !modalContent) {
                     console.error("Modal elements not found in the DOM!");
                     return;
@@ -425,10 +631,10 @@
                     if (trigger) {
                         trigger.addEventListener('click', async (e) => {
                             e.preventDefault();
-                            
+
                             const venueId = card.dataset.id;
                             console.log("Clicked venue card ID: " + venueId);
-                            
+
                             // Show loading modal
                             modal.classList.remove('hidden');
                             document.body.style.overflow = 'hidden'; // Prevent background scrolling
@@ -468,9 +674,13 @@
 
             // Run initialization
             if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', initVenueModal);
+                document.addEventListener('DOMContentLoaded', () => {
+                    initVenueModal();
+                    initFavoriteLogic();
+                });
             } else {
                 initVenueModal();
+                initFavoriteLogic();
             }
 
             // Dual Price Range Slider & AJAX Filtering Logic
@@ -528,16 +738,16 @@
                 }
 
                 inputs.forEach(input => {
-                    input.addEventListener('input', function() {
+                    input.addEventListener('input', function () {
                         clearTimeout(debounceTimer);
                         debounceTimer = setTimeout(() => {
                             fetchFilteredVenues();
                         }, 500); // Debounce to prevent excessive requests
                     });
-                    
+
                     // For radio/checkboxes, trigger immediately on change
                     if (input.type === 'radio' || input.type === 'checkbox') {
-                        input.addEventListener('change', function() {
+                        input.addEventListener('change', function () {
                             // Update styling for radio buttons
                             if (input.type === 'radio' && input.name === 'sportCode') {
                                 document.querySelectorAll('input[name="sportCode"]').forEach(radio => {
@@ -545,7 +755,7 @@
                                     const iconBg = label.querySelector('.rounded-full');
                                     const textSpan = label.querySelector('span.text-sm');
                                     const checkIcon = label.querySelector('svg.w-5.h-5');
-                                    
+
                                     if (radio.checked) {
                                         label.classList.add('bg-blue-50/50', 'border-blue-100');
                                         label.classList.remove('hover:bg-slate-50', 'border-transparent', 'hover:border-slate-100');
@@ -582,8 +792,14 @@
 
                 function fetchFilteredVenues() {
                     const formData = new FormData(form);
+
+                    const topFav = document.getElementById('onlyFavoritesTop');
+                    if (topFav && topFav.checked) {
+                        formData.append('onlyFavorites', 'true');
+                    }
+
                     const searchParams = new URLSearchParams(formData);
-                    
+
                     // Show loading if we added it
                     const overlay = document.getElementById('gridLoadingOverlay');
                     if (overlay) overlay.classList.remove('hidden');
@@ -593,33 +809,34 @@
                             'Fetch': 'true' // Trigger fragment return in Controller
                         }
                     })
-                    .then(res => res.text())
-                    .then(html => {
-                        // Dynamically get the current container to avoid modifying a detached node!
-                        const currentContainer = document.getElementById('venueGridContainer');
-                        if (currentContainer) {
-                            currentContainer.outerHTML = html;
-                        }
-                        // Re-initialize scripts after DOM replacement
-                        if ("geolocation" in navigator) {
-                            navigator.geolocation.getCurrentPosition(function (position) {
-                                calculateDistances(position.coords.latitude, position.coords.longitude);
-                            }, mockDistances);
-                        } else {
-                            mockDistances();
-                        }
-                        initVenueModal(); // Rebind modal events
-                    })
-                    .catch(err => console.error("Error fetching filtered venues", err));
+                        .then(res => res.text())
+                        .then(html => {
+                            // Dynamically get the current container to avoid modifying a detached node!
+                            const currentContainer = document.getElementById('venueGridContainer');
+                            if (currentContainer) {
+                                currentContainer.outerHTML = html;
+                            }
+                            // Re-initialize scripts after DOM replacement
+                            if ("geolocation" in navigator) {
+                                navigator.geolocation.getCurrentPosition(function (position) {
+                                    calculateDistances(position.coords.latitude, position.coords.longitude);
+                                }, mockDistances);
+                            } else {
+                                mockDistances();
+                            }
+                            initVenueModal(); // Rebind modal events
+                            initFavoriteLogic(); // Rebind favorite events
+                        })
+                        .catch(err => console.error("Error fetching filtered venues", err));
                 }
             });
 
             function calculateDistances(userLat, userLng) {
-                const distanceText = document.getElementById('i18nAllPrices') ? 
+                const distanceText = document.getElementById('i18nAllPrices') ?
                     document.getElementById('i18nAllPrices').parentElement.nextElementSibling.nextElementSibling.innerText : 'km'; // Fallback or we can just inject a span
                 // A better way to get the 'km' text for distance is to embed it in the card, which we did with th:text="#{venue.distance}"
                 const kmSuffix = ' km'; // For simplicity, we just append ' km' in JS, or extract from DOM. Let's just hardcode ' km' or use the existing text.
-                
+
                 const cards = document.querySelectorAll('.venue-card');
                 cards.forEach(card => {
                     const venueLat = parseFloat(card.getAttribute('data-lat'));

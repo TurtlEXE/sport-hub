@@ -31,7 +31,8 @@ public class ProductFormDTO {
     @Min(value = 0, message = "Giá không được âm")
     private BigDecimal price;
 
-    private String rentalUnit; // Optional, only for RENTAL
+    @NotBlank(message = "Đơn vị tính không được để trống")
+    private String rentalUnit; // Used for both SALE and RENTAL as unit of measurement
 
     @Min(value = 0, message = "Tồn kho không được âm")
     private Integer stockQuantity; // Optional (null = unlimited)

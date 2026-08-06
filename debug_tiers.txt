@@ -1,0 +1,5 @@
+Active tiers count: 3
+Tier: ID=2, min=0.00, max=1000.00
+Tier: ID=3, min=1000.01, max=3000.00
+Tier: ID=4, min=3000.01, max=null
+Gap reason: gap between tier max (1000.00) and next tier min (1000.01)
