@@ -624,19 +624,23 @@ public class BookingServiceImpl implements BookingService {
             String formattedTime = payTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss"));
             String facilityName = (invoice.getBooking() != null && invoice.getBooking().getFacility() != null) 
                     ? invoice.getBooking().getFacility().getName() : "Venue";
-            StringBuilder slotsInfo = new StringBuilder();
-            if (invoice.getBooking() != null && invoice.getBooking().getBookingSlots() != null) {
-                for (BookingSlot bs : invoice.getBooking().getBookingSlots()) {
-                    slotsInfo.append(bs.getCourt().getCourtName()).append(" (")
-                             .append(bs.getStartTime()).append("-").append(bs.getEndTime()).append("), ");
+            
+            String userName = "Customer";
+            if (invoice.getBooking() != null && invoice.getBooking().getAccount() != null) {
+                userName = invoice.getBooking().getAccount().getFullName();
+                if (userName == null || userName.isEmpty()) {
+                    userName = "Customer";
                 }
             }
             
-            String bookingDetails = "Mã giao dịch: " + transactionId + "\n"
-                    + "Thời gian: " + formattedTime + "\n"
-                    + "Cơ sở: " + facilityName + "\n"
-                    + "Chi tiết sân: " + slotsInfo.toString();
-            emailService.sendPaymentSuccessEmail(email, bookingDetails);
+            java.util.List<String> courtDetails = new java.util.ArrayList<>();
+            if (invoice.getBooking() != null && invoice.getBooking().getBookingSlots() != null) {
+                for (BookingSlot bs : invoice.getBooking().getBookingSlots()) {
+                    courtDetails.add(bs.getCourt().getCourtName() + " (" + bs.getStartTime() + "-" + bs.getEndTime() + ")");
+                }
+            }
+            
+            emailService.sendPaymentSuccessEmail(email, userName, transactionId, formattedTime, facilityName, courtDetails);
         }
     }
 

@@ -100,26 +100,211 @@ public class EmailServiceImpl implements EmailService {
     }
 
     @Override
-    public void sendPaymentSuccessEmail(String to, String bookingDetails) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(to);
-        message.setSubject("Xác nhận thanh toán tiền sân thành công - SportHub");
-        message.setText("Chào bạn,\n\n"
-                + "Bạn đã thanh toán tiền sân thành công tại hệ thống SportHub.\n"
-                + "Chi tiết đơn hàng:\n"
-                + bookingDetails + "\n\n"
-                + "LƯU Ý: Số tiền dịch vụ đi kèm (nếu có) sẽ được thanh toán trực tiếp tại sân.\n\n"
-                + "Trân trọng,\nĐội ngũ SportHub");
-
+    public void sendPaymentSuccessEmail(String to, String userName, String transactionId, String time, String facilityName, java.util.List<String> courtDetails) {
         try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("Booking Confirmation - SportHub");
+
+            StringBuilder courtDetailsHtml = new StringBuilder();
+            if (courtDetails != null) {
+                for (String detail : courtDetails) {
+                    courtDetailsHtml.append("<li>").append(detail).append("</li>");
+                }
+            }
+
+            String htmlContent = "<!DOCTYPE html>\n" +
+                    "<html lang=\"en\">\n" +
+                    "<head>\n" +
+                    "    <meta charset=\"UTF-8\">\n" +
+                    "    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n" +
+                    "    <title>Booking Confirmation - SportHub</title>\n" +
+                    "    <style>\n" +
+                    "        body {\n" +
+                    "            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;\n" +
+                    "            background-color: #f4f7f6;\n" +
+                    "            margin: 0;\n" +
+                    "            padding: 0;\n" +
+                    "            color: #333333;\n" +
+                    "        }\n" +
+                    "        .email-wrapper {\n" +
+                    "            width: 100%;\n" +
+                    "            background-color: #f4f7f6;\n" +
+                    "            padding: 40px 15px;\n" +
+                    "            box-sizing: border-box;\n" +
+                    "        }\n" +
+                    "        .email-content {\n" +
+                    "            max-width: 600px;\n" +
+                    "            margin: 0 auto;\n" +
+                    "            background-color: #ffffff;\n" +
+                    "            border-radius: 8px;\n" +
+                    "            overflow: hidden;\n" +
+                    "            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);\n" +
+                    "        }\n" +
+                    "        .header {\n" +
+                    "            background-color: #10b981;\n" +
+                    "            padding: 30px 20px;\n" +
+                    "            text-align: center;\n" +
+                    "        }\n" +
+                    "        .header h1 {\n" +
+                    "            color: #ffffff;\n" +
+                    "            margin: 0;\n" +
+                    "            font-size: 26px;\n" +
+                    "            font-weight: 700;\n" +
+                    "            letter-spacing: 1px;\n" +
+                    "        }\n" +
+                    "        .body-content {\n" +
+                    "            padding: 35px 40px;\n" +
+                    "        }\n" +
+                    "        .body-content p {\n" +
+                    "            font-size: 16px;\n" +
+                    "            line-height: 1.6;\n" +
+                    "            margin-top: 0;\n" +
+                    "            margin-bottom: 20px;\n" +
+                    "            color: #4b5563;\n" +
+                    "        }\n" +
+                    "        .greeting {\n" +
+                    "            font-size: 18px !important;\n" +
+                    "            font-weight: 600;\n" +
+                    "            color: #1f2937 !important;\n" +
+                    "        }\n" +
+                    "        .order-details {\n" +
+                    "            background-color: #f9fafb;\n" +
+                    "            border: 1px solid #e5e7eb;\n" +
+                    "            border-radius: 8px;\n" +
+                    "            padding: 25px;\n" +
+                    "            margin-bottom: 25px;\n" +
+                    "        }\n" +
+                    "        .order-details h2 {\n" +
+                    "            font-size: 18px;\n" +
+                    "            margin-top: 0;\n" +
+                    "            margin-bottom: 20px;\n" +
+                    "            color: #1f2937;\n" +
+                    "            border-bottom: 2px solid #e5e7eb;\n" +
+                    "            padding-bottom: 10px;\n" +
+                    "        }\n" +
+                    "        .detail-row {\n" +
+                    "            margin-bottom: 12px;\n" +
+                    "        }\n" +
+                    "        .detail-label {\n" +
+                    "            font-weight: 600;\n" +
+                    "            color: #6b7280;\n" +
+                    "            display: block;\n" +
+                    "            font-size: 13px;\n" +
+                    "            text-transform: uppercase;\n" +
+                    "            letter-spacing: 0.5px;\n" +
+                    "            margin-bottom: 4px;\n" +
+                    "        }\n" +
+                    "        .detail-value {\n" +
+                    "            color: #111827;\n" +
+                    "            font-size: 16px;\n" +
+                    "            font-weight: 500;\n" +
+                    "        }\n" +
+                    "        .detail-value ul {\n" +
+                    "            margin: 5px 0 0 0;\n" +
+                    "            padding-left: 20px;\n" +
+                    "            font-weight: normal;\n" +
+                    "        }\n" +
+                    "        .detail-value ul li {\n" +
+                    "            margin-bottom: 5px;\n" +
+                    "        }\n" +
+                    "        .note {\n" +
+                    "            background-color: #fffbeb;\n" +
+                    "            border-left: 4px solid #f59e0b;\n" +
+                    "            padding: 16px 20px;\n" +
+                    "            border-radius: 4px;\n" +
+                    "            font-size: 14px;\n" +
+                    "            color: #92400e;\n" +
+                    "            margin-bottom: 30px;\n" +
+                    "            line-height: 1.5;\n" +
+                    "        }\n" +
+                    "        .note strong {\n" +
+                    "            color: #b45309;\n" +
+                    "        }\n" +
+                    "        .footer {\n" +
+                    "            background-color: #f3f4f6;\n" +
+                    "            padding: 25px;\n" +
+                    "            text-align: center;\n" +
+                    "            font-size: 13px;\n" +
+                    "            color: #6b7280;\n" +
+                    "            border-top: 1px solid #e5e7eb;\n" +
+                    "        }\n" +
+                    "        .footer p {\n" +
+                    "            margin: 0;\n" +
+                    "            line-height: 1.5;\n" +
+                    "        }\n" +
+                    "    </style>\n" +
+                    "</head>\n" +
+                    "<body>\n" +
+                    "    <div class=\"email-wrapper\">\n" +
+                    "        <div class=\"email-content\">\n" +
+                    "            <div class=\"header\">\n" +
+                    "                <h1>SportHub</h1>\n" +
+                    "            </div>\n" +
+                    "            \n" +
+                    "            <div class=\"body-content\">\n" +
+                    "                <p class=\"greeting\">Hello " + userName + ",</p>\n" +
+                    "                \n" +
+                    "                <p>Your payment for the court booking has been processed successfully at SportHub.</p>\n" +
+                    "                \n" +
+                    "                <div class=\"order-details\">\n" +
+                    "                    <h2>Booking Details</h2>\n" +
+                    "                    \n" +
+                    "                    <div class=\"detail-row\">\n" +
+                    "                        <span class=\"detail-label\">Transaction ID</span>\n" +
+                    "                        <span class=\"detail-value\">" + transactionId + "</span>\n" +
+                    "                    </div>\n" +
+                    "                    \n" +
+                    "                    <div class=\"detail-row\">\n" +
+                    "                        <span class=\"detail-label\">Time</span>\n" +
+                    "                        <span class=\"detail-value\">" + time + "</span>\n" +
+                    "                    </div>\n" +
+                    "                    \n" +
+                    "                    <div class=\"detail-row\">\n" +
+                    "                        <span class=\"detail-label\">Facility</span>\n" +
+                    "                        <span class=\"detail-value\">" + facilityName + "</span>\n" +
+                    "                    </div>\n" +
+                    "                    \n" +
+                    "                    <div class=\"detail-row\">\n" +
+                    "                        <span class=\"detail-label\">Court Details</span>\n" +
+                    "                        <div class=\"detail-value\">\n" +
+                    "                            <ul>\n" +
+                    "                                " + courtDetailsHtml.toString() + "\n" +
+                    "                            </ul>\n" +
+                    "                        </div>\n" +
+                    "                    </div>\n" +
+                    "                </div>\n" +
+                    "                \n" +
+                    "                <div class=\"note\">\n" +
+                    "                    <strong>NOTE:</strong> Payment for any additional services (if applicable) will be made directly at the facility.\n" +
+                    "                </div>\n" +
+                    "                \n" +
+                    "                <p>Best regards,<br><strong>The SportHub Team</strong></p>\n" +
+                    "            </div>\n" +
+                    "            \n" +
+                    "            <div class=\"footer\">\n" +
+                    "                <p>&copy; 2026 SportHub. All rights reserved.</p>\n" +
+                    "                <p>If you have any questions, please reply directly to this email.</p>\n" +
+                    "            </div>\n" +
+                    "        </div>\n" +
+                    "    </div>\n" +
+                    "</body>\n" +
+                    "</html>";
+
+            helper.setText(htmlContent, true);
+
             mailSender.send(message);
             log.info("Payment success email sent to {}", to);
+        } catch (MessagingException e) {
+            log.error("Failed to construct MimeMessage for payment success to {}", to, e);
         } catch (MailException e) {
             log.error("Failed to send payment email to {}", to, e);
             System.out.println("=========================================================");
             System.out.println("DEVELOPMENT MODE - MOCK EMAIL (PAYMENT SUCCESS)");
             System.out.println("To: " + to);
-            System.out.println("Booking details: " + bookingDetails);
+            System.out.println("Transaction ID: " + transactionId);
             System.out.println("=========================================================");
         }
     }
