@@ -1055,7 +1055,9 @@ public class BookingServiceImpl implements BookingService {
         LocalDateTime now = LocalDateTime.now();
         List<BookingSlot> targetSlots;
         if (slotIds != null && !slotIds.isEmpty()) {
-            targetSlots = bookingSlotRepository.findAllById(slotIds);
+            targetSlots = booking.getBookingSlots() != null ? booking.getBookingSlots().stream()
+                    .filter(bs -> slotIds.contains(bs.getId()))
+                    .collect(Collectors.toList()) : Collections.emptyList();
         } else {
             targetSlots = booking.getBookingSlots() != null ? booking.getBookingSlots() : Collections.emptyList();
         }
@@ -1344,7 +1346,7 @@ public class BookingServiceImpl implements BookingService {
                         .quantity(qty)
                         .unitPriceSnapshot(unitPrice)
                         .totalAmount(lineTotal)
-                        .addedBy(userAccount != null ? "STAFF_OWNER" : "SYSTEM")
+                        .addedBy(determineAddedBy(userAccount))
                         .build();
                 orderItemRepository.save(item);
                 booking.getOrderItems().add(item);
@@ -1382,5 +1384,12 @@ public class BookingServiceImpl implements BookingService {
         resp.put("success", true);
         resp.put("message", "Add-on services updated successfully!");
         return resp;
+    }
+
+    private String determineAddedBy(Account userAccount) {
+        if (userAccount == null) return "SYSTEM";
+        Optional<Staff> staffOpt = staffRepository.findByAccountId(userAccount.getId());
+        if (staffOpt.isPresent()) return "STAFF";
+        return "OWNER";
     }
 }

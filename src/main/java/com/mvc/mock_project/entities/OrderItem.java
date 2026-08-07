@@ -35,8 +35,8 @@ public class OrderItem {
     @Column(name = "total_amount", nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
-    @Column(name = "added_by", length = 10)
-    private String addedBy; // CUSTOMER or STAFF
+    @Column(name = "added_by", length = 20)
+    private String addedBy; // CUSTOMER or STAFF or OWNER or STAFF_OWNER
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
