@@ -17,6 +17,11 @@ let facilityProducts = [];
 let selectedProductsMap = {}; // productId -> qty
 let fpInstance = null;
 
+// --- EDIT BOOKING SERVICES GLOBAL VARIABLES ---
+let currentBookingDetail = null;
+let editServicesProducts = [];
+let editServicesQuantitiesMap = {};
+
 // --- CUSTOM NOTIFICATION MODAL SYSTEM (REPLACES NATIVE BROWSER ALERT/CONFIRM) ---
 
 function getNotificationModalElements() {
@@ -314,7 +319,7 @@ async function loadTimelineData() {
         renderGrid(data);
     } catch (error) {
         console.error("Error loading timeline:", error);
-        timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Lỗi khi tải dữ liệu. Vui lòng thử lại.</div>`;
+        timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Failed to load timeline data. Please try again.</div>`;
     } finally {
         if (loadingOverlay) loadingOverlay.classList.add('hidden');
     }
@@ -325,7 +330,7 @@ function renderGrid(data) {
     timelineGrid.innerHTML = '';
     const courts = data.courts || [];
     if (courts.length === 0) {
-        timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">Không có sân nào hoạt động.</div>`;
+        timelineGrid.innerHTML = `<div class="p-8 text-center text-slate-500 col-span-full">No active courts available.</div>`;
         return;
     }
 
@@ -339,10 +344,20 @@ function renderGrid(data) {
     cornerCell.textContent = 'COURT / TIME';
     headerFrag.appendChild(cornerCell);
 
-    courts[0].slots.forEach(slot => {
+    courts[0].slots.forEach((slot, idx) => {
         const timeCell = document.createElement('div');
-        timeCell.className = 'timeline-header timeline-cell px-1 font-mono text-[10px] select-none';
-        timeCell.innerHTML = `<div class="flex justify-between items-center w-full"><span class="font-bold text-slate-700">${slot.startTime}</span><span class="text-slate-400 font-normal">${slot.endTime}</span></div>`;
+        timeCell.className = 'timeline-header timeline-cell';
+        timeCell.style.overflow = 'visible';
+        // Show startTime centered on the left border (= the grid line between slots)
+        if (idx === 0) {
+            timeCell.innerHTML = `<span class="time-ruler-label" style="left: 4px; transform: translateY(-50%);">${slot.startTime}</span>`;
+        } else {
+            timeCell.innerHTML = `<span class="time-ruler-label">${slot.startTime}</span>`;
+        }
+        // If this is the last slot, append the closing endTime on the right side
+        if (idx === courts[0].slots.length - 1) {
+            timeCell.innerHTML += `<span class="time-ruler-label" style="left: calc(100% - 4px); transform: translate(-100%, -50%);">${slot.endTime}</span>`;
+        }
         headerFrag.appendChild(timeCell);
     });
     timelineGrid.appendChild(headerFrag);
@@ -804,6 +819,7 @@ window.fetchAndShowBookingDetail = async function (bookingId) {
         if (!res.ok) throw new Error("Failed to fetch booking detail");
 
         const data = await res.json();
+        currentBookingDetail = data; // Store globally
         renderBookingDetailCard(data);
     } catch (e) {
         console.error(e);
@@ -823,6 +839,10 @@ function renderBookingDetailCard(data) {
     const isConfirmed = data.bookingStatus === 'CONFIRMED';
     const isPaid = data.paymentStatus === 'PAID';
     const isPartial = data.paymentStatus === 'PARTIAL';
+
+    // A booking can have its services edited if at least one slot is PENDING or CHECKED_IN
+    const hasEditableSlots = data.groupedSlotBlocks
+        && data.groupedSlotBlocks.some(b => b.slotStatus === 'PENDING' || b.slotStatus === 'CHECKED_IN');
 
     content.innerHTML = `
         <!-- Section 1: Header Status -->
@@ -918,9 +938,17 @@ function renderBookingDetailCard(data) {
 
         <!-- Section 4: Accompanying Services -->
         <div class="bg-white p-3.5 rounded-xl border border-slate-200 space-y-2 shadow-2xs">
-            <div class="font-bold text-[10px] uppercase tracking-wider text-slate-400">ADD-ON SERVICES (${data.services ? data.services.length : 0})</div>
+            <div class="flex justify-between items-center">
+                <div class="font-bold text-[10px] uppercase tracking-wider text-slate-400">ADD-ON SERVICES (${data.services ? data.services.length : 0})</div>
+                ${hasEditableSlots ? `
+                    <button onclick="openEditServicesModal()" class="flex items-center gap-1 text-[10px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded-lg transition-colors">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        Edit
+                    </button>
+                ` : ''}
+            </div>
             ${!data.services || data.services.length === 0 ? `
-                <div class="text-slate-400 italic text-center py-2">No add-on services</div>
+                <div class="text-slate-400 italic text-center py-2 text-xs">No add-on services</div>
             ` : `
                 <div class="space-y-1.5">
                     ${data.services.map(s => `
@@ -1063,3 +1091,131 @@ window.confirmCheckOutSettlement = async function () {
     }
 };
 
+// ─────────────────────────────────────────────────────
+//  EDIT BOOKING SERVICES MODAL
+// ─────────────────────────────────────────────────────
+
+window.openEditServicesModal = async function () {
+    if (!currentBookingDetail) return;
+
+    const modal = document.getElementById('editBookingServicesModal');
+    const container = document.getElementById('editServicesProductsContainer');
+    if (!modal || !container) return;
+
+    // Pre-populate quantities from the currently attached services
+    editServicesQuantitiesMap = {};
+    if (currentBookingDetail.services) {
+        currentBookingDetail.services.forEach(s => {
+            if (s.productId != null) {
+                editServicesQuantitiesMap[s.productId] = s.quantity || 0;
+            }
+        });
+    }
+
+    modal.classList.remove('hidden');
+    container.innerHTML = `<div class="text-xs text-slate-400 italic p-3 text-center col-span-full flex items-center justify-center gap-2">
+        <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div> Loading products...
+    </div>`;
+
+    try {
+        const res = await fetch(`/api/owner/booking/products?facilityId=${currentBookingDetail.facilityId}`);
+        if (!res.ok) throw new Error("Failed to load products");
+        editServicesProducts = await res.json();
+
+        if (editServicesProducts.length === 0) {
+            container.innerHTML = `<div class="text-xs text-slate-400 italic p-4 text-center">No products available at this facility.</div>`;
+        } else {
+            renderEditServicesProducts();
+        }
+    } catch (e) {
+        console.error(e);
+        container.innerHTML = `<div class="text-xs text-red-500 italic p-4 text-center">Failed to load products. Please try again.</div>`;
+    }
+
+    updateEditServicesTotal();
+};
+
+function renderEditServicesProducts() {
+    const container = document.getElementById('editServicesProductsContainer');
+    if (!container) return;
+
+    container.innerHTML = editServicesProducts.map(p => {
+        const qty = editServicesQuantitiesMap[p.productId] || 0;
+        return `
+        <div class="p-3 bg-white rounded-xl border border-slate-200 flex items-center justify-between shadow-xs gap-3">
+            <div class="flex-1 min-w-0">
+                <div class="font-bold text-xs text-slate-800 truncate">${p.productName}</div>
+                <div class="text-[10px] text-emerald-600 font-semibold">${formatVND(p.price)}${p.unit ? ' / ' + p.unit : ''}</div>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <button onclick="changeEditServiceQty(${p.productId}, -1)"
+                    class="w-7 h-7 rounded-lg bg-slate-100 hover:bg-red-100 hover:text-red-600 text-slate-700 font-bold text-sm flex items-center justify-center transition-colors">−</button>
+                <span id="editProdQty-${p.productId}" class="text-sm font-extrabold text-slate-800 w-5 text-center">${qty}</span>
+                <button onclick="changeEditServiceQty(${p.productId}, 1)"
+                    class="w-7 h-7 rounded-lg bg-blue-50 hover:bg-blue-200 text-blue-700 font-bold text-sm flex items-center justify-center transition-colors">+</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    updateEditServicesTotal();
+}
+
+window.changeEditServiceQty = function (productId, delta) {
+    const current = editServicesQuantitiesMap[productId] || 0;
+    const newQty = Math.max(0, current + delta);
+    editServicesQuantitiesMap[productId] = newQty;
+
+    const el = document.getElementById(`editProdQty-${productId}`);
+    if (el) el.textContent = newQty;
+
+    updateEditServicesTotal();
+};
+
+function updateEditServicesTotal() {
+    let total = 0;
+    editServicesProducts.forEach(p => {
+        const qty = editServicesQuantitiesMap[p.productId] || 0;
+        total += qty * Number(p.price);
+    });
+    const el = document.getElementById('editServicesTotalDisplay');
+    if (el) el.textContent = formatVND(total);
+}
+
+window.closeEditServicesModal = function () {
+    const modal = document.getElementById('editBookingServicesModal');
+    if (modal) modal.classList.add('hidden');
+};
+
+window.submitEditServices = async function () {
+    if (!currentBookingDetail) return;
+
+    const btn = document.getElementById('btnSubmitEditServices');
+    if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
+    const services = editServicesProducts
+        .filter(p => (editServicesQuantitiesMap[p.productId] || 0) > 0)
+        .map(p => ({ productId: p.productId, quantity: editServicesQuantitiesMap[p.productId] }));
+
+    try {
+        const res = await fetch('/api/owner/booking/update-services', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ bookingId: currentBookingDetail.bookingId, services })
+        });
+        const result = await res.json();
+
+        if (res.ok && result.success) {
+            closeEditServicesModal();
+            await showCustomAlert(result.message || 'Services updated successfully!', 'Services Updated', 'success');
+            await fetchAndShowBookingDetail(currentBookingDetail.bookingId);
+            loadTimelineData();
+        } else {
+            await showCustomAlert(result.message || 'Failed to update services.', 'Update Error', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        await showCustomAlert('Connection error. Please try again.', 'System Error', 'error');
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
+    }
+};

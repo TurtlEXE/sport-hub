@@ -7,7 +7,7 @@ public interface EmailService {
 
     void sendContactEmail(String name, String email, String message);
 
-    void sendPaymentSuccessEmail(String to, String bookingDetails);
+    void sendPaymentSuccessEmail(String to, String userName, String transactionId, String time, String facilityName, java.util.List<String> courtDetails);
 
     void sendFeedbackConfirmationEmail(String name, String email, String messageContent);
 }

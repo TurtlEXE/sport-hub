@@ -55,10 +55,18 @@ public class FacilityServiceImpl implements FacilityService {
     }
 
     @Override
-    public List<VenueCardDTO> getFilteredFacilities(String keyword, String sportCode, Double maxPrice,
-            List<Integer> categoryIds, Boolean onlyFavorites, Integer accountId) {
+    public List<VenueCardDTO> getFilteredFacilities(
+            String keyword,
+            String sportCode,
+            Double minPrice,
+            Double maxPrice,
+            String province,
+            List<Integer> categoryIds,
+            Boolean onlyFavorites,
+            Integer accountId) {
+
         List<VenueCardDTO> allVenues = getAllActiveVenues();
-        
+
         List<Integer> favoriteIds = null;
         if (Boolean.TRUE.equals(onlyFavorites) && accountId != null) {
             favoriteIds = favoriteRepository.findFacilityIdsByAccountId(accountId);
@@ -66,25 +74,23 @@ public class FacilityServiceImpl implements FacilityService {
         final List<Integer> finalFavoriteIds = favoriteIds;
 
         return allVenues.stream()
+                .filter(v -> keyword == null || keyword.trim().isEmpty()
+                        || v.getName().toLowerCase().contains(keyword.toLowerCase())
+                        || (v.getAddress() != null && v.getAddress().toLowerCase().contains(keyword.toLowerCase())))
+                .filter(v -> sportCode == null || sportCode.trim().isEmpty()
+                        || (v.getSports() != null && v.getSports().contains(sportCode)))
+                .filter(v -> minPrice == null || v.getMinPricePerHour() >= minPrice)
+                .filter(v -> maxPrice == null || v.getMinPricePerHour() <= maxPrice)
+                .filter(v -> province == null || province.trim().isEmpty()
+                        || (v.getProvince() != null && v.getProvince().equalsIgnoreCase(province.trim())))
                 .filter(v -> {
                     if (Boolean.TRUE.equals(onlyFavorites) && accountId != null) {
                         return finalFavoriteIds != null && finalFavoriteIds.contains(v.getFacilityId());
                     }
                     return true;
                 })
-                .filter(v -> keyword == null || keyword.trim().isEmpty()
-                        || v.getName().toLowerCase().contains(keyword.toLowerCase())
-                        || v.getAddress().toLowerCase().contains(keyword.toLowerCase()))
-                .filter(v -> sportCode == null || sportCode.trim().isEmpty() || v.getSports().contains(sportCode))
-                .filter(v -> maxPrice == null || v.getMinPricePerHour() <= maxPrice)
                 .filter(v -> {
-                    if (categoryIds == null || categoryIds.isEmpty())
-                        return true;
-                    // For each required category, check if the venue has it
-                    // The venue's amenities (List<String>) now contains the names of the categories
-                    // but we need to check IDs. Since the mock project requires in-memory
-                    // filtering,
-                    // we'll fetch the venue's products and check their category IDs.
+                    if (categoryIds == null || categoryIds.isEmpty()) return true;
                     List<Product> products = productRepository.findByFacility_IdAndIsActiveTrue(v.getFacilityId());
                     List<Integer> venueCategoryIds = products.stream()
                             .map(p -> p.getCategory().getId())
@@ -92,6 +98,17 @@ public class FacilityServiceImpl implements FacilityService {
                             .collect(Collectors.toList());
                     return venueCategoryIds.containsAll(categoryIds);
                 })
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<String> getDistinctProvinces() {
+        return facilityRepository.findByIsActiveTrueAndApprovalStatus(com.mvc.mock_project.entities.enums.ApprovalStatus.APPROVED)
+                .stream()
+                .map(f -> f.getProvince())
+                .filter(p -> p != null && !p.trim().isEmpty())
+                .distinct()
+                .sorted()
                 .collect(Collectors.toList());
     }
 
@@ -157,6 +174,7 @@ public class FacilityServiceImpl implements FacilityService {
                     .facilityId(facility.getId())
                     .name(facility.getName())
                     .address(facility.getAddress())
+                    .province(facility.getProvince())
                     .imageUrl(imageUrl)
                     .sports(sports)
                     .sportNames(sportNames)
