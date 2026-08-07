@@ -21,10 +21,14 @@ public class FavoriteApiController {
 
     @PostMapping("/{facilityId}/toggle")
     public ResponseEntity<ApiResponse<Map<String, Boolean>>> toggleFavorite(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal Object principal,
             @PathVariable Integer facilityId) {
         
-        Integer accountId = userDetails.getAccount().getId();
+        Integer accountId = getAccountIdFromPrincipal(principal);
+        if (accountId == null) {
+            return ResponseEntity.status(401).body(ApiResponse.error("Unauthorized"));
+        }
+        
         boolean isFavorited = favoriteFacilityService.toggleFavorite(accountId, facilityId);
         
         Map<String, Boolean> data = new HashMap<>();
@@ -36,11 +40,24 @@ public class FavoriteApiController {
 
     @GetMapping("/ids")
     public ResponseEntity<ApiResponse<List<Integer>>> getFavoriteFacilityIds(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal Object principal) {
         
-        Integer accountId = userDetails.getAccount().getId();
+        Integer accountId = getAccountIdFromPrincipal(principal);
+        if (accountId == null) {
+            return ResponseEntity.ok(ApiResponse.success("success", List.of()));
+        }
+        
         List<Integer> favoriteIds = favoriteFacilityService.getFavoriteFacilityIds(accountId);
         
         return ResponseEntity.ok(ApiResponse.success("success", favoriteIds));
+    }
+    
+    private Integer getAccountIdFromPrincipal(Object principal) {
+        if (principal instanceof CustomUserDetails) {
+            return ((CustomUserDetails) principal).getAccount().getId();
+        } else if (principal instanceof com.mvc.mock_project.security.CustomOAuth2User) {
+            return ((com.mvc.mock_project.security.CustomOAuth2User) principal).getAccount().getId();
+        }
+        return null;
     }
 }

@@ -21,11 +21,16 @@ public class VenueController {
             @org.springframework.web.bind.annotation.RequestParam(required = false) String province,
             @org.springframework.web.bind.annotation.RequestParam(required = false) java.util.List<Integer> amenities,
             @org.springframework.web.bind.annotation.RequestParam(required = false) Boolean onlyFavorites,
-            @org.springframework.security.core.annotation.AuthenticationPrincipal com.mvc.mock_project.security.CustomUserDetails userDetails,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal Object principal,
             jakarta.servlet.http.HttpServletRequest request,
             Model model) {
         
-        Integer accountId = (userDetails != null && userDetails.getAccount() != null) ? userDetails.getAccount().getId() : null;
+        Integer accountId = null;
+        if (principal instanceof com.mvc.mock_project.security.CustomUserDetails) {
+            accountId = ((com.mvc.mock_project.security.CustomUserDetails) principal).getAccount().getId();
+        } else if (principal instanceof com.mvc.mock_project.security.CustomOAuth2User) {
+            accountId = ((com.mvc.mock_project.security.CustomOAuth2User) principal).getAccount().getId();
+        }
 
         model.addAttribute("sports", facilityService.getAllActiveSports());
         model.addAttribute("categories", facilityService.getAllActiveProductCategories());
